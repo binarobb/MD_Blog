@@ -5,9 +5,10 @@ const articleRouter = require('./routes/articles.js')
 const methodOverride = require('method-override')
 const nodemailer = require('nodemailer')
 const session = require('express-session')
+require('dotenv').config()
 const app = express()
 
-mongoose.connect('mongodb://localhost/blog', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/blog', {
     useNewUrlParser: true, useUnifiedTopology: true 
 })
 
@@ -24,7 +25,7 @@ app.use(methodOverride('_method'))
 app.use(express.static(__dirname))
 
 app.use(session({
-    secret: 'your-secret-key', // change this to a real secret
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
     saveUninitialized: false
 }))
@@ -68,12 +69,12 @@ app.get('/articles/new', requireAdmin, (req, res) => {
     res.render('articles/new', { article: new Article() })
 })
 
-// Nodemailer setup (configure with your SMTP details)
+// Nodemailer setup
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // or your email service
+    service: process.env.EMAIL_SERVICE || 'gmail',
     auth: {
-        user: 'your-email@gmail.com', // replace with your email
-        pass: 'your-password' // replace with your password or app password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
     }
 })
 
@@ -104,7 +105,7 @@ app.post('/contact', (req, res) => {
     const { name, email, message } = req.body
     const mailOptions = {
         from: email,
-        to: 'robb@unrealstyle.com',
+        to: process.env.EMAIL_TO || 'admin@intentionalowl.io',
         subject: `Contact Form Message from ${name}`,
         text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
     }
@@ -122,6 +123,6 @@ app.post('/contact', (req, res) => {
 
 app.use('/articles', articleRouter)
 
-app.listen(5000, () => {
-    console.log('Server running on http://localhost:5000')
+app.listen(process.env.PORT || 5000, () => {
+    console.log(`Server running on http://localhost:${process.env.PORT || 5000}`)
 })
