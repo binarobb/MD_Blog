@@ -41,7 +41,12 @@ function saveArticleAndRedirect(path) {
         let article = req.article
         article.title = req.body.title
         article.description = req.body.description
-        article.markdown = req.body.markdown  
+        article.markdown = req.body.markdown
+        article.author = req.body.author
+        article.category = req.body.category
+        article.tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : []
+        article.featuredImage = req.body.featuredImage
+        article.published = req.body.published ? true : false
           try {
           article = await article.save()
           res.redirect(`/articles/${article.slug}`)

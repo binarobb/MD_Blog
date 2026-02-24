@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/style.css">
-    <title><%= article.title %> - Owl Blog</title>
+    <title>About - Owl Blog</title>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -21,7 +21,7 @@
                         <a class="nav-link" href="/">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/about">About</a>
+                        <a class="nav-link active" aria-current="page" href="/about">About</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/contact">Contact</a>
@@ -31,26 +31,10 @@
         </div>
     </nav>
     <div class="container article-content">
-        <h1 class="mb-1"><%= article.title %></h1>
-        <div class="text-muted mb-2">
-            <%= article.createdAt.toLocaleDateString() %> by <%= article.author %>
-            <% if (article.readingTime) { %> | <%= article.readingTime %> min read <% } %>
-        </div>
-        <% if (article.category) { %>
-            <span class="badge bg-primary mb-2"><%= article.category %></span>
-        <% } %>
-        <% if (article.tags && article.tags.length > 0) { %>
-            <% article.tags.forEach(tag => { %>
-                <span class="badge bg-secondary mb-2"><%= tag %></span>
-            <% }) %>
-        <% } %>
-        <a href="/" class="btn btn-secondary">All Articles</a>
-        <a href="/articles/edit/<%= article.id %>" class="btn btn-info">Edit</a>
-
-        <div>
-            <%- article.sanitizedHtml %>
-        </div>
-        
+        <h1>About</h1>
+        <p>I was drawn to video games, electronics and just science stuff in general. When PC's became affordable, my parents got me a C-64 for Christmas. This started my love/hate relationship with computers. In college I started out in the biological sciences and ended up in computer science (long story). Coding at that level was cool, but not really for me. After graduation, I landed an entry level job at a web hosting company as a junior Linux system administrator. It was great, and I was good at it. Quickly I rose through the ranks and was able to help others understand how 'the web' worked. My career took me to the edge of DevOps and SRE and security. Always on the infrastructure side of things, cozy dancing with the code that wrapped it all together. Currently I decided to make the full jump and am doing development for ServiceNow. Here I am learning, learning, learning. It's tough but you just keep moving, slow moving is better than no moving.</p>
+        <h2>What does an Owl do to be Intentional</h2>
+        <p>Stay curious. Stay humble. Keep learning.</p>
     </div>
     <footer class="bg-dark text-white text-center py-3 mt-5">
         <p>&copy; <span id="year"></span> Owl Blog. All rights reserved.</p>

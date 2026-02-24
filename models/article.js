@@ -26,9 +26,29 @@ const articleSchema = new mongoose.Schema({
     required: true,
     unique: true
    },
-   santizedHtml: {
+   sanitizedHtml: {
     type: String,
     required: true
+   },
+   author: {
+    type: String,
+    default: 'Anonymous'
+   },
+   tags: [{
+    type: String
+   }],
+   category: {
+    type: String
+   },
+   featuredImage: {
+    type: String
+   },
+   readingTime: {
+    type: Number
+   },
+   published: {
+    type: Boolean,
+    default: true
    }
 })
 
@@ -37,7 +57,8 @@ articleSchema.pre('validate', function(next) {
         this.slug = slugify(this.title, { lower: true, strict: true})
     }
     if(this.markdown){
-        this.santizedHtml = dompurify.sanitize(marked.parse(this.markdown))
+        this.sanitizedHtml = dompurify.sanitize(marked.parse(this.markdown, { breaks: true }))
+        this.readingTime = Math.ceil(this.markdown.split(' ').length / 200)
     }
     next()
 })
