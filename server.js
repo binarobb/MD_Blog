@@ -124,5 +124,11 @@ app.post('/contact', (req, res) => {
 app.use('/articles', articleRouter)
 
 app.listen(process.env.PORT || 5000, () => {
-    console.log(`Server running on http://localhost:${process.env.PORT || 5000}`)
+    const port = process.env.PORT || 5000
+    const env = process.env.NODE_ENV || 'development'
+    if (env === 'production') {
+        console.log(`Node.js server running on port ${port} (internal, proxied through Nginx on ports 80/443)`)
+    } else {
+        console.log(`Server running on http://localhost:${port}`)
+    }
 })

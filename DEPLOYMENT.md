@@ -2,11 +2,30 @@
 
 This guide covers deploying the MD Blog to a DigitalOcean droplet running Rocky Linux 9.
 
-## Prerequisites
+## Architecture Overview
 
-1. **DigitalOcean Account**: Create a new droplet with Rocky Linux 9 image
-2. **GitHub Secrets**: Configure in your repo settings
-3. **MongoDB Atlas**: Create a cluster and get your connection string
+The blog uses this architecture:
+- **Node.js App**: Runs on port 5000 (internal only, not publicly accessible)
+- **Nginx**: Listens on ports 80/443 (public-facing)
+- **SSL/TLS**: Handled by Nginx with Let's Encrypt
+- **Users**: Access via `https://intentionalowl.io` (standard web ports)
+
+Nginx acts as a reverse proxy, forwarding all web traffic to the Node app running on port 5000. This is the standard, secure way to run Node.js applications.
+
+## Why This Architecture?
+
+**Security & Best Practices:**
+- Node.js app runs as non-root user (cannot bind to ports < 1024)
+- Nginx runs as root, can bind to ports 80/443
+- Nginx handles SSL/TLS certificates
+- If Node crashes, Nginx still serves error pages
+- Easy to scale (add multiple Node instances behind Nginx)
+
+**Port Explanation:**
+- **Port 5000** (internal): Where your Node.js app actually runs
+- **Port 80** (public): HTTP traffic (redirects to HTTPS)
+- **Port 443** (public): HTTPS traffic (secure, standard web port)
+- Users never interact with port 5000 directly
 
 ## Rocky Linux 9 Specifics
 
@@ -81,11 +100,38 @@ PORT=5000
 SESSION_SECRET=your-secret-key-here-change-this
 ```
 
-Get your MongoDB Atlas connection string:
-1. Go to MongoDB Atlas
+### Get Your MongoDB Atlas Connection String
+
+**Option A: Username/Password (Recommended for simplicity)**
+1. Go to MongoDB Atlas (https://cloud.mongodb.com)
 2. Click "Connect" on your cluster
-3. Choose "Applications"
-4. Copy the connection string and replace USERNAME/PASSWORD
+3. Choose "Drivers" (not Applications/X.509)
+4. Select "Node.js" and copy the connection string
+5. Replace `<username>` and `<password>` with your credentials
+6. Replace `<password>` with your database password
+
+**Option B: X.509 Certificates (More Secure)**
+If you have an X.509 connection string like:
+```
+mongodb+srv://parliment.myhux.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509&appName=parliment
+```
+
+This requires:
+1. Downloading X.509 certificate from MongoDB Atlas
+2. Adding certificate path environment variables
+3. More complex server setup
+
+**For easier first deployment, use Option A (username/password)**
+
+### MongoDB Database Setup
+1. In MongoDB Atlas, create a database user:
+   - Go to Database Access
+   - Click "+ Add New Database User"
+   - Choose "Password" authentication
+   - Set username and password
+   - Add to cluster
+2. Create a database (e.g., "blog")
+3. Use these credentials in your connection string
 
 ## Step 4: Install and Start the App
 
@@ -182,6 +228,30 @@ certbot renew --dry-run
 
 **Note**: On Rocky Linux 9, Let's Encrypt auto-renewal uses systemd timers instead of cron jobs. Certbot will automatically set up the timer.
 
+## Step 6a: Verify Port Configuration
+
+To verify that your setup is correctly routing traffic:
+
+```bash
+# Check that Node.js app is running on port 5000 (internal)
+netstat -tuln | grep 5000
+# Output should show: LISTEN on 127.0.0.1:5000 (only localhost)
+
+# Check that Nginx is listening on ports 80 and 443 (public)
+netstat -tuln | grep :80
+netstat -tuln | grep :443
+# Output should show: LISTEN on 0.0.0.0 (all interfaces)
+
+# Test that Nginx is routing correctly to Node.js
+curl http://localhost/  # Should work through Nginx → Node.js
+curl http://127.0.0.1:5000/  # Should work directly to Node.js
+```
+
+The security model:
+- Node app on port 5000: **Not exposed to internet** (only localhost)
+- Nginx on ports 80/443: **Public facing**
+- Users access the public ports, Nginx forwards to the internal port
+
 ## Step 7: Update Your Domain DNS
 
 Point your domain to your DigitalOcean droplet IP in your DNS settings:
@@ -235,6 +305,27 @@ After saving, restart the app:
 pm2 restart md-blog
 ```
 
+## Port Configuration Summary
+
+**Your Site Access Pattern:**
+```
+User Browser
+    ↓ https://intentionalowl.io (port 443)
+Nginx (reverse proxy)
+    ↓ http://127.0.0.1:5000
+Node.js App
+    ↓ Serves content
+```
+
+**Port Breakdown:**
+| Port | Service | Access | Purpose |
+|------|---------|--------|---------|
+| 80 | Nginx | Public (everyone) | HTTP → redirects to HTTPS |
+| 443 | Nginx | Public (everyone) | HTTPS (secure, default web) |
+| 5000 | Node.js | Internal only (localhost) | Actual app logic |
+
+Users never see or interact with port 5000. All traffic goes through Nginx on the standard web ports (80/443).
+
 ## Troubleshooting
 
 **Node.js module not found**:
@@ -245,14 +336,24 @@ dnf module enable nodejs:18
 
 **Firewall blocking connections**:
 ```bash
-# Check if port 5000 is accessible from localhost
-curl http://localhost:5000
-
-# Check firewall rules
+# Check firewall rules (should only expose 80 and 443)
 firewall-cmd --list-all
 
-# Temporarily disable firewall (for debugging only)
-systemctl stop firewalld
+# If HTTP/HTTPS aren't listed:
+firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-service=https
+firewall-cmd --reload
+
+# Verify ports are open
+firewall-cmd --query-service=http  # Should output 'yes'
+firewall-cmd --query-service=https  # Should output 'yes'
+
+# Check if port 5000 is accessible from localhost (internal only)
+curl http://localhost:5000
+
+# IMPORTANT: Port 5000 should NOT be open to the firewall - it's internal only!
+# If you see it exposed, something isn't right
+firewall-cmd --query-port=5000/tcp  # Should output 'no'
 ```
 
 **Port already in use**:
@@ -307,6 +408,38 @@ certbot renew
 
 # View Certbot logs
 journalctl -u certbot.timer -f
+```
+
+## Verifying Your Complete Setup
+
+Run these checks to ensure everything is configured correctly:
+
+```bash
+# 1. Check Node.js is running on port 5000 (internal)
+pm2 status
+netstat -tuln | grep 5000
+# Expected: LISTEN on 127.0.0.1:5000
+
+# 2. Check Nginx is listening on ports 80/443 (public)
+ssl -t
+systemctl status nginx
+netstat -tuln | grep :80
+netstat -tuln | grep :443
+# Expected: LISTEN on 0.0.0.0 for both
+
+# 3. Check firewall only exposes 80/443, NOT 5000
+firewall-cmd --list-all | grep 80
+firewall-cmd --list-all | grep 443
+firewall-cmd --query-port=5000/tcp  # Should output: no
+
+# 4. Test routing from Nginx to Node.js
+curl -I http://localhost  # Via Nginx
+curl -I http://127.0.0.1:5000  # Direct to Node.js
+# Both should respond with HTTP 200 or redirect
+
+# 5. Check SSL certificate is working
+curl -I https://intentionalowl.io  # Should work (after DNS is updated)
+certbot certificates  # View all certificates
 ```
 
 ## Rocky Linux 9 Quick Reference
