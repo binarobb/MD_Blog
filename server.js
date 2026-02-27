@@ -5,7 +5,7 @@ const articleRouter = require('./routes/articles.js')
 const methodOverride = require('method-override')
 const nodemailer = require('nodemailer')
 const session = require('express-session')
-require('dotenv').config()
+require('dotenv').config({ override: true })
 const app = express()
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/blog', {
