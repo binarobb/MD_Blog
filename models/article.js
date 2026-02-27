@@ -62,4 +62,5 @@ articleSchema.pre('validate', function(next) {
     }
     next()
 })
-module.exports = mongoose.model('Article', articleSchema)
+const articleCollection = process.env.MONGODB_COLLECTION || 'articles'
+module.exports = mongoose.model('Article', articleSchema, articleCollection)
