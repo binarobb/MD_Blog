@@ -55,12 +55,24 @@ a:hover {
 .navbar {
     background-color: #0d1016 !important;
     border-bottom: 1px solid #20293a;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
 }
 
 .navbar-brand {
     font-weight: 700;
     font-size: 1.15rem;
     letter-spacing: 0.01em;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-right: 0.75rem;
+    line-height: 1;
+}
+
+.navbar-brand img {
+    height: 84px;
+    width: auto;
+    display: block;
 }
 
 .nav-link {
