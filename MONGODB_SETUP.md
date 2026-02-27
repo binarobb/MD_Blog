@@ -39,7 +39,7 @@ Replace the placeholders:
 
 Your final string should look like:
 ```
-mongodb+srv://blog_user:mySecurePassword123@cluster0.abc123.mongodb.net/blog?retryWrites=true&w=majority
+mongodb+srv://blog_user:<DB_PASSWORD>@cluster0.abc123.mongodb.net/blog?retryWrites=true&w=majority
 ```
 
 ### 6. Add to `.env` File
@@ -50,7 +50,7 @@ nano /var/www/md-blog/.env
 
 Add:
 ```
-MONGODB_URI=mongodb+srv://blog_user:mySecurePassword123@cluster0.abc123.mongodb.net/blog?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://blog_user:<DB_PASSWORD>@cluster0.abc123.mongodb.net/blog?retryWrites=true&w=majority
 ```
 
 ### 7. Allow Your App to Connect

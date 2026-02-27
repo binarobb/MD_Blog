@@ -94,7 +94,7 @@ nano .env
 
 Create `.env` file on your droplet:
 ```
-MONGODB_URI=mongodb+srv://owleyes:owleyes@cluster.mongodb.net/blog?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://<DB_USERNAME>:<DB_PASSWORD>@cluster.mongodb.net/blog?retryWrites=true&w=majority
 NODE_ENV=production
 PORT=5000
 SESSION_SECRET=your-secret-key-here-change-this
