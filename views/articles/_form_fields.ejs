@@ -1,34 +1,36 @@
-<div class="form-group">
-    <label for="title">Title</label>
+<div class="mb-3">
+    <label for="title" class="form-label">Title</label>
     <input required value="<%= article.title %>" type="text" name="title" id="title" class="form-control">  
 </div>
-<div class="form-group">
-    <label for="description">Description</label>
-    <textarea name="description" id="description" class="form-control"><%= article.description %></textarea>
+<div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea name="description" id="description" class="form-control" rows="3"><%= article.description %></textarea>
 </div>
-<div class="form-group">
-    <label for="author">Author</label>
-    <input value="<%= article.author %>" type="text" name="author" id="author" class="form-control">
+<div class="row">
+    <div class="mb-3 col-md-6">
+        <label for="author" class="form-label">Author</label>
+        <input value="<%= article.author %>" type="text" name="author" id="author" class="form-control">
+    </div>
+    <div class="mb-3 col-md-6">
+        <label for="category" class="form-label">Category</label>
+        <input value="<%= article.category %>" type="text" name="category" id="category" class="form-control">
+    </div>
 </div>
-<div class="form-group">
-    <label for="category">Category</label>
-    <input value="<%= article.category %>" type="text" name="category" id="category" class="form-control">
-</div>
-<div class="form-group">
-    <label for="tags">Tags (comma-separated)</label>
+<div class="mb-3">
+    <label for="tags" class="form-label">Tags (comma-separated)</label>
     <input value="<%= article.tags ? article.tags.join(', ') : '' %>" type="text" name="tags" id="tags" class="form-control">
 </div>
-<div class="form-group">
-    <label for="featuredImage">Featured Image URL</label>
+<div class="mb-3">
+    <label for="featuredImage" class="form-label">Featured Image URL</label>
     <input value="<%= article.featuredImage %>" type="url" name="featuredImage" id="featuredImage" class="form-control">
 </div>
-<div class="form-group form-check">
+<div class="mb-3 form-check">
     <input type="checkbox" name="published" id="published" class="form-check-input" <%= article.published ? 'checked' : '' %>>
     <label for="published" class="form-check-label">Published</label>
 </div>
-<div class="form-group">
-    <label for="markdown">Markdown</label>
-    <textarea required name="markdown" id="markdown" class="form-control"><%= article.markdown %></textarea>
+<div class="mb-3">
+    <label for="markdown" class="form-label">Article Body (Markdown)</label>
+    <textarea required name="markdown" id="markdown" class="form-control" rows="12"><%= article.markdown %></textarea>
 </div>
 
 <a href="/" class="btn btn-secondary">Cancel</a>

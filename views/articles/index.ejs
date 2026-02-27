@@ -44,38 +44,40 @@
             </div>
         </div>
     </nav>
-    <div class="container">
-        <div class="text-center mb-5 pt-4">
+    <div class="page-shell">
+        <div class="hero">
             <h1 class="mb-2">Owl Blog</h1>
-            <h3 class="text-muted">What does an Owl do to be Intentional?</h3>
-            <p class="lead mt-3">Stay curious. Stay humble. Keep learning.</p>
+            <h3 class="text-muted">What does an owl do to be intentional?</h3>
+            <p class="lead">A personal space for thoughtful engineering, practical learning, and consistent growth.</p>
         </div>
-        <h2 class="mb-4">Latest Articles</h2>
-        <a href="/articles/new" class="btn btn-success">New Article</a>
-        <% if (!isAdmin) { %>
-            <p><small>Admin login required to create articles.</small></p>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 section-title">
+            <h2 class="mb-0">Latest Articles</h2>
+            <a href="/articles/new" class="btn btn-success">New Article</a>
+        </div>
+         <% if (!isAdmin) { %>
+            <p class="text-muted mb-3"><small>Admin login required to create articles.</small></p>
         <% } %>
         <% if (articles.length === 0) { %>
             <p class="mt-4">No articles yet. <a href="/articles/new">Create the first one!</a></p>
         <% } %>
 
         <% articles.forEach(article => { %>
-            <div class="card mt-4">
+            <div class="content-card mt-3">
                 <% if (article.featuredImage) { %>
                     <img src="<%= article.featuredImage %>" class="card-img-top" alt="<%= article.title %>">
                 <% } %>
                 <div class="card-body">
-                    <h4 class="card-title"><%= article.title %></h4>
-                    <div class="card-subtitle text-muted mb-2">
+                    <h3 class="card-title"><%= article.title %></h3>
+                    <div class="meta-row">
                         <%= article.createdAt.toLocaleDateString() %> by <%= article.author %>
                         <% if (article.readingTime) { %> | <%= article.readingTime %> min read <% } %>
                     </div>
                     <% if (article.category) { %>
-                        <span class="badge bg-primary"><%= article.category %></span>
+                        <span class="chip"><%= article.category %></span>
                     <% } %>
                     <% if (article.tags && article.tags.length > 0) { %>
                         <% article.tags.forEach(tag => { %>
-                            <span class="badge bg-secondary"><%= tag %></span>
+                            <span class="chip"><%= tag %></span>
                         <% }) %>
                     <% } %>
                     <div class="card-text mb-2"><%= article.description %></div>

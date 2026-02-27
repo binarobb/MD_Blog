@@ -30,24 +30,26 @@
             </div>
         </div>
     </nav>
-    <div class="container article-content">
+    <div class="article-content">
         <h1 class="mb-1"><%= article.title %></h1>
-        <div class="text-muted mb-2">
+        <div class="meta-row">
             <%= article.createdAt.toLocaleDateString() %> by <%= article.author %>
             <% if (article.readingTime) { %> | <%= article.readingTime %> min read <% } %>
         </div>
         <% if (article.category) { %>
-            <span class="badge bg-primary mb-2"><%= article.category %></span>
+            <span class="chip"><%= article.category %></span>
         <% } %>
         <% if (article.tags && article.tags.length > 0) { %>
             <% article.tags.forEach(tag => { %>
-                <span class="badge bg-secondary mb-2"><%= tag %></span>
+                <span class="chip"><%= tag %></span>
             <% }) %>
         <% } %>
-        <a href="/" class="btn btn-secondary">All Articles</a>
-        <a href="/articles/edit/<%= article.id %>" class="btn btn-info">Edit</a>
+        <div class="my-3">
+            <a href="/" class="btn btn-secondary">All Articles</a>
+            <a href="/articles/edit/<%= article.id %>" class="btn btn-info">Edit</a>
+        </div>
 
-        <div>
+        <div class="article-prose">
             <%- article.sanitizedHtml %>
         </div>
         

@@ -94,7 +94,7 @@ nano .env
 
 Create `.env` file on your droplet:
 ```
-MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@cluster.mongodb.net/blog?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://owleyes:owleyes@cluster.mongodb.net/blog?retryWrites=true&w=majority
 NODE_ENV=production
 PORT=5000
 SESSION_SECRET=your-secret-key-here-change-this
@@ -384,19 +384,50 @@ pm2 logs md-blog  # View real-time logs
 
 **SELinux issues (if enabled)**:
 
-Rocky Linux 9 may have SELinux enabled by default. If you encounter permission issues:
+Rocky Linux 9 has SELinux enabled by default. If you get "Permission denied" errors connecting to port 5000:
 
 ```bash
 # Check SELinux status
 getenforce
+# Output: Enforcing (if it's blocking things)
 
-# Set to permissive mode (not recommended for production)
+# QUICK FIX: Allow Nginx to connect to port 5000
+setsebool -P httpd_can_network_connect 1
+
+# Then restart
+systemctl restart nginx
+pm2 restart md-blog
+
+# Test the connection
+curl http://127.0.0.1:5000
+```
+
+**Alternative (more restrictive):**
+If you only want to allow port 5000, not all network connections:
+```bash
+# Add port to http_port_t
+semanage port -a -t http_port_t -p tcp 5000
+
+# Apply contexts
+semanage fcontext -a -t http_exec_t "/var/www/md-blog(/.*)?"
+restorecon -R /var/www/md-blog
+
+# Restart
+systemctl restart nginx
+```
+
+**Nuclear option (not recommended for production):**
+```bash
+# Disable SELinux entirely (temporary)
 setenforce 0
 
-# Or add proper policies for Nginx
-semanage port -a -t http_port_t -p tcp 5000
-restorecon -R /var/www/md-blog
+# Make it permanent (edit file and reboot)
+nano /etc/selinux/config
+# Change: SELINUX=enforcing → SELINUX=permissive
+# Then reboot
 ```
+
+**Pro tip:** The `setsebool -P httpd_can_network_connect 1` command is the easiest and safest option for development/small deployments.
 
 **Certbot renewal issues**:
 ```bash
