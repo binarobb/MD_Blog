@@ -15,7 +15,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USERNAME }}
+          username: mdblog
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd /var/www/md-blog
@@ -23,6 +23,6 @@ jobs:
             git reset --hard origin/main
             npm install
             npm run build 2>/dev/null || true
-            pm2 restart md-blog || pm2 start server.js --name "md-blog"
+            pm2 restart md-blog --update-env || pm2 start server.js --name "md-blog"
             pm2 save
             echo "✅ Deployment complete"
