@@ -15,7 +15,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USERNAME }}
+          username: mdblog
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             cd /var/www/md-blog
