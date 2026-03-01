@@ -337,6 +337,40 @@ a:hover {
     text-align: center;
 }
 
+<<<<<<< HEAD
+.about-motto-flip {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    min-height: 130px;
+}
+
+.about-motto-flip .about-card-inner {
+    min-height: 130px;
+}
+
+
+.about-motto-flip:hover .about-card-inner,
+.about-motto-flip:focus .about-card-inner,
+.about-motto-flip:focus-within .about-card-inner {
+    transform: rotateX(180deg);
+}
+
+.about-motto-flip .about-card-front {
+    transform: rotateX(0deg);
+}
+
+.about-motto-flip .about-card-back {
+    transform: rotateX(180deg);
+}
+
+.about-motto-flip .about-card-face {
+    padding: 0.85rem 1rem;
+}
+
+=======
+>>>>>>> 66f9671f1efd8d248a894b99748943105e60f358
 footer {
     background-color: #0d1016 !important;
     border-top: 1px solid #20293a;
