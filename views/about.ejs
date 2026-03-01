@@ -172,14 +172,8 @@
                             button.onclick = function(e) {
                                 var text = codeBlock.innerText;
                                 navigator.clipboard.writeText(text).then(function() {
-                                    // Calculate position for tooltip
-                                    var rect = button.getBoundingClientRect();
-                                    var tooltipTop = rect.top - 40;
-                                    var tooltipLeft = rect.left + rect.width / 2;
                                     button.setAttribute('data-tooltip', 'Copied!');
                                     button.classList.add('show-tooltip');
-                                    button.style.setProperty('--copy-tooltip-top', tooltipTop + 'px');
-                                    button.style.setProperty('--copy-tooltip-left', tooltipLeft + 'px');
                                     setTimeout(function() {
                                         button.setAttribute('data-tooltip', 'Copy');
                                         button.classList.remove('show-tooltip');
