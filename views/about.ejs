@@ -134,57 +134,7 @@
                 }
                 .copy-btn:hover {
                     opacity: 1;
-                }
-                .copy-btn img {
-                    width: 22px;
-                    height: 22px;
-                }
-                .copy-btn[data-tooltip]:hover::after,
-                .copy-btn[data-tooltip].show-tooltip::after {
-                    content: attr(data-tooltip);
-                    position: absolute;
-                    top: -36px;
-                    right: 0;
-                    background: #222;
-                    color: #fff;
-                    padding: 4px 12px;
-                    border-radius: 6px;
-                    font-size: 15px;
-                    font-weight: bold;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                    z-index: 10;
-                    white-space: nowrap;
-                    opacity: 1;
-                    transition: opacity 0.2s;
-                }
-                pre {
-                    position: relative;
-                }
-                </style>
-                <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.querySelectorAll('pre > code').forEach(function(codeBlock) {
-                        var pre = codeBlock.parentElement;
-                        var button = document.createElement('button');
-                        button.className = 'copy-btn';
-                        button.setAttribute('data-tooltip', 'Copy');
-                        button.innerHTML = '<img src="https://cdn-icons-png.flaticon.com/512/4837/4837299.png" alt="Copy">';
-                            button.onclick = function(e) {
-                                var text = codeBlock.innerText;
-                                navigator.clipboard.writeText(text).then(function() {
-                                    button.setAttribute('data-tooltip', 'Copied!');
-                                    button.classList.add('show-tooltip');
-                                    setTimeout(function() {
-                                        button.setAttribute('data-tooltip', 'Copy');
-                                        button.classList.remove('show-tooltip');
-                                    }, 1500);
-                                });
-                            };
-                        pre.style.position = 'relative';
-                        pre.appendChild(button);
-                    });
-                });
-                </script>
+                <!-- Copy-button styles and behavior are now provided by shared CSS/JS assets. -->
     </div>
     <footer class="bg-dark text-white text-center py-3 mt-5">
         <p>&copy; <span id="year"></span> Owl Blog. All rights reserved.</p>
