@@ -19,25 +19,24 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="/">Home</a>
-                                .copy-btn[data-tooltip]:hover::after,
-                                .copy-btn[data-tooltip].show-tooltip::after {
-                                    content: attr(data-tooltip);
-                                    position: fixed;
-                                    top: calc(var(--copy-tooltip-top, 0px));
-                                    left: calc(var(--copy-tooltip-left, 0px));
-                                    background: #222;
-                                    color: #fff;
-                                    padding: 6px 16px;
-                                    border-radius: 8px;
-                                    font-size: 16px;
-                                    font-weight: bold;
-                                    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-                                    z-index: 9999;
-                                    white-space: nowrap;
-                                    opacity: 1;
-                                    transition: opacity 0.2s;
-                                    pointer-events: none;
-                                }
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="article-content">
+        <h1>About</h1>
+        <p class="lead text-muted">This blog is where infrastructure experience meets product thinking, one lesson at a time.</p>
+
+        <div class="about-grid">
+            <div class="about-card" tabindex="0">
+                <div class="about-card-inner">
                     <div class="about-card-face about-card-front">
                         <h2>Where It Started</h2>
                         <p>Curiosity began early with games, electronics, and a C-64 that opened the door to computing.</p>
@@ -120,71 +119,6 @@
                 </div>
             </div>
         </div>
-                <style>
-                .copy-btn {
-                    background: none;
-                    border: none;
-                    position: absolute;
-                    top: 8px;
-                    right: 8px;
-                    padding: 0;
-                    cursor: pointer;
-                    opacity: 0.5;
-                    transition: opacity 0.2s;
-                }
-                .copy-btn:hover {
-                    opacity: 1;
-                }
-                .copy-btn img {
-                    width: 22px;
-                    height: 22px;
-                }
-                .copy-btn[data-tooltip]:hover::after,
-                .copy-btn[data-tooltip].show-tooltip::after {
-                    content: attr(data-tooltip);
-                    position: absolute;
-                    top: -36px;
-                    right: 0;
-                    background: #222;
-                    color: #fff;
-                    padding: 4px 12px;
-                    border-radius: 6px;
-                    font-size: 15px;
-                    font-weight: bold;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                    z-index: 10;
-                    white-space: nowrap;
-                    opacity: 1;
-                    transition: opacity 0.2s;
-                }
-                pre {
-                    position: relative;
-                }
-                </style>
-                <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.querySelectorAll('pre > code').forEach(function(codeBlock) {
-                        var pre = codeBlock.parentElement;
-                        var button = document.createElement('button');
-                        button.className = 'copy-btn';
-                        button.setAttribute('data-tooltip', 'Copy');
-                        button.innerHTML = '<img src="https://cdn-icons-png.flaticon.com/512/4837/4837299.png" alt="Copy">';
-                            button.onclick = function(e) {
-                                var text = codeBlock.innerText;
-                                navigator.clipboard.writeText(text).then(function() {
-                                    button.setAttribute('data-tooltip', 'Copied!');
-                                    button.classList.add('show-tooltip');
-                                    setTimeout(function() {
-                                        button.setAttribute('data-tooltip', 'Copy');
-                                        button.classList.remove('show-tooltip');
-                                    }, 1500);
-                                });
-                            };
-                        pre.style.position = 'relative';
-                        pre.appendChild(button);
-                    });
-                });
-                </script>
     </div>
     <footer class="bg-dark text-white text-center py-3 mt-5">
         <p>&copy; <span id="year"></span> Owl Blog. All rights reserved.</p>
