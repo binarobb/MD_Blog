@@ -19,25 +19,24 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="/">Home</a>
-                                .copy-btn[data-tooltip]:hover::after,
-                                .copy-btn[data-tooltip].show-tooltip::after {
-                                    content: attr(data-tooltip);
-                                    position: fixed;
-                                    top: calc(var(--copy-tooltip-top, 0px));
-                                    left: calc(var(--copy-tooltip-left, 0px));
-                                    background: #222;
-                                    color: #fff;
-                                    padding: 6px 16px;
-                                    border-radius: 8px;
-                                    font-size: 16px;
-                                    font-weight: bold;
-                                    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-                                    z-index: 9999;
-                                    white-space: nowrap;
-                                    opacity: 1;
-                                    transition: opacity 0.2s;
-                                    pointer-events: none;
-                                }
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="article-content">
+        <h1>About</h1>
+        <p class="lead text-muted">This blog is where infrastructure experience meets product thinking, one lesson at a time.</p>
+
+        <div class="about-grid">
+            <div class="about-card" tabindex="0">
+                <div class="about-card-inner">
                     <div class="about-card-face about-card-front">
                         <h2>Where It Started</h2>
                         <p>Curiosity began early with games, electronics, and a C-64 that opened the door to computing.</p>
@@ -110,31 +109,10 @@
             </div>
         </div>
 
-        <div class="about-card about-motto-flip mt-3" tabindex="0">
-            <div class="about-card-inner">
-                <div class="about-card-face about-card-front">
-                    <h2 class="mt-0">What does an owl do to be intentional?</h2>
-                </div>
-                <div class="about-card-face about-card-back">
-                    <h2 class="mt-0">Stay Curious. Stay Humble. Keep Learning.</h2>
-                </div>
-            </div>
+        <div class="about-panel about-motto mt-3">
+            <h2 class="mt-0">What does an owl do to be intentional?</h2>
+            <p class="mb-0"><strong>Stay curious. Stay humble. Keep learning.</strong></p>
         </div>
-                <style>
-                .copy-btn {
-                    background: none;
-                    border: none;
-                    position: absolute;
-                    top: 8px;
-                    right: 8px;
-                    padding: 0;
-                    cursor: pointer;
-                    opacity: 0.5;
-                    transition: opacity 0.2s;
-                }
-                .copy-btn:hover {
-                    opacity: 1;
-                <!-- Copy-button styles and behavior are now provided by shared CSS/JS assets. -->
     </div>
     <footer class="bg-dark text-white text-center py-3 mt-5">
         <p>&copy; <span id="year"></span> Owl Blog. All rights reserved.</p>
