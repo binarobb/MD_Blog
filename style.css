@@ -318,8 +318,7 @@ a:hover {
 
 .about-card-back {
     transform: rotateY(180deg);
-    background: linear-gradient(160deg, #1d2a3d, #182435);
-    border-color: #3a4b66;
+    background: linear-gradient(160deg, #1a2433, #15202d);
 }
 
 .about-card-face h2 {
@@ -338,6 +337,7 @@ a:hover {
     text-align: center;
 }
 
+<<<<<<< HEAD
 .about-motto-flip {
     max-width: 640px;
     margin-left: auto;
@@ -369,6 +369,8 @@ a:hover {
     padding: 0.85rem 1rem;
 }
 
+=======
+>>>>>>> 66f9671f1efd8d248a894b99748943105e60f358
 footer {
     background-color: #0d1016 !important;
     border-top: 1px solid #20293a;
