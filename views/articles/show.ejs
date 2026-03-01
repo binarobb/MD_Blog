@@ -54,11 +54,81 @@
         </div>
         
     </div>
-    <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p>&copy; <span id="year"></span> Owl Blog. All rights reserved.</p>
-    </footer>
-    <script>
-        document.getElementById('year').textContent = new Date().getFullYear();
-    </script>
+        <footer class="bg-dark text-white text-center py-3 mt-5">
+                <p>&copy; <span id="year"></span> Owl Blog. All rights reserved.</p>
+        </footer>
+                <style>
+                .copy-btn {
+                    background: none;
+                    border: none;
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    padding: 0;
+                    cursor: pointer;
+                    opacity: 0.5;
+                    transition: opacity 0.2s;
+                }
+                .copy-btn:hover {
+                    opacity: 1;
+                }
+                .copy-btn img {
+                    width: 22px;
+                    height: 22px;
+                }
+                .copy-btn[data-tooltip]:hover::after,
+                .copy-btn[data-tooltip].show-tooltip::after {
+                    content: attr(data-tooltip);
+                    position: fixed;
+                    top: calc(var(--copy-tooltip-top, 0px));
+                    left: calc(var(--copy-tooltip-left, 0px));
+                    background: #222;
+                    color: #fff;
+                    padding: 6px 16px;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+                    z-index: 9999;
+                    white-space: nowrap;
+                    opacity: 1;
+                    transition: opacity 0.2s;
+                    pointer-events: none;
+                }
+                pre {
+                    position: relative;
+                }
+                </style>
+                <script>
+                document.getElementById('year').textContent = new Date().getFullYear();
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.querySelectorAll('pre > code').forEach(function(codeBlock) {
+                        var pre = codeBlock.parentElement;
+                        var button = document.createElement('button');
+                        button.className = 'copy-btn';
+                        button.setAttribute('data-tooltip', 'Copy');
+                        button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="9" width="11" height="13" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="11" height="13" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+                        button.onclick = function(e) {
+                            var text = codeBlock.textContent;
+                            navigator.clipboard.writeText(text).then(function() {
+                                // Calculate position for tooltip
+                                var rect = button.getBoundingClientRect();
+                                var tooltipTop = rect.top - 40;
+                                var tooltipLeft = rect.left + rect.width / 2;
+                                button.setAttribute('data-tooltip', 'Copied!');
+                                button.classList.add('show-tooltip');
+                                button.style.setProperty('--copy-tooltip-top', tooltipTop + 'px');
+                                button.style.setProperty('--copy-tooltip-left', tooltipLeft + 'px');
+                                setTimeout(function() {
+                                    button.setAttribute('data-tooltip', 'Copy');
+                                    button.classList.remove('show-tooltip');
+                                }, 1500);
+                            });
+                        };
+                        pre.style.position = 'relative';
+                        pre.appendChild(button);
+                    });
+                });
+                </script>
 </body>
 </html>
