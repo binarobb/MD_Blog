@@ -318,7 +318,8 @@ a:hover {
 
 .about-card-back {
     transform: rotateY(180deg);
-    background: linear-gradient(160deg, #1a2433, #15202d);
+    background: linear-gradient(160deg, #1d2a3d, #182435);
+    border-color: #3a4b66;
 }
 
 .about-card-face h2 {
@@ -335,6 +336,36 @@ a:hover {
     margin-left: auto;
     margin-right: auto;
     text-align: center;
+}
+
+.about-motto-flip {
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    min-height: 130px;
+}
+
+.about-motto-flip .about-card-inner {
+    min-height: 130px;
+}
+
+.about-motto-flip:hover .about-card-inner,
+.about-motto-flip:focus .about-card-inner,
+.about-motto-flip:focus-within .about-card-inner {
+    transform: rotateX(180deg);
+}
+
+.about-motto-flip .about-card-front {
+    transform: rotateX(0deg);
+}
+
+.about-motto-flip .about-card-back {
+    transform: rotateX(180deg);
+}
+
+.about-motto-flip .about-card-face {
+    padding: 0.85rem 1rem;
 }
 
 footer {
