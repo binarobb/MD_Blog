@@ -1,4 +1,4 @@
-# MD_Blog
+# My Markdown Blog
 
 A Markdown-powered blog platform built with Node.js, Express, MongoDB, and EJS.
 
