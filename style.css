@@ -1,3 +1,31 @@
+/* --- Copy Button Styles --- */
+.copy-btn img {
+    width: 22px;
+    height: 22px;
+}
+.copy-btn svg {
+    color: #6cb7ff;
+    stroke: #6cb7ff;
+}
+.copy-btn[data-tooltip]:hover::after,
+.copy-btn[data-tooltip].show-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -36px;
+    right: 0;
+    background: #222;
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    z-index: 9999;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
 :root {
     --bg: #0f1117;
     --surface: #171b24;
@@ -337,7 +365,6 @@ a:hover {
     text-align: center;
 }
 
-<<<<<<< HEAD
 .about-motto-flip {
     max-width: 640px;
     margin-left: auto;
@@ -368,9 +395,6 @@ a:hover {
 .about-motto-flip .about-card-face {
     padding: 0.85rem 1rem;
 }
-
-=======
->>>>>>> 66f9671f1efd8d248a894b99748943105e60f358
 footer {
     background-color: #0d1016 !important;
     border-top: 1px solid #20293a;

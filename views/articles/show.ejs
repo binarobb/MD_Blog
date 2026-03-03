@@ -76,13 +76,16 @@
                     width: 22px;
                     height: 22px;
                 }
+                .copy-btn svg {
+                    color: #6cb7ff;
+                    stroke: #6cb7ff;
+                }
                 .copy-btn[data-tooltip]:hover::after,
                 .copy-btn[data-tooltip].show-tooltip::after {
                     content: attr(data-tooltip);
-                    position: fixed;
-                    top: calc(var(--copy-tooltip-top, 0px));
-                    left: calc(var(--copy-tooltip-left, 0px));
-                    transform: translateX(-50%);
+                    position: absolute;
+                    top: -36px;
+                    right: 0;
                     background: #222;
                     color: #fff;
                     padding: 6px 16px;
@@ -105,6 +108,10 @@
                 document.addEventListener('DOMContentLoaded', function() {
                     document.querySelectorAll('pre > code').forEach(function(codeBlock) {
                         var pre = codeBlock.parentElement;
+                        var wrapper = document.createElement('div');
+                        wrapper.style.position = 'relative';
+                        pre.parentNode.insertBefore(wrapper, pre);
+                        wrapper.appendChild(pre);
                         var button = document.createElement('button');
                         button.className = 'copy-btn';
                         button.setAttribute('data-tooltip', 'Copy');
@@ -112,22 +119,15 @@
                         button.onclick = function(e) {
                             var text = codeBlock.textContent;
                             navigator.clipboard.writeText(text).then(function() {
-                                // Calculate position for tooltip
-                                var rect = button.getBoundingClientRect();
-                                var tooltipTop = rect.top - 40;
-                                var tooltipLeft = rect.left + rect.width / 2;
                                 button.setAttribute('data-tooltip', 'Copied!');
                                 button.classList.add('show-tooltip');
-                                button.style.setProperty('--copy-tooltip-top', tooltipTop + 'px');
-                                button.style.setProperty('--copy-tooltip-left', tooltipLeft + 'px');
                                 setTimeout(function() {
                                     button.setAttribute('data-tooltip', 'Copy');
                                     button.classList.remove('show-tooltip');
                                 }, 1500);
                             });
                         };
-                        pre.style.position = 'relative';
-                        pre.appendChild(button);
+                        wrapper.appendChild(button);
                     });
                 });
                 </script>
