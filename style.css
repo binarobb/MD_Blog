@@ -177,6 +177,63 @@ a:hover {
     margin: 0 0.35rem 0.35rem 0;
 }
 
+.chip-tag,
+.chip-category {
+    cursor: pointer;
+    text-decoration: none;
+    transition: filter 0.15s ease;
+}
+
+.chip-tag:hover,
+.chip-category:hover {
+    filter: brightness(1.3);
+    text-decoration: none;
+}
+
+.category-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.75rem;
+}
+
+.category-pill {
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-soft);
+    font-size: 1rem;
+    text-decoration: none;
+    margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.category-pill:hover {
+    color: var(--text);
+    border-bottom-color: var(--border);
+    text-decoration: none;
+}
+
+.category-pill.active {
+    color: var(--brand);
+    border-bottom-color: var(--brand);
+    font-weight: 600;
+}
+
+.tag-clear-link {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    text-decoration: none;
+}
+
+.tag-clear-link:hover {
+    color: var(--text);
+    text-decoration: none;
+}
+
 .card-text {
     color: #d4dceb;
 }

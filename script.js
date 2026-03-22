@@ -55,3 +55,23 @@ document.addEventListener('DOMContentLoaded', function () {
     resize();
     requestAnimationFrame(draw);
 });
+
+// Deterministic tag colors — djb2 hash maps each tag name to a consistent HSL hue
+(function applyTagColors() {
+    function hashTag(str) {
+        var h = 5381;
+        var s = str.toLowerCase();
+        for (var i = 0; i < s.length; i++) {
+            h = Math.imul(h, 33) ^ s.charCodeAt(i);
+        }
+        return Math.abs(h);
+    }
+
+    document.querySelectorAll('[data-tag]').forEach(function (el) {
+        var tag = el.getAttribute('data-tag');
+        var hue = hashTag(tag) % 360;
+        el.style.background = 'hsl(' + hue + ', 35%, 16%)';
+        el.style.borderColor = 'hsl(' + hue + ', 45%, 32%)';
+        el.style.color = 'hsl(' + hue + ', 75%, 78%)';
+    });
+}());

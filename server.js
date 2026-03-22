@@ -78,19 +78,35 @@ const transporter = nodemailer.createTransport({
     }
 })
 
+async function getCategories() {
+    const cats = await Article.distinct('category', { published: true })
+    return cats.filter(Boolean)
+}
+
 app.get('/', async (req, res) => {
     try {
-        const articles = await Article.find({ published: true }).sort({createdAt: 'desc'})
-        res.render('articles/index', { articles: articles})
+        const [articles, categories] = await Promise.all([
+            Article.find({ published: true }).sort({ createdAt: 'desc' }),
+            getCategories()
+        ])
+        res.render('articles/index', { articles, categories, currentCategory: null })
     } catch (error) {
         console.error('Error fetching articles:', error)
-        res.render('articles/index', { articles: [] })
+        res.render('articles/index', { articles: [], categories: [], currentCategory: null })
     }
 })
 
 app.get('/home', async (req, res) => {
-    const articles =  await Article.find({ published: true }).sort({createdAt: 'desc'})
-   res.render('articles/index', { articles: articles})
+    try {
+        const [articles, categories] = await Promise.all([
+            Article.find({ published: true }).sort({ createdAt: 'desc' }),
+            getCategories()
+        ])
+        res.render('articles/index', { articles, categories, currentCategory: null })
+    } catch (error) {
+        console.error('Error fetching articles:', error)
+        res.render('articles/index', { articles: [], categories: [], currentCategory: null })
+    }
 })
 
 app.get('/about', (req, res) => {
@@ -119,6 +135,34 @@ app.post('/contact', (req, res) => {
             res.send('Message sent successfully!')
         }
     })
+})
+
+app.get('/tags/:tag', async (req, res) => {
+    try {
+        const tag = req.params.tag
+        const [articles, categories] = await Promise.all([
+            Article.find({ published: true, tags: tag }).sort({ createdAt: 'desc' }),
+            getCategories()
+        ])
+        res.render('articles/index', { articles, categories, currentTag: tag, currentCategory: null })
+    } catch (error) {
+        console.error('Error fetching articles by tag:', error)
+        res.render('articles/index', { articles: [], categories: [], currentTag: req.params.tag, currentCategory: null })
+    }
+})
+
+app.get('/categories/:category', async (req, res) => {
+    try {
+        const category = req.params.category
+        const [articles, categories] = await Promise.all([
+            Article.find({ published: true, category }).sort({ createdAt: 'desc' }),
+            getCategories()
+        ])
+        res.render('articles/index', { articles, categories, currentCategory: category, currentTag: null })
+    } catch (error) {
+        console.error('Error fetching articles by category:', error)
+        res.render('articles/index', { articles: [], categories: [], currentCategory: req.params.category, currentTag: null })
+    }
 })
 
 app.use('/articles', articleRouter)

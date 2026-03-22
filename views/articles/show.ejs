@@ -37,11 +37,11 @@
             <% if (article.readingTime) { %> | <%= article.readingTime %> min read <% } %>
         </div>
         <% if (article.category) { %>
-            <span class="chip"><%= article.category %></span>
+            <a href="/categories/<%= encodeURIComponent(article.category) %>" class="chip chip-category"><%= article.category %></a>
         <% } %>
         <% if (article.tags && article.tags.length > 0) { %>
             <% article.tags.forEach(tag => { %>
-                <span class="chip"><%= tag %></span>
+                <a href="/tags/<%= encodeURIComponent(tag) %>" class="chip chip-tag" data-tag="<%= tag %>"><%= tag %></a>
             <% }) %>
         <% } %>
         <div class="my-3">
