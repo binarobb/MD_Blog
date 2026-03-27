@@ -22,6 +22,12 @@
                         <a class="nav-link" href="/">Home</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/blog">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/italian">Italian</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="/about">About</a>
                     </li>
                     <li class="nav-item">
@@ -35,7 +41,7 @@
        <h1 class="mb-3">New Article</h1>
        <p class="text-muted mb-4">Draft something useful, clear, and worth returning to.</p>
        <div class="panel-body">
-           <form action="/articles" method="POST">
+           <form action="/blog" method="POST">
                <%- include('_form_fields') %>
            </form>
        </div>

@@ -19,7 +19,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/blog">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/italian">Italian</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/about">About</a>
@@ -52,27 +58,27 @@
         </div>
         <% if (locals.categories && locals.categories.length > 0) { %>
             <div class="category-tabs">
-                <a href="/" class="category-pill <%= !locals.currentCategory ? 'active' : '' %>">All</a>
+                <a href="/blog" class="category-pill <%= !locals.currentCategory ? 'active' : '' %>">All</a>
                 <% locals.categories.forEach(cat => { %>
-                    <a href="/categories/<%= encodeURIComponent(cat) %>" class="category-pill <%= locals.currentCategory === cat ? 'active' : '' %>"><%= cat %></a>
+                    <a href="/blog/categories/<%= encodeURIComponent(cat) %>" class="category-pill <%= locals.currentCategory === cat ? 'active' : '' %>"><%= cat %></a>
                 <% }) %>
             </div>
         <% } %>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 section-title">
             <% if (locals.currentCategory) { %>
-                <h2 class="mb-0"><%= locals.currentCategory %> <a href="/" class="tag-clear-link ms-2">× All</a></h2>
+                <h2 class="mb-0"><%= locals.currentCategory %> <a href="/blog" class="tag-clear-link ms-2">× All</a></h2>
             <% } else if (locals.currentTag) { %>
-                <h2 class="mb-0">Tagged: <a href="/tags/<%= encodeURIComponent(locals.currentTag) %>" class="chip chip-tag" data-tag="<%= locals.currentTag %>"><%= locals.currentTag %></a> <a href="/" class="tag-clear-link ms-2">× Clear</a></h2>
+                <h2 class="mb-0">Tagged: <a href="/blog/tags/<%= encodeURIComponent(locals.currentTag) %>" class="chip chip-tag" data-tag="<%= locals.currentTag %>"><%= locals.currentTag %></a> <a href="/blog" class="tag-clear-link ms-2">× Clear</a></h2>
             <% } else { %>
                 <h2 class="mb-0">Latest Articles</h2>
             <% } %>
-            <a href="/articles/new" class="btn btn-success">New Article</a>
+            <a href="/blog/new" class="btn btn-success">New Article</a>
         </div>
          <% if (!isAdmin) { %>
             <p class="text-muted mb-3"><small>Admin login required to create articles.</small></p>
         <% } %>
         <% if (articles.length === 0) { %>
-            <p class="mt-4">No articles yet. <a href="/articles/new">Create the first one!</a></p>
+            <p class="mt-4">No articles yet. <a href="/blog/new">Create the first one!</a></p>
         <% } %>
 
         <% articles.forEach(article => { %>
@@ -87,17 +93,17 @@
                         <% if (article.readingTime) { %> | <%= article.readingTime %> min read <% } %>
                     </div>
                     <% if (article.category) { %>
-                        <a href="/categories/<%= encodeURIComponent(article.category) %>" class="chip chip-category"><%= article.category %></a>
+                        <a href="/blog/categories/<%= encodeURIComponent(article.category) %>" class="chip chip-category"><%= article.category %></a>
                     <% } %>
                     <% if (article.tags && article.tags.length > 0) { %>
                         <% article.tags.forEach(tag => { %>
-                            <a href="/tags/<%= encodeURIComponent(tag) %>" class="chip chip-tag" data-tag="<%= tag %>"><%= tag %></a>
+                            <a href="/blog/tags/<%= encodeURIComponent(tag) %>" class="chip chip-tag" data-tag="<%= tag %>"><%= tag %></a>
                         <% }) %>
                     <% } %>
                     <div class="card-text mb-2"><%= article.description %></div>
-                    <a href="/articles/<%= article.slug %>" class="btn btn-primary">Read More</a>
-                    <a href="/articles/edit/<%= article.id %>" class="btn btn-info">Edit</a>
-                    <form action="/articles/<%= article.id %>?_method=DELETE" method="POST" class="d-inline">
+                    <a href="/blog/<%= article.slug %>" class="btn btn-primary">Read More</a>
+                    <a href="/blog/edit/<%= article.id %>" class="btn btn-info">Edit</a>
+                    <form action="/blog/<%= article.id %>?_method=DELETE" method="POST" class="d-inline">
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </div>

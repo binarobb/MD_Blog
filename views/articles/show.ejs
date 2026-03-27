@@ -21,6 +21,12 @@
                         <a class="nav-link" href="/">Home</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/blog">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/italian">Italian</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="/about">About</a>
                     </li>
                     <li class="nav-item">
@@ -37,16 +43,16 @@
             <% if (article.readingTime) { %> | <%= article.readingTime %> min read <% } %>
         </div>
         <% if (article.category) { %>
-            <a href="/categories/<%= encodeURIComponent(article.category) %>" class="chip chip-category"><%= article.category %></a>
+            <a href="/blog/categories/<%= encodeURIComponent(article.category) %>" class="chip chip-category"><%= article.category %></a>
         <% } %>
         <% if (article.tags && article.tags.length > 0) { %>
             <% article.tags.forEach(tag => { %>
-                <a href="/tags/<%= encodeURIComponent(tag) %>" class="chip chip-tag" data-tag="<%= tag %>"><%= tag %></a>
+                <a href="/blog/tags/<%= encodeURIComponent(tag) %>" class="chip chip-tag" data-tag="<%= tag %>"><%= tag %></a>
             <% }) %>
         <% } %>
         <div class="my-3">
-            <a href="/" class="btn btn-secondary">All Articles</a>
-            <a href="/articles/edit/<%= article.id %>" class="btn btn-info">Edit</a>
+            <a href="/blog" class="btn btn-secondary">All Articles</a>
+            <a href="/blog/edit/<%= article.id %>" class="btn btn-info">Edit</a>
         </div>
 
         <div class="article-prose">
