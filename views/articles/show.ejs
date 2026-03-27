@@ -55,6 +55,10 @@
             <a href="/blog/edit/<%= article.id %>" class="btn btn-info">Edit</a>
         </div>
 
+        <% if (article.featuredImage) { %>
+            <img src="<%= article.featuredImage %>" class="img-fluid rounded mb-4" alt="<%= article.title %>" onerror="this.style.display='none'">
+        <% } %>
+
         <div class="article-prose">
             <%- article.sanitizedHtml %>
         </div>

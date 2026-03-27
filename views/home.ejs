@@ -99,7 +99,7 @@
             <% recentArticles.forEach(article => { %>
                 <div class="content-card mt-3">
                     <% if (article.featuredImage) { %>
-                        <img src="<%= article.featuredImage %>" class="card-img-top" alt="<%= article.title %>">
+                        <img src="<%= article.featuredImage %>" class="card-img-top" alt="<%= article.title %>" onerror="this.style.display='none'">
                     <% } %>
                     <div class="card-body">
                         <h3 class="card-title"><%= article.title %></h3>

@@ -2,8 +2,6 @@ name: Auto-open PR to main
 
 on:
   push:
-    branches:
-      - '**'
     branches-ignore:
       - main
 
