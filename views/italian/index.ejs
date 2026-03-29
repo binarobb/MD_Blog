@@ -200,7 +200,7 @@
         setState('connecting');
         try {
           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert('Microphone access requires a secure connection (HTTPS). Please visit the site via https://intentionalowl.io');
+            alert('Microphone access requires a secure connection (HTTPS). Please visit the site via https://' + location.hostname);
             setState('idle');
             return;
           }
