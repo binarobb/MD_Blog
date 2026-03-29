@@ -199,6 +199,11 @@
 
         setState('connecting');
         try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Microphone access requires a secure connection (HTTPS). Please visit the site via https://intentionalowl.io');
+            setState('idle');
+            return;
+          }
           await navigator.mediaDevices.getUserMedia({ audio: true });
 
           conversation = await Conversation.startSession({
