@@ -163,8 +163,10 @@ app.get('/blog/categories/:category', async (req, res) => {
 })
 
 const italianRouter = require('./routes/italian')
+const elevenLabsRouter = require('./routes/elevenlabs')
 app.use('/blog', articleRouter)
 app.use('/italian', italianRouter)
+app.use('/api/elevenlabs', elevenLabsRouter)
 
 app.listen(process.env.PORT || 5000, () => {
     const port = process.env.PORT || 5000
