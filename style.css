@@ -466,7 +466,7 @@ footer {
     border-top: 1px solid #20293a;
     margin-top: 2rem;
     position: relative;
-    z-index: 1;
+    z-index: 0;
 }
 
 /* ================================
@@ -540,5 +540,611 @@ Article tables (explicit styling)
 @media (max-width: 1080px) and (min-width: 769px) {
     .about-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ================================
+   Italian SPA
+   ================================ */
+
+/* Sub-nav tab bar */
+.ita-tabs-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.ita-tabs {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+}
+
+.ita-tab {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-soft);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.ita-tab:hover {
+    color: var(--text);
+    text-decoration: none;
+}
+
+.ita-tab.active {
+    color: var(--brand);
+    border-bottom-color: var(--brand);
+}
+
+/* Setup panels */
+.ita-setup-panel h3 {
+    margin-top: 0;
+}
+
+/* Quiz layout */
+.ita-quiz-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.ita-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.ita-progress-fill {
+    height: 100%;
+    background: var(--brand);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.ita-quiz-prompt {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.ita-lang-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-soft);
+    margin-bottom: 0.25rem;
+}
+
+.ita-pronoun {
+    color: var(--brand);
+    font-style: italic;
+}
+
+/* Answer buttons */
+.ita-option-btn {
+    font-size: 1.05rem;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.ita-option-btn:disabled {
+    opacity: 1;
+}
+
+.ita-correct {
+    background: rgba(102, 187, 106, 0.2) !important;
+    border-color: #66bb6a !important;
+    color: #a5d6a7 !important;
+}
+
+.ita-wrong {
+    background: rgba(239, 83, 80, 0.2) !important;
+    border-color: #ef5350 !important;
+    color: #ef9a9a !important;
+}
+
+.ita-input-correct {
+    border-color: #66bb6a !important;
+    box-shadow: 0 0 0 0.2rem rgba(102, 187, 106, 0.25) !important;
+}
+
+.ita-input-wrong {
+    border-color: #ef5350 !important;
+    box-shadow: 0 0 0 0.2rem rgba(239, 83, 80, 0.25) !important;
+}
+
+/* Feedback */
+.ita-feedback-correct {
+    color: #a5d6a7;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.ita-feedback-wrong {
+    color: #ef9a9a;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+/* Results score ring */
+.ita-results {
+    padding: 2rem 0;
+}
+
+.ita-score-ring {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 1rem auto;
+}
+
+.ita-score-ring svg {
+    width: 100%;
+    height: 100%;
+}
+
+.ita-score-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--brand);
+}
+
+/* Grammar */
+.ita-grammar-toggle {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ita-grammar-toggle:hover {
+    color: var(--brand);
+}
+
+.ita-chevron {
+    font-size: 0.85rem;
+    transition: transform 0.2s;
+}
+
+.ita-chevron-open {
+    transform: rotate(180deg);
+}
+
+.grammar-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0;
+}
+
+.grammar-table th,
+.grammar-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.grammar-table th {
+    color: var(--brand);
+    font-weight: 600;
+}
+
+/* Verb reference grid */
+.ita-verb-ref-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    margin-top: 1rem;
+}
+
+/* Flip card structure */
+.ita-verb-ref-card {
+    perspective: 800px;
+    cursor: pointer;
+    border-radius: 10px;
+    min-height: 220px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ita-verb-ref-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.ita-verb-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+}
+
+.ita-verb-flipped .ita-verb-flip-inner {
+    transform: rotateY(180deg);
+}
+
+.ita-verb-front,
+.ita-verb-back {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 10px;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    line-height: 1.5;
+}
+
+.ita-verb-front {
+    position: relative;
+}
+
+.ita-verb-back {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    transform: rotateY(180deg);
+}
+
+/* Example pairs on back */
+.ita-example-pair {
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.ita-example-pair:last-child {
+    border-bottom: none;
+}
+
+.ita-example-it {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--text);
+}
+
+.ita-example-en {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #9eaab8;
+    margin-top: 0.1rem;
+}
+
+/* Overlay */
+.ita-card-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.ita-card-overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.ita-card-enlarged {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+}
+
+.ita-card-enlarged .ita-verb-ref-card {
+    min-height: 320px;
+}
+
+.ita-card-enlarged .ita-verb-front,
+.ita-card-enlarged .ita-verb-back {
+    padding: 1.75rem;
+}
+
+.ita-card-enlarged .card-title {
+    font-size: 1.5rem;
+}
+
+.ita-card-enlarged .ita-conj-table {
+    font-size: 1.15rem;
+}
+
+.ita-card-enlarged .ita-conj-table td {
+    padding: 0.35rem 0.6rem;
+}
+
+.ita-card-enlarged .ita-conj-table td:first-child {
+    font-size: 1rem;
+}
+
+.ita-card-enlarged .ita-example-it {
+    font-size: 1.15rem;
+}
+
+.ita-card-enlarged .ita-example-en {
+    font-size: 1.05rem;
+}
+
+.ita-enlarged-active {
+    animation: ita-zoom-in 0.25s ease forwards;
+}
+
+@keyframes ita-zoom-in {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+.ita-conj-table {
+    width: 100%;
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.ita-conj-table td {
+    padding: 0.25rem 0.4rem;
+}
+
+.ita-conj-table td:first-child {
+    color: #9eaab8;
+    width: 60px;
+    font-size: 0.88rem;
+}
+
+.ita-conj-table td:last-child {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+/* Sentence builder */
+.ita-sentence-answer {
+    min-height: 52px;
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+}
+
+.ita-sentence-answer:not(:empty) {
+    border-style: solid;
+}
+
+.ita-sentence-correct {
+    border-color: #66bb6a !important;
+    background: rgba(102, 187, 106, 0.08) !important;
+}
+
+.ita-sentence-wrong {
+    border-color: #ef5350 !important;
+    background: rgba(239, 83, 80, 0.08) !important;
+}
+
+.ita-answer-word {
+    display: inline;
+}
+
+.ita-sentence-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ita-word-btn {
+    font-size: 1.05rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: opacity 0.2s, transform 0.15s;
+}
+
+.ita-word-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.ita-word-used {
+    opacity: 0.3;
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+    .ita-tabs {
+        gap: 0;
+    }
+    .ita-tab {
+        padding: 0.65rem 0.85rem;
+        font-size: 0.88rem;
+    }
+    .ita-verb-ref-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+    .ita-card-enlarged {
+        max-width: 95%;
+    }
+    .ita-card-enlarged .ita-verb-front,
+    .ita-card-enlarged .ita-verb-back {
+        padding: 1rem;
+    }
+}
+
+/* ================================
+   Gufo – Italian Voice Tutor FAB
+   ================================ */
+
+#gufo-container {
+    position: fixed;
+    bottom: 4.5rem;
+    right: 2rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+#gufo-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.3s;
+    padding: 0;
+}
+
+#gufo-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.5);
+}
+
+#gufo-btn svg {
+    width: 52px;
+    height: 52px;
+}
+#gufo-container[data-state="idle"] #gufo-btn::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(108,183,255,0.3);
+    animation: gufo-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes gufo-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.12); opacity: 0; }
+}
+
+/* Connecting spinner */
+#gufo-container[data-state="connecting"] #gufo-btn {
+    border-color: var(--brand);
+    pointer-events: none;
+}
+#gufo-container[data-state="connecting"] #gufo-btn::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--brand);
+    animation: gufo-spin 0.8s linear infinite;
+}
+
+@keyframes gufo-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Connected – green ring */
+#gufo-container[data-state="connected"] #gufo-btn {
+    border-color: #66bb6a;
+    box-shadow: 0 0 16px rgba(102,187,106,0.3);
+}
+
+#gufo-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+#gufo-status {
+    font-size: 0.7rem;
+    color: #66bb6a;
+    font-weight: 600;
+}
+
+/* Audio wave bars */
+#gufo-waves {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 3px;
+    height: 12px;
+    align-items: flex-end;
+}
+
+#gufo-waves span {
+    display: block;
+    width: 3px;
+    border-radius: 2px;
+    background: #66bb6a;
+}
+
+.gufo-waves-hidden span {
+    height: 0;
+    opacity: 0;
+}
+
+.gufo-waves-listening span {
+    height: 4px;
+    opacity: 0.6;
+    animation: gufo-wave-idle 1.2s ease-in-out infinite;
+}
+.gufo-waves-listening span:nth-child(2) { animation-delay: 0.15s; }
+.gufo-waves-listening span:nth-child(3) { animation-delay: 0.3s; }
+
+.gufo-waves-active span {
+    opacity: 1;
+    animation: gufo-wave 0.5s ease-in-out infinite alternate;
+}
+.gufo-waves-active span:nth-child(1) { animation-delay: 0s; }
+.gufo-waves-active span:nth-child(2) { animation-delay: 0.12s; }
+.gufo-waves-active span:nth-child(3) { animation-delay: 0.24s; }
+
+@keyframes gufo-wave-idle {
+    0%, 100% { height: 3px; }
+    50% { height: 6px; }
+}
+
+@keyframes gufo-wave {
+    from { height: 3px; }
+    to { height: 12px; }
+}
+
+/* Mobile: smaller button */
+@media (max-width: 768px) {
+    #gufo-container {
+        bottom: 4rem;
+        right: 1rem;
+    }
+    #gufo-btn {
+        width: 68px;
+        height: 68px;
+    }
+    #gufo-btn svg {
+        width: 44px;
+        height: 44px;
     }
 }

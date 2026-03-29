@@ -53,7 +53,7 @@ app.post('/login', (req, res) => {
     const { username, password } = req.body
     if (username === 'admin' && password === 'admin') {
         req.session.isAdmin = true
-        res.redirect('/articles/new')
+        res.redirect('/blog/new')
     } else {
         res.render('login', { error: 'Invalid credentials' })
     }
@@ -65,7 +65,7 @@ app.post('/logout', (req, res) => {
 })
 
 // Protected route for new article
-app.get('/articles/new', requireAdmin, (req, res) => {
+app.get('/blog/new', requireAdmin, (req, res) => {
     res.render('articles/new', { article: new Article() })
 })
 
@@ -85,18 +85,15 @@ async function getCategories() {
 
 app.get('/', async (req, res) => {
     try {
-        const [articles, categories] = await Promise.all([
-            Article.find({ published: true }).sort({ createdAt: 'desc' }),
-            getCategories()
-        ])
-        res.render('articles/index', { articles, categories, currentCategory: null })
+        const recentArticles = await Article.find({ published: true }).sort({ createdAt: 'desc' }).limit(3)
+        res.render('home', { recentArticles })
     } catch (error) {
-        console.error('Error fetching articles:', error)
-        res.render('articles/index', { articles: [], categories: [], currentCategory: null })
+        console.error('Error fetching recent articles:', error)
+        res.render('home', { recentArticles: [] })
     }
 })
 
-app.get('/home', async (req, res) => {
+app.get('/blog', async (req, res) => {
     try {
         const [articles, categories] = await Promise.all([
             Article.find({ published: true }).sort({ createdAt: 'desc' }),
@@ -137,7 +134,7 @@ app.post('/contact', (req, res) => {
     })
 })
 
-app.get('/tags/:tag', async (req, res) => {
+app.get('/blog/tags/:tag', async (req, res) => {
     try {
         const tag = req.params.tag
         const [articles, categories] = await Promise.all([
@@ -151,7 +148,7 @@ app.get('/tags/:tag', async (req, res) => {
     }
 })
 
-app.get('/categories/:category', async (req, res) => {
+app.get('/blog/categories/:category', async (req, res) => {
     try {
         const category = req.params.category
         const [articles, categories] = await Promise.all([
@@ -165,7 +162,11 @@ app.get('/categories/:category', async (req, res) => {
     }
 })
 
-app.use('/articles', articleRouter)
+const italianRouter = require('./routes/italian')
+const elevenLabsRouter = require('./routes/elevenlabs')
+app.use('/blog', articleRouter)
+app.use('/italian', italianRouter)
+app.use('/api/elevenlabs', elevenLabsRouter)
 
 app.listen(process.env.PORT || 5000, () => {
     const port = process.env.PORT || 5000

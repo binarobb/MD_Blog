@@ -58,6 +58,9 @@ articleSchema.pre('validate', function(next) {
     }
     if(this.markdown){
         this.sanitizedHtml = dompurify.sanitize(marked.parse(this.markdown, { breaks: true }))
+        // Strip leading <h1> to avoid duplication with template title, but only if there's content after it
+        const stripped = this.sanitizedHtml.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>\s*/, '')
+        if (stripped.trim()) this.sanitizedHtml = stripped
         this.readingTime = Math.ceil(this.markdown.split(' ').length / 200)
     }
     next()

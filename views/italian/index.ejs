@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/style.css">
+    <title>Italian A1 &mdash; Intentional Owl</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><img src="/owl3.png" alt="Intentional Owl"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/blog">Blog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/italian">Italian</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SPA sub-nav tabs -->
+    <div class="ita-tabs-bar">
+        <div class="page-shell" style="padding-top:0;padding-bottom:0;">
+            <div class="ita-tabs">
+                <a href="#" class="ita-tab active" data-section="dashboard">Dashboard</a>
+                <a href="#" class="ita-tab" data-section="vocab">Vocabulary</a>
+                <a href="#" class="ita-tab" data-section="verbs">Verbs</a>
+                <a href="#" class="ita-tab" data-section="grammarquiz">Grammar Quiz</a>
+                <a href="#" class="ita-tab" data-section="sentences">Sentences</a>
+                <a href="#" class="ita-tab" data-section="grammar">Reference</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-shell">
+
+        <!-- DASHBOARD -->
+        <div id="section-dashboard" class="ita-section">
+            <div class="hero" style="margin-bottom:1rem;">
+                <h1 class="mb-2">&#x1F1EE;&#x1F1F9; Italian A1</h1>
+                <p class="lead">Build vocabulary, master present-tense conjugations, and learn A1 grammar &mdash; one exercise at a time.</p>
+            </div>
+            <div id="dash-content"></div>
+        </div>
+
+        <!-- VOCABULARY -->
+        <div id="section-vocab" class="ita-section d-none">
+            <div id="vocab-area"></div>
+        </div>
+
+        <!-- VERB CONJUGATION -->
+        <div id="section-verbs" class="ita-section d-none">
+            <div id="verb-area"></div>
+        </div>
+
+        <!-- GRAMMAR QUIZ -->
+        <div id="section-grammarquiz" class="ita-section d-none">
+            <div id="grammarquiz-area"></div>
+        </div>
+
+        <!-- SENTENCE BUILDER -->
+        <div id="section-sentences" class="ita-section d-none">
+            <div id="sentence-area"></div>
+        </div>
+
+        <!-- GRAMMAR REFERENCE -->
+        <div id="section-grammar" class="ita-section d-none">
+            <div id="grammar-area"></div>
+        </div>
+
+    </div><!-- /.page-shell -->
+
+    <!-- Gufo: Italian Voice Tutor -->
+    <div id="gufo-container">
+        <button id="gufo-btn" title="Talk to Gufo, your Italian tutor" aria-label="Start voice conversation with Gufo">
+            <svg id="gufo-icon" viewBox="0 0 64 64" width="40" height="40">
+                <!-- Owl body -->
+                <ellipse cx="32" cy="40" rx="18" ry="15" fill="#d4883a"/>
+                <ellipse cx="32" cy="40" rx="14" ry="11" fill="#e8a450"/>
+                <!-- Belly pattern -->
+                <ellipse cx="32" cy="43" rx="8" ry="7" fill="#f5cb82"/>
+                <!-- Owl head -->
+                <circle cx="32" cy="22" r="14" fill="#d4883a"/>
+                <circle cx="32" cy="23" r="11" fill="#e8a450"/>
+                <!-- Ear tufts -->
+                <polygon points="20,14 16,2 25,11" fill="#c47a2e"/>
+                <polygon points="44,14 48,2 39,11" fill="#c47a2e"/>
+                <polygon points="21,13 18,4 25,11" fill="#d4883a"/>
+                <polygon points="43,13 46,4 39,11" fill="#d4883a"/>
+                <!-- Eye rings -->
+                <circle cx="25" cy="21" r="7" fill="#fef3dc"/>
+                <circle cx="39" cy="21" r="7" fill="#fef3dc"/>
+                <!-- Eyes (iris) -->
+                <circle cx="25" cy="21" r="4.5" fill="#f5a623"/>
+                <circle cx="39" cy="21" r="4.5" fill="#f5a623"/>
+                <!-- Pupils -->
+                <circle cx="25" cy="21" r="2.5" fill="#1a1a2e"/>
+                <circle cx="39" cy="21" r="2.5" fill="#1a1a2e"/>
+                <!-- Eye glint -->
+                <circle cx="26.5" cy="19.5" r="1.2" fill="#fff"/>
+                <circle cx="40.5" cy="19.5" r="1.2" fill="#fff"/>
+                <!-- Beak -->
+                <polygon points="32,26 28.5,30.5 35.5,30.5" fill="#ff8c42"/>
+                <line x1="32" y1="28" x2="32" y2="30.5" stroke="#c96a2a" stroke-width="0.5"/>
+                <!-- Italian scarf - green/white/red -->
+                <path d="M16,34 Q32,38 48,34 Q48,39 32,40 Q16,39 16,34Z" fill="#009246" opacity="0.9"/>
+                <path d="M22,35 Q32,38.5 42,35 Q42,38.5 32,39.5 Q22,38.5 22,35Z" fill="#ffffff" opacity="0.95"/>
+                <path d="M27,36 Q32,38 37,36 Q37,38 32,39 Q27,38 27,36Z" fill="#ce2b37" opacity="0.9"/>
+                <!-- Wings -->
+                <ellipse cx="15" cy="38" rx="5" ry="9" fill="#c47a2e" transform="rotate(-10 15 38)"/>
+                <ellipse cx="49" cy="38" rx="5" ry="9" fill="#c47a2e" transform="rotate(10 49 38)"/>
+                <!-- Feet -->
+                <ellipse cx="26" cy="53" rx="5" ry="2.2" fill="#ff8c42"/>
+                <ellipse cx="38" cy="53" rx="5" ry="2.2" fill="#ff8c42"/>
+            </svg>
+            <div id="gufo-waves" class="gufo-waves-hidden">
+                <span></span><span></span><span></span>
+            </div>
+        </button>
+        <div id="gufo-label">Gufo</div>
+        <div id="gufo-status" class="d-none"></div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; <span id="year"></span> Intentional Owl. All rights reserved.</p>
+    </footer>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+    <script src="/italian-data.js"></script>
+    <script src="/italian-app.js"></script>
+    <script>ItalianApp.init()</script>
+
+    <!-- ElevenLabs Conversational AI client (ESM via CDN) -->
+    <script type="module">
+      import { Conversation } from 'https://esm.sh/@elevenlabs/client@1';
+
+      const btn = document.getElementById('gufo-btn');
+      const icon = document.getElementById('gufo-icon');
+      const waves = document.getElementById('gufo-waves');
+      const label = document.getElementById('gufo-label');
+      const statusEl = document.getElementById('gufo-status');
+      const container = document.getElementById('gufo-container');
+
+      let conversation = null;
+      let state = 'idle'; // idle | connecting | connected
+
+      function setState(s, detail) {
+        state = s;
+        container.setAttribute('data-state', s);
+        switch (s) {
+          case 'idle':
+            waves.className = 'gufo-waves-hidden';
+            label.textContent = 'Gufo';
+            statusEl.classList.add('d-none');
+            break;
+          case 'connecting':
+            waves.className = 'gufo-waves-hidden';
+            label.textContent = 'Connecting…';
+            statusEl.classList.add('d-none');
+            break;
+          case 'connected':
+            label.textContent = 'Gufo';
+            statusEl.classList.remove('d-none');
+            statusEl.textContent = detail || 'Listening…';
+            break;
+        }
+      }
+
+      btn.addEventListener('click', async () => {
+        if (state === 'connecting') return;
+
+        if (state === 'connected' && conversation) {
+          await conversation.endSession();
+          conversation = null;
+          setState('idle');
+          return;
+        }
+
+        setState('connecting');
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          conversation = await Conversation.startSession({
+            agentId: 'agent_6101kmvat5gqfvmvk91erw2bra5z',
+            onConnect: ({ conversationId }) => {
+              console.log('Gufo connected, id:', conversationId);
+              setState('connected', 'Listening…');
+            },
+            onDisconnect: () => {
+              console.log('Gufo disconnected');
+              conversation = null;
+              setState('idle');
+            },
+            onError: (err) => {
+              console.error('Gufo error:', err);
+              conversation = null;
+              setState('idle');
+            },
+            onMessage: (message) => {
+              console.log('Gufo message:', message);
+            },
+            onModeChange: (mode) => {
+              console.log('Gufo mode:', mode);
+              if (state !== 'connected') return;
+              if (mode.mode === 'speaking') {
+                waves.className = 'gufo-waves-active';
+                statusEl.textContent = 'Speaking…';
+              } else {
+                waves.className = 'gufo-waves-listening';
+                statusEl.textContent = 'Listening…';
+              }
+            },
+          });
+        } catch (err) {
+          console.error('Failed to start Gufo:', err);
+          setState('idle');
+        }
+      });
+    </script>
+</body>
+</html>
