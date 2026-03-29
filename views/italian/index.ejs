@@ -202,7 +202,7 @@
           await navigator.mediaDevices.getUserMedia({ audio: true });
 
           conversation = await Conversation.startSession({
-            agentId: 'agent_6101kmvat5gqfvmvk91erw2bra5z',
+            agentId: '<%= agentId %>',  
             onConnect: ({ conversationId }) => {
               console.log('Gufo connected, id:', conversationId);
               setState('connected', 'Listening…');
