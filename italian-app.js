@@ -180,6 +180,8 @@
               <label class="btn btn-outline-light" for="vmode-mc">Multiple Choice</label>
               <input type="radio" class="btn-check" name="vmode" id="vmode-type" value="type">
               <label class="btn btn-outline-light" for="vmode-type">Type Answer</label>
+              <input type="radio" class="btn-check" name="vmode" id="vmode-flip" value="flip">
+              <label class="btn btn-outline-light" for="vmode-flip">Flash Cards</label>
             </div>
           </div>
           <div>
@@ -206,7 +208,11 @@
         state.vocabIndex = 0
         state.vocabCorrect = 0
         state.vocabTotal = 0
-        renderVocabQuestion()
+        if (state.vocabMode === 'flip') {
+          renderVocabFlashCards(state.vocabQueue)
+        } else {
+          renderVocabQuestion()
+        }
       })
     })
   }
@@ -320,6 +326,83 @@
       : `<div class="ita-feedback-wrong">The answer is: <strong>${answer}</strong></div>`
 
     setTimeout(() => { state.vocabIndex++; renderVocabQuestion() }, correct ? 1200 : 2500)
+  }
+
+  // ── Wikipedia image cache ─────────────────────────────────────
+  const wikiImgCache = new Map()
+
+  async function fetchWikiImage(enTerm) {
+    if (wikiImgCache.has(enTerm)) return wikiImgCache.get(enTerm)
+    try {
+      const search = enTerm
+        .split('/')[0]
+        .replace(/^(the|a|an)\s+/i, '')
+        .replace(/\(.*?\)/g, '')
+        .replace(/\.{2,}$/, '')
+        .trim()
+      if (!search) { wikiImgCache.set(enTerm, null); return null }
+      const resp = await fetch(
+        `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(search)}`
+      )
+      if (!resp.ok) { wikiImgCache.set(enTerm, null); return null }
+      const data = await resp.json()
+      const src = data.thumbnail?.source ?? null
+      wikiImgCache.set(enTerm, src)
+      return src
+    } catch {
+      wikiImgCache.set(enTerm, null)
+      return null
+    }
+  }
+
+  function renderVocabFlashCards(words) {
+    el('vocab-area').innerHTML = `
+      <p class="text-muted mb-3">Click a card to reveal the translation.</p>
+      <div class="ita-flashcard-grid">
+        ${words.map((item, i) => `
+          <div class="ita-flip-card" data-idx="${i}">
+            <div class="ita-flip-inner">
+              <div class="ita-flip-front">
+                <div class="ita-flip-media">
+                  <div class="ita-flip-skeleton"></div>
+                  <img class="ita-flip-img" alt="${item.en}">
+                </div>
+                <div class="ita-flip-word">${item.it}</div>
+              </div>
+              <div class="ita-flip-back">
+                <div class="ita-flip-en">${item.en}</div>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="text-center mt-4">
+        <button class="btn btn-outline-light" onclick="ItalianApp.startVocab()">← Back to Setup</button>
+      </div>`
+
+    const cards = el('vocab-area').querySelectorAll('.ita-flip-card')
+    cards.forEach(card => {
+      card.addEventListener('click', () => card.classList.toggle('is-flipped'))
+    })
+
+    // Fetch Wikipedia images in parallel, update cards as they arrive
+    words.forEach((item, i) => {
+      fetchWikiImage(item.en).then(src => {
+        const card = cards[i]
+        if (!card) return
+        const skeleton = card.querySelector('.ita-flip-skeleton')
+        const img = card.querySelector('.ita-flip-img')
+        if (src) {
+          img.onload = () => {
+            img.classList.add('loaded')
+            if (skeleton) skeleton.style.display = 'none'
+          }
+          img.src = src
+        } else {
+          // No image found — show a subtle placeholder icon
+          if (skeleton) skeleton.classList.add('ita-flip-skeleton-none')
+        }
+      })
+    })
   }
 
   function renderVocabResults() {

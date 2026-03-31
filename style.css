@@ -1148,3 +1148,129 @@ Article tables (explicit styling)
         height: 44px;
     }
 }
+
+/* ================================
+   Vocabulary Flash Cards
+   ================================ */
+
+.ita-flashcard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+.ita-flip-card {
+    height: 160px;
+    cursor: pointer;
+    perspective: 600px;
+}
+
+.ita-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.45s ease;
+    transform-style: preserve-3d;
+}
+
+.ita-flip-card.is-flipped .ita-flip-inner {
+    transform: rotateY(180deg);
+}
+
+.ita-flip-front,
+.ita-flip-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.ita-flip-front {
+    background: var(--surface);
+}
+
+.ita-flip-back {
+    background: linear-gradient(160deg, var(--brand), #c4772a);
+    border-color: transparent;
+    transform: rotateY(180deg);
+}
+
+.ita-flip-media {
+    position: relative;
+    width: 100%;
+    height: 90px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface-soft);
+}
+
+.ita-flip-skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
+    background-size: 200% 100%;
+    animation: ita-shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+.ita-flip-skeleton-none {
+    animation: none;
+    background: var(--surface-soft);
+}
+
+@keyframes ita-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.ita-flip-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+
+.ita-flip-img.loaded {
+    opacity: 1;
+}
+
+.ita-flip-word {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    word-break: break-word;
+}
+
+.ita-flip-back .ita-flip-en {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    word-break: break-word;
+}
+
+@media (max-width: 768px) {
+    .ita-flashcard-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 0.65rem;
+    }
+    .ita-flip-card {
+        height: 150px;
+    }
+    .ita-flip-media {
+        height: 80px;
+    }
+}
