@@ -1155,15 +1155,22 @@ Article tables (explicit styling)
 
 .ita-flashcard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
     padding: 0.5rem 0;
 }
 
 .ita-flip-card {
-    height: 160px;
+    height: 220px;
     cursor: pointer;
     perspective: 600px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ita-flip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--brand);
+    border-radius: 12px;
 }
 
 .ita-flip-inner {
@@ -1200,15 +1207,15 @@ Article tables (explicit styling)
 }
 
 .ita-flip-back {
-    background: linear-gradient(160deg, var(--brand), #c4772a);
-    border-color: transparent;
+    background: var(--surface-soft);
+    border-color: var(--brand);
     transform: rotateY(180deg);
 }
 
 .ita-flip-media {
     position: relative;
     width: 100%;
-    height: 90px;
+    height: 140px;
     border-radius: 8px;
     overflow: hidden;
     background: var(--surface-soft);
@@ -1249,26 +1256,62 @@ Article tables (explicit styling)
 }
 
 .ita-flip-word {
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 600;
     color: var(--text);
     word-break: break-word;
 }
 
 .ita-flip-back .ita-flip-en {
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--brand);
     word-break: break-word;
+}
+
+/* ── Enlarged vocab flip card overlay ── */
+.ita-flip-card-overlay-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 380px;
+}
+
+.ita-flip-card-overlay-wrap .ita-flip-card {
+    height: 520px;
+    cursor: pointer;
+    transform: none !important;
+    box-shadow: 0 20px 64px rgba(0, 0, 0, 0.7);
+}
+
+.ita-flip-card-overlay-wrap .ita-flip-media {
+    height: 320px;
+}
+
+.ita-flip-card-overlay-wrap .ita-flip-word {
+    font-size: 1.5rem;
+}
+
+.ita-flip-card-overlay-wrap .ita-flip-back .ita-flip-en {
+    font-size: 1.6rem;
+}
+
+.ita-flip-card-hint {
+    text-align: center;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 768px) {
     .ita-flashcard-grid {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        gap: 0.65rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
     .ita-flip-card {
-        height: 150px;
+        height: 180px;
     }
     .ita-flip-media {
         height: 80px;
