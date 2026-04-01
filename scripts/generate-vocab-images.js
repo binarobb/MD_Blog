@@ -29,6 +29,7 @@ const axios = require('axios')
 
 // ── Load VOCAB from italian-data.js without modifying it ────────────
 const dataCode = fs.readFileSync(path.join(__dirname, '../italian-data.js'), 'utf8')
+  .replace(/\bconst\b/g, 'var').replace(/\blet\b/g, 'var')
 const sandbox  = {}
 vm.runInNewContext(dataCode, sandbox)
 const VOCAB = sandbox.VOCAB
