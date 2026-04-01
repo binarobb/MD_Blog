@@ -355,11 +355,22 @@
     }
   }
 
-  function renderVocabFlashCards(words) {
+  const FC_PAGE_SIZE = 8
+
+  function renderVocabFlashCards(words, page) {
+    if (page === undefined) page = 0
+    const totalPages = Math.ceil(words.length / FC_PAGE_SIZE)
+    const pageWords = words.slice(page * FC_PAGE_SIZE, (page + 1) * FC_PAGE_SIZE)
+    const isFirst = page === 0
+    const isLast = page >= totalPages - 1
+
     el('vocab-area').innerHTML = `
-      <p class="text-muted mb-3">Click a card to reveal the translation.</p>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted mb-0">Click a card to enlarge and flip it.</p>
+        <span class="text-muted small">Page ${page + 1} of ${totalPages}</span>
+      </div>
       <div class="ita-flashcard-grid">
-        ${words.map((item, i) => `
+        ${pageWords.map((item, i) => `
           <div class="ita-flip-card" data-idx="${i}">
             <div class="ita-flip-inner">
               <div class="ita-flip-front">
@@ -375,17 +386,31 @@
             </div>
           </div>`).join('')}
       </div>
-      <div class="text-center mt-4">
+      <div class="ita-card-overlay d-none" id="fc-overlay">
+        <div class="ita-card-overlay-backdrop"></div>
+        <div class="ita-flip-card-overlay-wrap" id="fc-enlarged"></div>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-4">
         <button class="btn btn-outline-light" onclick="ItalianApp.startVocab()">← Back to Setup</button>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-outline-light" id="fc-prev" ${isFirst ? 'disabled' : ''}>← Prev</button>
+          <span class="text-muted small">${page + 1} / ${totalPages}</span>
+          <button class="btn btn-outline-light" id="fc-next" ${isLast ? 'disabled' : ''}>Next →</button>
+        </div>
       </div>`
+
+    const prevBtn = document.getElementById('fc-prev')
+    const nextBtn = document.getElementById('fc-next')
+    if (prevBtn) prevBtn.addEventListener('click', () => renderVocabFlashCards(words, page - 1))
+    if (nextBtn) nextBtn.addEventListener('click', () => renderVocabFlashCards(words, page + 1))
 
     const cards = el('vocab-area').querySelectorAll('.ita-flip-card')
     cards.forEach(card => {
-      card.addEventListener('click', () => card.classList.toggle('is-flipped'))
+      card.addEventListener('click', () => openFlipCardFocus(card))
     })
 
-    // Fetch Wikipedia images in parallel, update cards as they arrive
-    words.forEach((item, i) => {
+    // Fetch Wikipedia images — cached so page navigation never re-fetches
+    pageWords.forEach((item, i) => {
       fetchWikiImage(item.en).then(src => {
         const card = cards[i]
         if (!card) return
@@ -398,11 +423,120 @@
           }
           img.src = src
         } else {
-          // No image found — show a subtle placeholder icon
           if (skeleton) skeleton.classList.add('ita-flip-skeleton-none')
         }
       })
     })
+  }
+
+  function openFlipCardFocus(card) {
+    const overlay = document.getElementById('fc-overlay')
+    const enlarged = document.getElementById('fc-enlarged')
+    if (!overlay || !enlarged) return
+
+    const rect = card.getBoundingClientRect()
+    const ENLARGED_W = Math.min(380, window.innerWidth - 32)
+    const ENLARGED_H = 520
+    const targetLeft = (window.innerWidth  - ENLARGED_W) / 2
+    const targetTop  = Math.max(16, (window.innerHeight - ENLARGED_H) / 2)
+
+    // Show overlay backdrop, fading in while card flies
+    overlay.classList.remove('d-none')
+    const backdrop = overlay.querySelector('.ita-card-overlay-backdrop')
+    backdrop.style.opacity = '0'
+    backdrop.style.transition = 'opacity 0.35s ease'
+    // Keep enlarged slot invisible until fly finishes
+    enlarged.style.visibility = 'hidden'
+    enlarged.innerHTML = ''
+    requestAnimationFrame(() => { backdrop.style.opacity = '1' })
+    document.body.style.overflow = 'hidden'
+
+    // Build a fixed-position flying clone starting at the card's grid position
+    const flyClone = card.cloneNode(true)
+    flyClone.classList.remove('is-flipped')
+    Object.assign(flyClone.style, {
+      position:     'fixed',
+      left:         rect.left   + 'px',
+      top:          rect.top    + 'px',
+      width:        rect.width  + 'px',
+      height:       rect.height + 'px',
+      margin:       '0',
+      zIndex:       '1060',
+      pointerEvents:'none',
+      borderRadius: '12px',
+      overflow:     'hidden',
+      boxShadow:    '0 4px 16px rgba(0,0,0,0.3)',
+      transition:   [
+        'left   0.4s cubic-bezier(0.4,0,0.2,1)',
+        'top    0.4s cubic-bezier(0.4,0,0.2,1)',
+        'width  0.4s cubic-bezier(0.4,0,0.2,1)',
+        'height 0.4s cubic-bezier(0.4,0,0.2,1)',
+        'box-shadow 0.4s ease'
+      ].join(',')
+    })
+
+    // Transfer already-loaded image so the fly clone looks right
+    const origImg = card.querySelector('.ita-flip-img')
+    const flyImg  = flyClone.querySelector('.ita-flip-img')
+    const flySkel = flyClone.querySelector('.ita-flip-skeleton')
+    if (origImg && flyImg && origImg.src) {
+      flyImg.src = origImg.src
+      if (origImg.classList.contains('loaded')) {
+        flyImg.classList.add('loaded')
+        if (flySkel) flySkel.style.display = 'none'
+      }
+    }
+
+    document.body.appendChild(flyClone)
+    flyClone.getBoundingClientRect() // force reflow before animating
+
+    requestAnimationFrame(() => {
+      flyClone.style.left      = targetLeft + 'px'
+      flyClone.style.top       = targetTop  + 'px'
+      flyClone.style.width     = ENLARGED_W + 'px'
+      flyClone.style.height    = ENLARGED_H + 'px'
+      flyClone.style.boxShadow = '0 20px 64px rgba(0,0,0,0.7)'
+    })
+
+    // After flight lands: swap in the real enlarged card
+    setTimeout(() => {
+      flyClone.remove()
+
+      const clone = card.cloneNode(true)
+      clone.classList.remove('is-flipped')
+      const oImg = card.querySelector('.ita-flip-img')
+      const cImg = clone.querySelector('.ita-flip-img')
+      const cSkel = clone.querySelector('.ita-flip-skeleton')
+      if (oImg && cImg && oImg.src) {
+        cImg.src = oImg.src
+        if (oImg.classList.contains('loaded')) {
+          cImg.classList.add('loaded')
+          if (cSkel) cSkel.style.display = 'none'
+        }
+      }
+
+      enlarged.innerHTML = ''
+      enlarged.appendChild(clone)
+      enlarged.style.visibility = ''
+
+      clone.addEventListener('click', e => {
+        e.stopPropagation()
+        clone.classList.toggle('is-flipped')
+      })
+    }, 420)
+
+    const close = () => {
+      flyClone.remove() // safety: remove if user closes mid-flight
+      backdrop.style.opacity = ''
+      backdrop.style.transition = ''
+      enlarged.style.visibility = ''
+      overlay.classList.add('d-none')
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', escHandler)
+    }
+    backdrop.onclick = close
+    const escHandler = e => { if (e.key === 'Escape') close() }
+    document.addEventListener('keydown', escHandler)
   }
 
   function renderVocabResults() {
