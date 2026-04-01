@@ -3,3 +3,6 @@ npm-debug.log
 .DS_Store
 
 /*.env
+
+# Generated vocabulary images (run scripts/generate-vocab-images.js locally)
+public/img/vocab/

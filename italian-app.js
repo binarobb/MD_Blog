@@ -203,8 +203,8 @@
         state.vocabDirection = document.querySelector('input[name="vdir"]:checked').value
         state.vocabCategory = cat
         state.vocabQueue = shuffle(cat === 'all'
-          ? Object.values(VOCAB).flat()
-          : VOCAB[cat].slice())
+          ? Object.entries(VOCAB).flatMap(([c, words]) => words.map(w => ({ ...w, _cat: c })))
+          : VOCAB[cat].map(w => ({ ...w, _cat: cat })))
         state.vocabIndex = 0
         state.vocabCorrect = 0
         state.vocabTotal = 0
@@ -328,6 +328,29 @@
     setTimeout(() => { state.vocabIndex++; renderVocabQuestion() }, correct ? 1200 : 2500)
   }
 
+  // ── Vocab image URL helpers ─────────────────────────────────────
+  function ita_slug(str) {
+    return str
+      .toLowerCase()
+      .replace(/^(the|a|an)\s+/i, '')
+      .replace(/\(.*?\)/g, ' ')
+      .replace(/[\/\.…]+/g, ' ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
+  function cat_slug(str) {
+    return str
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
+  function vocabImgUrl(enWord, catName) {
+    const base = (window.VOCAB_CDN_BASE || '').replace(/\/$/, '')
+    return `${base}/public/img/vocab/${cat_slug(catName || 'vocab')}/${ita_slug(enWord)}.png`
+  }
+
   // ── Wikipedia image cache ─────────────────────────────────────
   const wikiImgCache = new Map()
 
@@ -409,23 +432,28 @@
       card.addEventListener('click', () => openFlipCardFocus(card))
     })
 
-    // Fetch Wikipedia images — cached so page navigation never re-fetches
+    // Load static vocab images; fall back to Wikipedia if not yet generated
     pageWords.forEach((item, i) => {
-      fetchWikiImage(item.en).then(src => {
-        const card = cards[i]
-        if (!card) return
-        const skeleton = card.querySelector('.ita-flip-skeleton')
-        const img = card.querySelector('.ita-flip-img')
-        if (src) {
-          img.onload = () => {
-            img.classList.add('loaded')
-            if (skeleton) skeleton.style.display = 'none'
+      const card = cards[i]
+      if (!card) return
+      const skeleton = card.querySelector('.ita-flip-skeleton')
+      const img = card.querySelector('.ita-flip-img')
+
+      img.onload = () => {
+        img.classList.add('loaded')
+        if (skeleton) skeleton.style.display = 'none'
+      }
+      img.onerror = () => {
+        img.onerror = null
+        fetchWikiImage(item.en).then(src => {
+          if (src) {
+            img.src = src
+          } else {
+            if (skeleton) skeleton.classList.add('ita-flip-skeleton-none')
           }
-          img.src = src
-        } else {
-          if (skeleton) skeleton.classList.add('ita-flip-skeleton-none')
-        }
-      })
+        })
+      }
+      img.src = vocabImgUrl(item.en, item._cat)
     })
   }
 
