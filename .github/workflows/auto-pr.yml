@@ -19,7 +19,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="${GITHUB_REF_NAME}"
-          EXISTING=$(gh pr list --base main --head "$BRANCH" --json number --jq '.[0].number' 2>/dev/null || true)
+          EXISTING=$(gh pr list --base main --head "$BRANCH" --json number --jq '.[0].number // empty' 2>/dev/null || true)
           if [ -n "$EXISTING" ]; then
             echo "PR #$EXISTING already exists for $BRANCH — skipping."
           else
@@ -27,7 +27,6 @@ jobs:
               --base main \
               --head "$BRANCH" \
               --title "Merge $BRANCH into main" \
-              --body "Automated PR opened by GitHub Actions on push to \`$BRANCH\`." \
-              --draft
+              --body "Automated PR opened by GitHub Actions on push to \`$BRANCH\`."
             echo "PR created for $BRANCH"
           fi
