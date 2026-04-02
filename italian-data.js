@@ -657,3 +657,8 @@ const SENTENCES = [
   { en: 'I can\'t come tomorrow.', words: ['Non', 'posso', 'venire', 'domani.'] },
   { en: 'What time do you eat?', words: ['A', 'che', 'ora', 'mangi?'] }
 ]
+
+// Allow Node.js (seed script) to require this file while keeping browser globals intact
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { VERBS, VOCAB, GRAMMAR, GRAMMAR_QUIZ, SENTENCES }
+}

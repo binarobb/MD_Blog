@@ -1,8 +1,18 @@
 // italian-app.js — SPA engine for the A1 Italian learning app
-// Depends on italian-data.js being loaded first (VERBS, VOCAB, GRAMMAR, PRONOUNS)
+// Data is fetched from /italian/api/* endpoints at initialisation
 
 ;(function () {
   'use strict'
+
+  // ── Module-level data (populated by loadData on init) ────────────
+  const PRONOUNS = ['io', 'tu', 'lui/lei', 'noi', 'voi', 'loro']
+  const appData = {
+    verbs:       [],
+    vocab:       {},   // { 'Greetings': [{it, en}, ...], ... }
+    grammar:     [],
+    grammarQuiz: [],
+    sentences:   []
+  }
 
   // ── Helpers ──────────────────────────────────────────────────────
   function shuffle(arr) {
@@ -54,6 +64,63 @@
     sentenceCorrect: 0,
     sentenceTotal: 0,
     sentencePicked: [],
+  }
+
+  // ── Data loader ──────────────────────────────────────────────────
+  async function loadData() {
+    const BASE = '/italian/api'
+
+    const [categoriesRes, verbsRes, grammarTopicsRes, grammarQuestionsRes, sentencesRes] =
+      await Promise.all([
+        fetch(`${BASE}/vocab/categories`),
+        fetch(`${BASE}/verbs`),
+        fetch(`${BASE}/grammar/topics`),
+        fetch(`${BASE}/grammar/questions`),
+        fetch(`${BASE}/sentences`)
+      ])
+
+    if (!categoriesRes.ok || !verbsRes.ok || !grammarTopicsRes.ok ||
+        !grammarQuestionsRes.ok || !sentencesRes.ok) {
+      throw new Error('Failed to load Italian content from server')
+    }
+
+    const [categories, verbs, grammarTopics, grammarQuestions, sentences] =
+      await Promise.all([
+        categoriesRes.json(),
+        verbsRes.json(),
+        grammarTopicsRes.json(),
+        grammarQuestionsRes.json(),
+        sentencesRes.json()
+      ])
+
+    // Fetch all vocab items for each category in parallel
+    const vocabResponses = await Promise.all(
+      categories.map(cat => fetch(`${BASE}/vocab/${cat.slug}`))
+    )
+    const vocabData = await Promise.all(vocabResponses.map(r => r.json()))
+
+    // Rebuild VOCAB map: category name → [{it, en}] (matches existing app format)
+    const vocab = {}
+    categories.forEach((cat, i) => {
+      vocab[cat.name] = (vocabData[i].items || []).map(item => ({
+        it: item.italian,
+        en: item.english
+      }))
+    })
+
+    appData.verbs       = verbs
+    appData.vocab       = vocab
+    appData.grammar     = grammarTopics   // [{title, body}, ...]
+    appData.grammarQuiz = grammarQuestions.map(q => ({
+      q:     q.question,
+      a:     q.correctAnswer,
+      opts:  q.options,
+      topic: q.topic
+    }))
+    appData.sentences = sentences.map(s => ({
+      en:    s.english,
+      words: s.words
+    }))
   }
 
   // ── Persistence (localStorage) ──────────────────────────────────
@@ -154,7 +221,7 @@
   }
 
   function renderVocabSetup() {
-    const categories = Object.keys(VOCAB)
+    const categories = Object.keys(appData.vocab)
     el('vocab-area').innerHTML = `
       <div class="ita-setup-panel">
         <h3>Choose a Category</h3>
@@ -162,13 +229,13 @@
           ${categories.map(cat => `
             <div class="col-6 col-md-4">
               <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat}">
-                ${cat} <span class="badge bg-secondary">${VOCAB[cat].length}</span>
+                ${cat} <span class="badge bg-secondary">${appData.vocab[cat].length}</span>
               </button>
             </div>
           `).join('')}
           <div class="col-6 col-md-4">
             <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="all">
-              All Words <span class="badge bg-secondary">${Object.values(VOCAB).flat().length}</span>
+              All Words <span class="badge bg-secondary">${Object.values(appData.vocab).flat().length}</span>
             </button>
           </div>
         </div>
@@ -203,8 +270,8 @@
         state.vocabDirection = document.querySelector('input[name="vdir"]:checked').value
         state.vocabCategory = cat
         state.vocabQueue = shuffle(cat === 'all'
-          ? Object.entries(VOCAB).flatMap(([c, words]) => words.map(w => ({ ...w, _cat: c })))
-          : VOCAB[cat].map(w => ({ ...w, _cat: cat })))
+          ? Object.entries(appData.vocab).flatMap(([c, words]) => words.map(w => ({ ...w, _cat: c })))
+          : appData.vocab[cat].map(w => ({ ...w, _cat: cat })))
         state.vocabIndex = 0
         state.vocabCorrect = 0
         state.vocabTotal = 0
@@ -230,8 +297,8 @@
     if (state.vocabMode === 'mc') {
       // build 3 wrong options from same category or all
       const pool = (state.vocabCategory === 'all'
-        ? Object.values(VOCAB).flat()
-        : VOCAB[state.vocabCategory])
+        ? Object.values(appData.vocab).flat()
+        : appData.vocab[state.vocabCategory])
         .filter(w => (isItEn ? w.en : w.it) !== answer)
       const wrongs = pick(pool, 3).map(w => isItEn ? w.en : w.it)
       const options = shuffle([answer, ...wrongs])
@@ -641,9 +708,9 @@
     el('start-verb-drill').addEventListener('click', () => {
       state.verbFilter = document.querySelector('input[name="vfilter"]:checked').value
       state.verbMode = document.querySelector('input[name="verbmode"]:checked').value
-      let verbs = VERBS
+      let verbs = appData.verbs
       if (state.verbFilter !== 'all') {
-        verbs = VERBS.filter(v => {
+        verbs = appData.verbs.filter(v => {
           if (state.verbFilter === 'irregular') return v.group === 'irregular'
           return v.group.startsWith(state.verbFilter)
         })
@@ -702,7 +769,7 @@
         .map(([, c]) => c)
       wrongs.push(...pick(otherFromSame, 2))
       // from other verbs same pronoun
-      const otherVerbs = VERBS.filter(v => v.infinitive !== q.verb.infinitive)
+      const otherVerbs = appData.verbs.filter(v => v.infinitive !== q.verb.infinitive)
       const fromOthers = pick(otherVerbs, 3).map(v => v.conjugation[q.pronoun]).filter(c => c !== q.answer)
       wrongs.push(...fromOthers)
       const uniqueWrongs = [...new Set(wrongs)].filter(w => w !== q.answer).slice(0, 3)
@@ -811,7 +878,7 @@
   }
 
   function renderGrammarQuizSetup() {
-    const topics = [...new Set(GRAMMAR_QUIZ.map(q => q.topic))]
+    const topics = [...new Set(appData.grammarQuiz.map(q => q.topic))]
     el('grammarquiz-area').innerHTML = `
       <div class="ita-setup-panel">
         <h3>Grammar Quiz</h3>
@@ -819,11 +886,11 @@
         <div class="row g-2 mb-3">
           <div class="col-6 col-md-4">
             <button class="btn btn-outline-light w-100 ita-cat-btn active" data-topic="all">
-              All Topics <span class="badge bg-secondary">${GRAMMAR_QUIZ.length}</span>
+              All Topics <span class="badge bg-secondary">${appData.grammarQuiz.length}</span>
             </button>
           </div>
           ${topics.map(t => {
-            const count = GRAMMAR_QUIZ.filter(q => q.topic === t).length
+            const count = appData.grammarQuiz.filter(q => q.topic === t).length
             return `<div class="col-6 col-md-4">
               <button class="btn btn-outline-light w-100 ita-cat-btn" data-topic="${t}">
                 ${t} <span class="badge bg-secondary">${count}</span>
@@ -842,7 +909,7 @@
       })
     })
     el('start-grammar-quiz-btn').addEventListener('click', () => {
-      const pool = selectedTopic === 'all' ? GRAMMAR_QUIZ : GRAMMAR_QUIZ.filter(q => q.topic === selectedTopic)
+      const pool = selectedTopic === 'all' ? appData.grammarQuiz : appData.grammarQuiz.filter(q => q.topic === selectedTopic)
       state.grammarQueue = shuffle(pool).slice(0, Math.min(15, pool.length))
       state.grammarIndex = 0
       state.grammarCorrect = 0
@@ -925,7 +992,7 @@
   // ── Sentence Builder ─────────────────────────────────────────────
   function startSentences() {
     showSection('sentences')
-    state.sentenceQueue = shuffle(SENTENCES).slice(0, 12)
+    state.sentenceQueue = shuffle(appData.sentences).slice(0, 12)
     state.sentenceIndex = 0
     state.sentenceCorrect = 0
     state.sentenceTotal = state.sentenceQueue.length
@@ -1036,7 +1103,7 @@
     showSection('grammar')
     el('grammar-area').innerHTML = `
       <div class="ita-grammar-list">
-        ${GRAMMAR.map((g, i) => `
+        ${appData.grammar.map((g, i) => `
           <div class="content-card mb-3 ita-grammar-card">
             <div class="card-body">
               <h3 class="card-title ita-grammar-toggle" data-idx="${i}" role="button" tabindex="0">
@@ -1054,7 +1121,7 @@
         <h3>All 30 Verbs — Present Tense Reference</h3>
         <p class="text-muted mb-3" style="font-size:0.9rem">Click any card to enlarge &amp; flip for examples</p>
         <div class="ita-verb-ref-grid">
-          ${VERBS.map((v, idx) => `
+          ${appData.verbs.map((v, idx) => `
             <div class="ita-verb-ref-card" data-verb-idx="${idx}" role="button" tabindex="0">
               <div class="ita-verb-flip-inner">
                 <div class="ita-verb-front">
@@ -1151,7 +1218,24 @@
     startSentences,
     renderGrammar,
     resetStats,
-    init() {
+    async init() {
+      // Show loading spinner inside dash-content while data fetches from API
+      const dashContent = el('dash-content')
+      if (dashContent) {
+        dashContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading…</span></div><p class="mt-3 text-muted">Loading Italian content…</p></div>'
+      }
+
+      try {
+        await loadData()
+      } catch (err) {
+        console.error('Italian app failed to load data:', err)
+        const dashContent = el('dash-content')
+        if (dashContent) {
+          dashContent.innerHTML = '<div class="alert alert-danger m-3">Failed to load content. Please refresh the page.</div>'
+        }
+        return
+      }
+
       document.querySelectorAll('.ita-tab').forEach(tab => {
         tab.addEventListener('click', e => {
           e.preventDefault()

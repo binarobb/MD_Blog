@@ -5,7 +5,8 @@
   "main": "script.js",
   "scripts": {
     "devStart": "nodemon server.js",
-    "generate-images": "node scripts/generate-vocab-images.js"
+    "generate-images": "node scripts/generate-vocab-images.js",
+    "seed-italian": "node scripts/seed-italian.js"
   },
   "keywords": [],
   "author": "",
