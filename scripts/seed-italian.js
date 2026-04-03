@@ -5,7 +5,7 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') })
 const mongoose = require('mongoose')
 
-const { VERBS, VOCAB, GRAMMAR, GRAMMAR_QUIZ, SENTENCES } = require('../italian-data')
+const { VERBS, VOCAB, GRAMMAR, GRAMMAR_QUIZ, SENTENCES, READING_PASSAGES, IDIOMS } = require('../italian-data')
 
 const VocabCategory    = require('../models/italian/VocabCategory')
 const VocabItem        = require('../models/italian/VocabItem')
@@ -13,6 +13,8 @@ const Verb             = require('../models/italian/Verb')
 const GrammarTopic     = require('../models/italian/GrammarTopic')
 const GrammarQuestion  = require('../models/italian/GrammarQuestion')
 const SentenceExercise = require('../models/italian/SentenceExercise')
+const ReadingPassage   = require('../models/italian/ReadingPassage')
+const IdiomExpression  = require('../models/italian/IdiomExpression')
 
 // Build slug from a category name (e.g. "Food & Drink" → "food-drink")
 function toSlug(str) {
@@ -64,7 +66,7 @@ async function seedVocabItems(categories) {
                     italian: item.it,
                     english: item.en,
                     imageUrl: imageBase,
-                    difficulty: 1
+                    difficulty: item.difficulty || 1
                 },
                 { upsert: true, new: true }
             )
@@ -85,9 +87,12 @@ async function seedVerbs() {
                 translation: verb.translation,
                 group: verb.group,
                 conjugation: verb.conjugation,
+                tenses: verb.tenses || {},
+                auxiliaryVerb: verb.auxiliaryVerb || null,
+                pastParticiple: verb.pastParticiple || null,
                 example: verb.example,
                 examples: verb.examples || [],
-                difficulty: 1
+                difficulty: verb.difficulty || 1
             },
             { upsert: true, new: true }
         )
@@ -143,6 +148,48 @@ async function seedSentences() {
     console.log(`  SentenceExercises: ${docs.length} inserted`)
 }
 
+async function seedReadingPassages() {
+    let total = 0
+    for (const passage of READING_PASSAGES) {
+        await ReadingPassage.findOneAndUpdate(
+            { title: passage.title },
+            {
+                title:         passage.title,
+                level:         passage.level,
+                body:          passage.body,
+                vocabGlossary: passage.vocabGlossary || [],
+                questions:     passage.questions    || [],
+                tags:          passage.tags         || [],
+                audioUrl:      passage.audioUrl     || null
+            },
+            { upsert: true, new: true }
+        )
+        total++
+    }
+    console.log(`  ReadingPassages: ${total} upserted`)
+}
+
+async function seedIdioms() {
+    let total = 0
+    for (const idiom of IDIOMS) {
+        await IdiomExpression.findOneAndUpdate(
+            { idiom: idiom.idiom },
+            {
+                idiom:              idiom.idiom,
+                meaning:            idiom.meaning,
+                literalTranslation: idiom.literalTranslation || null,
+                example:            idiom.example || {},
+                difficulty:         idiom.difficulty || 2,
+                tags:               idiom.tags || [],
+                audioUrl:           idiom.audioUrl || null
+            },
+            { upsert: true, new: true }
+        )
+        total++
+    }
+    console.log(`  IdiomExpressions: ${total} upserted`)
+}
+
 async function run() {
     const uri = process.env.MONGODB_URI
     if (!uri) {
@@ -161,6 +208,8 @@ async function run() {
     await seedGrammarTopics()
     await seedGrammarQuestions()
     await seedSentences()
+    await seedReadingPassages()
+    await seedIdioms()
 
     console.log('\nSeed complete.')
     await mongoose.disconnect()

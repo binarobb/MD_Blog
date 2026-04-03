@@ -14,6 +14,12 @@ const conjugationSchema = new mongoose.Schema({
     loro:     { type: String, default: '' }
 }, { _id: false })
 
+const tensesSchema = new mongoose.Schema({
+    presenteIndicativo: { type: conjugationSchema, default: () => ({}) },
+    passatoProssimo:    { type: conjugationSchema, default: () => ({}) },
+    imperfetto:         { type: conjugationSchema, default: () => ({}) }
+}, { _id: false })
+
 const verbSchema = new mongoose.Schema({
     infinitive: {
         type: String,
@@ -30,11 +36,25 @@ const verbSchema = new mongoose.Schema({
     group: {
         type: String,
         required: true,
-        enum: ['-are', '-ere', '-ire', '-ire (isc)', 'irregular']
+        enum: ['-are', '-ere', '-ire', '-ire (isc)', 'irregular', 'reflexive']
     },
     conjugation: {
         type: conjugationSchema,
         required: true
+    },
+    tenses: {
+        type: tensesSchema,
+        default: () => ({})
+    },
+    auxiliaryVerb: {
+        type: String,
+        enum: ['avere', 'essere', null],
+        default: null
+    },
+    pastParticiple: {
+        type: String,
+        trim: true,
+        default: null
     },
     example: {
         type: exampleSchema,
