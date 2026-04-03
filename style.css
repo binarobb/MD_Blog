@@ -1317,3 +1317,392 @@ Article tables (explicit styling)
         height: 80px;
     }
 }
+
+/* ── Level Selector Bar ───────────────────────────────────────────── */
+.ita-level-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.ita-levels {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.ita-level-label {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-right: 0.25rem;
+}
+
+.ita-level-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--fg);
+    border-radius: 20px;
+    padding: 0.2rem 0.85rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.ita-level-btn:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.ita-level-btn.active {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ── Reading Comprehension ───────────────────────────────────────── */
+.ita-reading-body {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--fg);
+}
+
+.ita-reading-body mark,
+.ita-gloss-mark {
+    background: rgba(var(--brand-rgb, 99, 102, 241), 0.25);
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 2px;
+    cursor: help;
+    text-decoration: underline dotted;
+}
+
+.ita-reading-glossary {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+}
+
+.ita-gloss-item {
+    font-size: 0.88rem;
+    display: block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    background: var(--surface);
+}
+
+/* ── Idiom Flip Cards ────────────────────────────────────────────── */
+.ita-idiom-card {
+    width: 100%;
+    min-height: 260px;
+    perspective: 1000px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ita-idiom-flip-inner {
+    position: relative;
+    width: 100%;
+    min-height: 260px;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+}
+
+.ita-idiom-flip-inner.ita-idiom-flipped {
+    transform: rotateY(180deg);
+}
+
+.ita-idiom-front,
+.ita-idiom-back {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.ita-idiom-back {
+    transform: rotateY(180deg);
+}
+
+.ita-idiom-text {
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--fg);
+}
+
+.ita-idiom-meaning {
+    font-size: 1.25rem;
+    color: var(--fg);
+}
+
+.ita-idiom-example-it {
+    font-size: 1rem;
+    color: var(--fg);
+}
+
+.ita-idiom-example-en {
+    font-size: 0.88rem;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.ita-empty-state {
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* ── Verb Reference ──────────────────────────────────────────────── */
+.ita-verb-ref-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.ita-verb-ref-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.ita-verb-ref-right {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.ita-verb-ref-search {
+    width: 200px;
+}
+
+.ita-verb-ref-filter {
+    width: 140px;
+}
+
+.ita-verb-ref-pginfo {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.ita-verb-ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.ita-verb-ref-card {
+    background: var(--card-bg, #1e1e2e);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    user-select: none;
+}
+
+.ita-verb-ref-card:hover,
+.ita-verb-ref-card:focus {
+    transform: translateY(-3px);
+    border-color: var(--brand, #c084fc);
+    box-shadow: 0 4px 16px rgba(192, 132, 252, 0.25);
+    outline: none;
+}
+
+.ita-vrc-infinitive {
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.2rem;
+    color: var(--fg, #e2e8f0);
+}
+
+.ita-vrc-translation {
+    font-size: 0.82rem;
+    color: var(--muted, #94a3b8);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+.ita-vrc-badges {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+/* ── Verb Modal Overlay ──────────────────────────────────────────── */
+.ita-verb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 1060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+}
+
+.ita-verb-modal {
+    background: var(--card-bg, #1e1e2e);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    animation: verb-modal-in 0.2s ease;
+}
+
+@keyframes verb-modal-in {
+    from { opacity: 0; transform: scale(0.93); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.ita-verb-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.2rem 1.3rem 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    gap: 0.75rem;
+}
+
+.ita-verb-modal-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--fg, #e2e8f0);
+    margin-right: 0.4rem;
+}
+
+.ita-verb-modal-trans {
+    font-size: 0.9rem;
+    color: var(--muted, #94a3b8);
+    margin-top: 0.3rem;
+}
+
+.ita-verb-modal-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.ita-verb-modal-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--muted, #94a3b8);
+    padding: 0.7rem 0.5rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.ita-verb-modal-tab:hover {
+    color: var(--fg, #e2e8f0);
+}
+
+.ita-verb-modal-tab.active {
+    color: var(--brand, #c084fc);
+    border-bottom-color: var(--brand, #c084fc);
+}
+
+.ita-verb-modal-body {
+    padding: 1.2rem 1.3rem;
+}
+
+.ita-tense-heading {
+    color: var(--brand, #c084fc);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+}
+
+.ita-aux-note {
+    font-size: 0.85rem;
+    color: var(--muted, #94a3b8);
+    margin-bottom: 0.75rem;
+    background: rgba(255,255,255,0.04);
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+}
+
+.ita-tense-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.2rem;
+}
+
+.ita-tense-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.ita-pron {
+    color: var(--muted, #94a3b8);
+    font-size: 0.88rem;
+    width: 40%;
+}
+
+.ita-form {
+    font-weight: 700;
+    color: var(--fg, #e2e8f0);
+    font-size: 0.95rem;
+}
+
+.ita-verb-modal-examples {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 1rem;
+}
+
+.ita-examples-heading {
+    color: var(--brand, #c084fc);
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+}
+
+.ita-ex-pair {
+    margin-bottom: 0.75rem;
+}
+
+.ita-ex-it {
+    font-size: 0.92rem;
+    color: var(--fg, #e2e8f0);
+}
+
+.ita-ex-en {
+    font-size: 0.85rem;
+    color: var(--muted, #94a3b8);
+    margin-top: 0.1rem;
+}
+
+@media (max-width: 768px) {
+    .ita-level-bar {
+        padding: 0.4rem 1rem;
+    }
+
+    .ita-idiom-text {
+        font-size: 1.3rem;
+    }
+
+    .ita-verb-ref-search { width: 140px; }
+    .ita-verb-ref-filter { width: 120px; }
+
+    .ita-verb-ref-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    }
+}

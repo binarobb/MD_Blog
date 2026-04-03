@@ -1,4 +1,4 @@
-// italian-app.js — SPA engine for the A1 Italian learning app
+// italian-app.js — SPA engine for the Italian learning app (A1/A2/B1)
 // Data is fetched from /italian/api/* endpoints at initialisation
 
 ;(function () {
@@ -11,7 +11,9 @@
     vocab:       {},   // { 'Greetings': [{it, en}, ...], ... }
     grammar:     [],
     grammarQuiz: [],
-    sentences:   []
+    sentences:   [],
+    reading:     [],
+    idioms:      []
   }
 
   // ── Helpers ──────────────────────────────────────────────────────
@@ -28,6 +30,18 @@
 
   function el(id) { return document.getElementById(id) }
 
+  function emptyState(areaId, sectionLabel) {
+    const levelLabel = state.level === 'all' ? '' : state.level.toUpperCase()
+    el(areaId).innerHTML = `
+      <div class="ita-empty-state text-center py-5">
+        <div style="font-size:3rem;margin-bottom:1rem">📭</div>
+        <h4>No ${levelLabel ? levelLabel + ' ' : ''}${sectionLabel} content yet</h4>
+        <p class="text-muted mb-4">There isn't enough content at the <strong>${levelLabel || 'current'}</strong> level for this section.<br>
+          Try switching to <strong>All Levels</strong> to see everything.</p>
+        <button class="btn btn-primary" onclick="ItalianApp.setLevel('all')">Show All Levels</button>
+      </div>`
+  }
+
   function normalize(s) {
     return s.trim().toLowerCase()
       .replace(/[\u2018\u2019\u0060]/g, "'")
@@ -36,22 +50,25 @@
 
   // ── State ────────────────────────────────────────────────────────
   const state = {
-    section: 'dashboard',       // dashboard | vocab | verbs | grammar | grammarquiz | sentences
+    section: 'dashboard',
+    level: 'all',          // 'all' | 'a1' | 'a2' | 'b1'
+    activeTense: 'presenteIndicativo',  // 'presenteIndicativo' | 'passatoProssimo' | 'imperfetto'
     // vocab quiz
     vocabCategory: null,
     vocabQueue: [],
     vocabIndex: 0,
     vocabCorrect: 0,
     vocabTotal: 0,
-    vocabMode: 'mc',           // mc = multiple-choice, type = type-in
-    vocabDirection: 'it-en',   // it-en or en-it
+    vocabMode: 'mc',
+    vocabDirection: 'it-en',
     // verb drill
     verbQueue: [],
     verbIndex: 0,
     verbCorrect: 0,
     verbTotal: 0,
-    verbMode: 'type',          // type or mc
-    verbFilter: 'all',         // all | -are | -ere | -ire | irregular
+    verbMode: 'type',
+    verbFilter: 'all',
+    verbTense: 'presenteIndicativo',   // 'presenteIndicativo' | 'passatoProssimo' | 'imperfetto'
     // grammar quiz
     grammarQueue: [],
     grammarIndex: 0,
@@ -64,19 +81,38 @@
     sentenceCorrect: 0,
     sentenceTotal: 0,
     sentencePicked: [],
+    // reading
+    readingPassage: null,
+    readingQuizIndex: 0,
+    readingQuizCorrect: 0,
+    readingQuizTotal: 0,
+    // idioms
+    idiomMode: 'study',   // 'study' | 'quiz'
+    idiomStudyIndex: 0,
+    idiomQuizQueue: [],
+    idiomQuizIndex: 0,
+    idiomQuizCorrect: 0,
+    idiomQuizTotal: 0,
+    verbRefPage:    0,
+    verbRefSearch:  '',
+    verbRefGroup:   'all',
+    verbRefTense:   'presenteIndicativo'
   }
 
   // ── Data loader ──────────────────────────────────────────────────
   async function loadData() {
     const BASE = '/italian/api'
+    const lvl = state.level !== 'all' ? `?level=${state.level}` : ''
 
-    const [categoriesRes, verbsRes, grammarTopicsRes, grammarQuestionsRes, sentencesRes] =
+    const [categoriesRes, verbsRes, grammarTopicsRes, grammarQuestionsRes, sentencesRes, readingRes, idiomsRes] =
       await Promise.all([
         fetch(`${BASE}/vocab/categories`),
-        fetch(`${BASE}/verbs`),
+        fetch(`${BASE}/verbs${lvl}`),
         fetch(`${BASE}/grammar/topics`),
-        fetch(`${BASE}/grammar/questions`),
-        fetch(`${BASE}/sentences`)
+        fetch(`${BASE}/grammar/questions${lvl}`),
+        fetch(`${BASE}/sentences${lvl}`),
+        fetch(`${BASE}/reading${lvl}`),
+        fetch(`${BASE}/idioms${lvl}`)
       ])
 
     if (!categoriesRes.ok || !verbsRes.ok || !grammarTopicsRes.ok ||
@@ -84,18 +120,20 @@
       throw new Error('Failed to load Italian content from server')
     }
 
-    const [categories, verbs, grammarTopics, grammarQuestions, sentences] =
+    const [categories, verbs, grammarTopics, grammarQuestions, sentences, readingPayload, idioms] =
       await Promise.all([
         categoriesRes.json(),
         verbsRes.json(),
         grammarTopicsRes.json(),
         grammarQuestionsRes.json(),
-        sentencesRes.json()
+        sentencesRes.json(),
+        readingRes.ok ? readingRes.json() : Promise.resolve({ passages: [] }),
+        idiomsRes.ok ? idiomsRes.json() : Promise.resolve([])
       ])
 
-    // Fetch all vocab items for each category in parallel
+    // Fetch all vocab items for each category in parallel, respecting level filter
     const vocabResponses = await Promise.all(
-      categories.map(cat => fetch(`${BASE}/vocab/${cat.slug}`))
+      categories.map(cat => fetch(`${BASE}/vocab/${cat.slug}${lvl}`))
     )
     const vocabData = await Promise.all(vocabResponses.map(r => r.json()))
 
@@ -110,7 +148,7 @@
 
     appData.verbs       = verbs
     appData.vocab       = vocab
-    appData.grammar     = grammarTopics   // [{title, body}, ...]
+    appData.grammar     = grammarTopics
     appData.grammarQuiz = grammarQuestions.map(q => ({
       q:     q.question,
       a:     q.correctAnswer,
@@ -121,6 +159,29 @@
       en:    s.english,
       words: s.words
     }))
+    appData.reading = readingPayload.passages || []
+    appData.idioms  = Array.isArray(idioms) ? idioms : []
+  }
+
+  // ── Level selector ───────────────────────────────────────────────
+  function setLevel(level) {
+    state.level = level
+    try { localStorage.setItem('italian_level', level) } catch {}
+    document.querySelectorAll('.ita-level-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.level === level)
+    })
+    // Reload data for the new level then re-render the active section
+    loadData().then(() => {
+      const s = state.section
+      if      (s === 'dashboard')   renderDashboard()
+      else if (s === 'grammar')     renderGrammar()
+      else if (s === 'reading')     renderReadingList()
+      else if (s === 'idioms')      renderIdiomsSetup()
+      else if (s === 'vocab')       startVocab()
+      else if (s === 'verbs')       startVerbs()
+      else if (s === 'grammarquiz') startGrammarQuiz()
+      else if (s === 'sentences')   startSentences()
+    }).catch(err => console.error('Level reload failed:', err))
   }
 
   // ── Persistence (localStorage) ──────────────────────────────────
@@ -153,61 +214,41 @@
   // ── Dashboard ────────────────────────────────────────────────────
   function renderDashboard() {
     const stats = getStats()
-    const vocabStats = stats.vocab || { correct: 0, total: 0, sessions: 0 }
-    const verbStats = stats.verbs || { correct: 0, total: 0, sessions: 0 }
-    const grammarStats = stats.grammarquiz || { correct: 0, total: 0, sessions: 0 }
-    const sentenceStats = stats.sentences || { correct: 0, total: 0, sessions: 0 }
-    const vocabPct = vocabStats.total ? Math.round(vocabStats.correct / vocabStats.total * 100) : 0
-    const verbPct = verbStats.total ? Math.round(verbStats.correct / verbStats.total * 100) : 0
-    const grammarPct = grammarStats.total ? Math.round(grammarStats.correct / grammarStats.total * 100) : 0
+    const vocabStats    = stats.vocab      || { correct: 0, total: 0, sessions: 0 }
+    const verbStats     = stats.verbs      || { correct: 0, total: 0, sessions: 0 }
+    const grammarStats  = stats.grammarquiz|| { correct: 0, total: 0, sessions: 0 }
+    const sentenceStats = stats.sentences  || { correct: 0, total: 0, sessions: 0 }
+    const readingStats  = stats.reading    || { correct: 0, total: 0, sessions: 0 }
+    const idiomStats    = stats.idioms     || { correct: 0, total: 0, sessions: 0 }
+    const vocabPct    = vocabStats.total    ? Math.round(vocabStats.correct    / vocabStats.total    * 100) : 0
+    const verbPct     = verbStats.total     ? Math.round(verbStats.correct     / verbStats.total     * 100) : 0
+    const grammarPct  = grammarStats.total  ? Math.round(grammarStats.correct  / grammarStats.total  * 100) : 0
     const sentencePct = sentenceStats.total ? Math.round(sentenceStats.correct / sentenceStats.total * 100) : 0
+    const readingPct  = readingStats.total  ? Math.round(readingStats.correct  / readingStats.total  * 100) : 0
+    const idiomPct    = idiomStats.total    ? Math.round(idiomStats.correct    / idiomStats.total    * 100) : 0
+
+    const card = (title, desc, stats, pct, btnLabel, onclick) => `
+      <div class="col-md-6">
+        <div class="content-card h-100">
+          <div class="card-body d-flex flex-column">
+            <h4 class="card-title">${title}</h4>
+            <p class="text-muted">${desc}</p>
+            <p class="text-muted">${stats.sessions} session${stats.sessions !== 1 ? 's' : ''} completed</p>
+            <div class="ita-progress-bar mb-2"><div class="ita-progress-fill" style="width:${pct}%"></div></div>
+            <p class="mb-0"><strong>${stats.correct}</strong> / ${stats.total} correct (${pct}%)</p>
+            <button class="btn btn-primary mt-auto" onclick="${onclick}">${btnLabel}</button>
+          </div>
+        </div>
+      </div>`
 
     el('dash-content').innerHTML = `
       <div class="row g-3">
-        <div class="col-md-6">
-          <div class="content-card h-100">
-            <div class="card-body d-flex flex-column">
-              <h4 class="card-title">Vocabulary</h4>
-              <p class="text-muted">${vocabStats.sessions} session${vocabStats.sessions !== 1 ? 's' : ''} completed</p>
-              <div class="ita-progress-bar mb-2"><div class="ita-progress-fill" style="width:${vocabPct}%"></div></div>
-              <p class="mb-0"><strong>${vocabStats.correct}</strong> / ${vocabStats.total} correct (${vocabPct}%)</p>
-              <button class="btn btn-primary mt-auto" onclick="ItalianApp.startVocab()">Practice Vocabulary</button>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="content-card h-100">
-            <div class="card-body d-flex flex-column">
-              <h4 class="card-title">Verb Conjugation</h4>
-              <p class="text-muted">${verbStats.sessions} session${verbStats.sessions !== 1 ? 's' : ''} completed</p>
-              <div class="ita-progress-bar mb-2"><div class="ita-progress-fill" style="width:${verbPct}%"></div></div>
-              <p class="mb-0"><strong>${verbStats.correct}</strong> / ${verbStats.total} correct (${verbPct}%)</p>
-              <button class="btn btn-primary mt-auto" onclick="ItalianApp.startVerbs()">Practice Verbs</button>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="content-card h-100">
-            <div class="card-body d-flex flex-column">
-              <h4 class="card-title">Grammar Quiz</h4>
-              <p class="text-muted">${grammarStats.sessions} session${grammarStats.sessions !== 1 ? 's' : ''} completed</p>
-              <div class="ita-progress-bar mb-2"><div class="ita-progress-fill" style="width:${grammarPct}%"></div></div>
-              <p class="mb-0"><strong>${grammarStats.correct}</strong> / ${grammarStats.total} correct (${grammarPct}%)</p>
-              <button class="btn btn-primary mt-auto" onclick="ItalianApp.startGrammarQuiz()">Practice Grammar</button>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="content-card h-100">
-            <div class="card-body d-flex flex-column">
-              <h4 class="card-title">Sentence Builder</h4>
-              <p class="text-muted">${sentenceStats.sessions} session${sentenceStats.sessions !== 1 ? 's' : ''} completed</p>
-              <div class="ita-progress-bar mb-2"><div class="ita-progress-fill" style="width:${sentencePct}%"></div></div>
-              <p class="mb-0"><strong>${sentenceStats.correct}</strong> / ${sentenceStats.total} correct (${sentencePct}%)</p>
-              <button class="btn btn-primary mt-auto" onclick="ItalianApp.startSentences()">Build Sentences</button>
-            </div>
-          </div>
-        </div>
+        ${card('Vocabulary', 'Topic-based word practice.', vocabStats, vocabPct, 'Practice Vocabulary', 'ItalianApp.startVocab()')}
+        ${card('Verb Conjugation', 'Presente, passato prossimo &amp; imperfetto.', verbStats, verbPct, 'Practice Verbs', 'ItalianApp.startVerbs()')}
+        ${card('Grammar Quiz', 'Articles, gender, prepositions &amp; more.', grammarStats, grammarPct, 'Practice Grammar', 'ItalianApp.startGrammarQuiz()')}
+        ${card('Sentence Builder', 'Arrange words into correct Italian sentences.', sentenceStats, sentencePct, 'Build Sentences', 'ItalianApp.startSentences()')}
+        ${card('Reading (A2/B1)', 'Passages with vocab glossary &amp; comprehension quiz.', readingStats, readingPct, 'Read &amp; Practise', 'ItalianApp.startReading()')}
+        ${card('Idioms (A2/B1)', 'Idiomatic expressions with flip cards &amp; quiz.', idiomStats, idiomPct, 'Explore Idioms', 'ItalianApp.startIdioms()')}
       </div>
       <div class="mt-3 text-center">
         <button class="btn btn-outline-secondary btn-sm" onclick="ItalianApp.resetStats()">Reset all progress</button>
@@ -222,6 +263,10 @@
 
   function renderVocabSetup() {
     const categories = Object.keys(appData.vocab)
+    const totalItems = Object.values(appData.vocab).flat().length
+    if (totalItems === 0) {
+      return emptyState('vocab-area', 'Vocabulary')
+    }
     el('vocab-area').innerHTML = `
       <div class="ita-setup-panel">
         <h3>Choose a Category</h3>
@@ -675,19 +720,32 @@
     el('verb-area').innerHTML = `
       <div class="ita-setup-panel">
         <h3>Verb Conjugation Drill</h3>
-        <p class="text-muted">You'll be given an infinitive and a subject pronoun — conjugate the verb in the present tense.</p>
+        <p class="text-muted">Choose a tense, verb group, and quiz mode.</p>
         <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
+          <div>
+            <label class="form-label mb-1">Tense</label><br>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="vtense" id="vt-pres" value="presenteIndicativo" checked>
+              <label class="btn btn-outline-light" for="vt-pres">Presente</label>
+              <input type="radio" class="btn-check" name="vtense" id="vt-pp" value="passatoProssimo">
+              <label class="btn btn-outline-light" for="vt-pp">Passato Prossimo</label>
+              <input type="radio" class="btn-check" name="vtense" id="vt-imp" value="imperfetto">
+              <label class="btn btn-outline-light" for="vt-imp">Imperfetto</label>
+            </div>
+          </div>
           <div>
             <label class="form-label mb-1">Verb Group</label><br>
             <div class="btn-group btn-group-sm" role="group">
               <input type="radio" class="btn-check" name="vfilter" id="vf-all" value="all" checked>
-              <label class="btn btn-outline-light" for="vf-all">All 30</label>
+              <label class="btn btn-outline-light" for="vf-all">All</label>
               <input type="radio" class="btn-check" name="vfilter" id="vf-are" value="-are">
               <label class="btn btn-outline-light" for="vf-are">-are</label>
               <input type="radio" class="btn-check" name="vfilter" id="vf-ere" value="-ere">
               <label class="btn btn-outline-light" for="vf-ere">-ere</label>
               <input type="radio" class="btn-check" name="vfilter" id="vf-ire" value="-ire">
               <label class="btn btn-outline-light" for="vf-ire">-ire</label>
+              <input type="radio" class="btn-check" name="vfilter" id="vf-ref" value="reflexive">
+              <label class="btn btn-outline-light" for="vf-ref">Reflexive</label>
               <input type="radio" class="btn-check" name="vfilter" id="vf-irr" value="irregular">
               <label class="btn btn-outline-light" for="vf-irr">Irregular</label>
             </div>
@@ -707,19 +765,34 @@
 
     el('start-verb-drill').addEventListener('click', () => {
       state.verbFilter = document.querySelector('input[name="vfilter"]:checked').value
-      state.verbMode = document.querySelector('input[name="verbmode"]:checked').value
+      state.verbMode   = document.querySelector('input[name="verbmode"]:checked').value
+      state.verbTense  = document.querySelector('input[name="vtense"]:checked').value
+      if (!appData.verbs || appData.verbs.length === 0) {
+        return emptyState('verb-area', 'Verb Drill')
+      }
       let verbs = appData.verbs
       if (state.verbFilter !== 'all') {
         verbs = appData.verbs.filter(v => {
           if (state.verbFilter === 'irregular') return v.group === 'irregular'
+          if (state.verbFilter === 'reflexive') return v.group === 'reflexive'
           return v.group.startsWith(state.verbFilter)
         })
       }
-      // build question queue: each verb × random pronoun (pick 10–15 questions per round)
+      // build question queue
+      const tenseKey = state.verbTense
       const questions = []
       verbs.forEach(v => {
+        // get conjugation table for the selected tense
+        const conjTable = (tenseKey === 'presenteIndicativo')
+          ? (v.tenses && v.tenses.presenteIndicativo && v.tenses.presenteIndicativo.io
+              ? v.tenses.presenteIndicativo : v.conjugation)   // fallback for A1 verbs without tenses yet
+          : (v.tenses && v.tenses[tenseKey] && v.tenses[tenseKey].io
+              ? v.tenses[tenseKey] : null)
+        if (!conjTable) return  // skip verbs without data for this tense
         const pronoun = PRONOUNS[Math.floor(Math.random() * PRONOUNS.length)]
-        questions.push({ verb: v, pronoun, answer: v.conjugation[pronoun] })
+        const answer = conjTable[pronoun]
+        if (!answer) return
+        questions.push({ verb: v, pronoun, answer, tenseKey })
       })
       state.verbQueue = shuffle(questions).slice(0, Math.min(15, questions.length))
       state.verbIndex = 0
@@ -734,6 +807,7 @@
 
     const q = state.verbQueue[state.verbIndex]
     const progress = `${state.verbIndex + 1} / ${state.verbQueue.length}`
+    const tenseLabel = { presenteIndicativo: 'Presente', passatoProssimo: 'Passato Prossimo', imperfetto: 'Imperfetto' }[q.tenseKey] || 'Presente'
 
     if (state.verbMode === 'type') {
       el('verb-area').innerHTML = `
@@ -743,9 +817,9 @@
           <span class="text-muted">${state.verbCorrect} correct</span>
         </div>
         <div class="ita-quiz-prompt">
-          <span class="ita-lang-label">${q.verb.group}</span>
+          <span class="ita-lang-label">${q.verb.group} &middot; ${tenseLabel}</span>
           <h2 class="mb-1"><span class="ita-pronoun">${q.pronoun}</span> ______</h2>
-          <p class="text-muted mb-0">${q.verb.infinitive} — <em>${q.verb.translation}</em></p>
+          <p class="text-muted mb-0">${q.verb.infinitive} &mdash; <em>${q.verb.translation}</em></p>
         </div>
         <form id="verb-form" class="mt-3" autocomplete="off">
           <div class="input-group">
@@ -762,15 +836,20 @@
       })
     } else {
       // MC mode — 3 wrong conjugations from same verb or other verbs
+      const conjTable = q.tenseKey === 'presenteIndicativo'
+        ? (q.verb.tenses && q.verb.tenses.presenteIndicativo && q.verb.tenses.presenteIndicativo.io
+            ? q.verb.tenses.presenteIndicativo : q.verb.conjugation)
+        : (q.verb.tenses && q.verb.tenses[q.tenseKey] ? q.verb.tenses[q.tenseKey] : q.verb.conjugation)
       const wrongs = []
-      // other pronouns of same verb
-      const otherFromSame = Object.entries(q.verb.conjugation)
+      const otherFromSame = Object.entries(conjTable)
         .filter(([p, c]) => p !== q.pronoun && c !== q.answer)
         .map(([, c]) => c)
       wrongs.push(...pick(otherFromSame, 2))
-      // from other verbs same pronoun
       const otherVerbs = appData.verbs.filter(v => v.infinitive !== q.verb.infinitive)
-      const fromOthers = pick(otherVerbs, 3).map(v => v.conjugation[q.pronoun]).filter(c => c !== q.answer)
+      const fromOthers = pick(otherVerbs, 3).map(v => {
+        const t = v.tenses && v.tenses[q.tenseKey] && v.tenses[q.tenseKey].io ? v.tenses[q.tenseKey] : v.conjugation
+        return t ? t[q.pronoun] : null
+      }).filter(c => c && c !== q.answer)
       wrongs.push(...fromOthers)
       const uniqueWrongs = [...new Set(wrongs)].filter(w => w !== q.answer).slice(0, 3)
       const options = shuffle([q.answer, ...uniqueWrongs])
@@ -782,9 +861,9 @@
           <span class="text-muted">${state.verbCorrect} correct</span>
         </div>
         <div class="ita-quiz-prompt">
-          <span class="ita-lang-label">${q.verb.group}</span>
+          <span class="ita-lang-label">${q.verb.group} &middot; ${tenseLabel}</span>
           <h2 class="mb-1"><span class="ita-pronoun">${q.pronoun}</span> ______</h2>
-          <p class="text-muted mb-0">${q.verb.infinitive} — <em>${q.verb.translation}</em></p>
+          <p class="text-muted mb-0">${q.verb.infinitive} &mdash; <em>${q.verb.translation}</em></p>
         </div>
         <div class="row g-2 mt-3" id="verb-mc-options">
           ${options.map(opt => `
@@ -874,6 +953,9 @@
   // ── Grammar Quiz ─────────────────────────────────────────────────
   function startGrammarQuiz() {
     showSection('grammarquiz')
+    if (!appData.grammarQuiz || appData.grammarQuiz.length === 0) {
+      return emptyState('grammarquiz-area', 'Grammar Quiz')
+    }
     renderGrammarQuizSetup()
   }
 
@@ -992,6 +1074,9 @@
   // ── Sentence Builder ─────────────────────────────────────────────
   function startSentences() {
     showSection('sentences')
+    if (!appData.sentences || appData.sentences.length === 0) {
+      return emptyState('sentence-area', 'Sentence Builder')
+    }
     state.sentenceQueue = shuffle(appData.sentences).slice(0, 12)
     state.sentenceIndex = 0
     state.sentenceCorrect = 0
@@ -1075,7 +1160,7 @@
   }
 
   function renderSentenceResults() {
-    const pct = Math.round(state.sentenceCorrect / state.sentenceTotal * 100)
+    const pct = state.sentenceTotal > 0 ? Math.round(state.sentenceCorrect / state.sentenceTotal * 100) : 0
     const dash = 2 * Math.PI * 52
     const offset = dash - (dash * pct / 100)
     saveStats('sentences', state.sentenceCorrect, state.sentenceTotal)
@@ -1098,7 +1183,485 @@
       </div>`
   }
 
+  // ── Reading Comprehension ────────────────────────────────────────
+  function readingLevelBadge(level) {
+    const map = { 1: ['bg-success', 'A1'], 2: ['bg-info text-dark', 'A2'], 3: ['bg-warning text-dark', 'B1'] }
+    const [cls, label] = map[level] || ['bg-secondary', level]
+    return `<span class="badge ${cls}">${label}</span>`
+  }
+
+  function startReading() {
+    showSection('reading')
+    renderReadingList()
+  }
+
+  function renderReadingList() {
+    const passages = appData.reading
+    if (!passages.length) {
+      el('reading-area').innerHTML = `<div class="alert alert-info mt-4">No reading passages available for the current level. Try selecting "All" or "A2" in the level filter.</div>`
+      return
+    }
+    el('reading-area').innerHTML = `
+      <h3 class="mb-3">Reading Comprehension</h3>
+      <div class="row g-3">
+        ${passages.map(p => `
+          <div class="col-md-6">
+            <div class="content-card h-100 ita-reading-card" role="button" tabindex="0" data-id="${p._id}">
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h5 class="card-title mb-0">${p.title}</h5>
+                  ${readingLevelBadge(p.level)}
+                </div>
+                <p class="text-muted small mb-2">${(p.tags || []).join(' · ')}</p>
+                <p class="text-muted small">${p.questions ? p.questions.length : 0} comprehension questions</p>
+                <button class="btn btn-sm btn-primary mt-auto ita-reading-open" data-id="${p._id}">Read &amp; Practise</button>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>`
+
+    el('reading-area').querySelectorAll('.ita-reading-open').forEach(btn => {
+      btn.addEventListener('click', () => openPassage(btn.dataset.id))
+    })
+  }
+
+  function openPassage(id) {
+    const passage = appData.reading.find(p => p._id === id)
+    if (!passage) return
+    state.readingPassage = passage
+    state.readingQuizIndex = 0
+    state.readingQuizCorrect = 0
+    state.readingQuizTotal = passage.questions ? passage.questions.length : 0
+
+    const audioHook = passage.audioUrl
+      ? `<button class="btn btn-sm btn-outline-light mb-3" onclick="window.open('${passage.audioUrl}')">&#9654; Listen</button>`
+      : ''
+
+    const glossaryHtml = (passage.vocabGlossary || []).length
+      ? `<div class="ita-reading-glossary mt-4">
+          <h6>Vocab Glossary</h6>
+          <div class="row g-2">
+            ${passage.vocabGlossary.map(g => `
+              <div class="col-6 col-md-4">
+                <span class="ita-gloss-item"><strong>${g.italian}</strong> — ${g.english}</span>
+              </div>`).join('')}
+          </div>
+        </div>`
+      : ''
+
+    el('reading-area').innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-sm btn-outline-light" onclick="ItalianApp.startReading()">← Back</button>
+        ${readingLevelBadge(passage.level)}
+      </div>
+      <h3>${passage.title}</h3>
+      ${audioHook}
+      <div class="ita-reading-body">${passage.body}</div>
+      ${glossaryHtml}
+      <div class="mt-4">
+        ${passage.questions && passage.questions.length
+          ? `<button class="btn btn-primary" id="start-reading-quiz">Start Comprehension Quiz (${passage.questions.length} questions)</button>`
+          : ''}
+      </div>`
+
+    // Tooltip glossary on marked words
+    el('reading-area').querySelectorAll('mark[data-word]').forEach(mark => {
+      const word = mark.dataset.word
+      const gloss = (passage.vocabGlossary || []).find(g => g.italian === word)
+      if (gloss) {
+        mark.title = gloss.english
+        mark.classList.add('ita-gloss-mark')
+      }
+    })
+
+    const quizBtn = document.getElementById('start-reading-quiz')
+    if (quizBtn) quizBtn.addEventListener('click', renderReadingQuestion)
+  }
+
+  function renderReadingQuestion() {
+    const passage = state.readingPassage
+    if (!passage || state.readingQuizIndex >= passage.questions.length) return renderReadingResults()
+    const q = passage.questions[state.readingQuizIndex]
+    const progress = `${state.readingQuizIndex + 1} / ${passage.questions.length}`
+    const opts = shuffle(q.options.map((o, i) => ({ text: o, idx: i })))
+
+    el('reading-area').innerHTML = `
+      <div class="ita-quiz-header">
+        <span class="text-muted">${progress}</span>
+        <div class="ita-progress-bar"><div class="ita-progress-fill" style="width:${(state.readingQuizIndex / passage.questions.length) * 100}%"></div></div>
+        <span class="text-muted">${state.readingQuizCorrect} correct</span>
+      </div>
+      <div class="ita-quiz-prompt mb-3">
+        <span class="ita-lang-label">${passage.title}</span>
+        <p style="font-size:1.1rem;margin-bottom:0">${q.text}</p>
+      </div>
+      <div class="d-grid gap-2">
+        ${opts.map(o => `<button class="btn btn-outline-light ita-option-btn" data-idx="${o.idx}">${o.text}</button>`).join('')}
+      </div>
+      <div id="reading-feedback" class="mt-3"></div>`
+
+    let answered = false
+    el('reading-area').querySelectorAll('.ita-option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (answered) return
+        answered = true
+        const chosen = parseInt(btn.dataset.idx, 10)
+        const correct = chosen === q.correctIndex
+        if (correct) state.readingQuizCorrect++
+        el('reading-area').querySelectorAll('.ita-option-btn').forEach(b => {
+          b.disabled = true
+          if (parseInt(b.dataset.idx, 10) === q.correctIndex) b.classList.add('ita-correct')
+          else if (b === btn && !correct) b.classList.add('ita-wrong')
+        })
+        el('reading-feedback').innerHTML = correct
+          ? '<p class="ita-feedback-correct">Correct!</p>'
+          : `<p class="ita-feedback-wrong">The answer is: <strong>${q.options[q.correctIndex]}</strong></p>`
+        setTimeout(() => { state.readingQuizIndex++; renderReadingQuestion() }, 1300)
+      })
+    })
+  }
+
+  function renderReadingResults() {
+    const total = state.readingQuizTotal
+    const correct = state.readingQuizCorrect
+    const pct = total ? Math.round(correct / total * 100) : 0
+    const dash = 2 * Math.PI * 52
+    saveStats('reading', correct, total)
+    el('reading-area').innerHTML = `
+      <div class="ita-results text-center">
+        <h3>Quiz Complete!</h3>
+        <div class="ita-score-ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="8"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--brand)" stroke-width="8"
+              stroke-dasharray="${dash}" stroke-dashoffset="${dash - (dash * pct / 100)}"
+              stroke-linecap="round" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="ita-score-text">${pct}%</div>
+        </div>
+        <p><strong>${correct}</strong> / ${total} correct</p>
+        <button class="btn btn-primary me-2" onclick="ItalianApp.startReading()">More Passages</button>
+        <button class="btn btn-outline-light" onclick="ItalianApp.showSection('dashboard')">Dashboard</button>
+      </div>`
+  }
+
+  // ── Idioms ────────────────────────────────────────────────────────
+  function startIdioms() {
+    showSection('idioms')
+    renderIdiomsSetup()
+  }
+
+  function renderIdiomsSetup() {
+    const idioms = appData.idioms
+    if (!idioms.length) {
+      el('idioms-area').innerHTML = `<div class="alert alert-info mt-4">No idioms available for the current level. Try selecting "All" or "A2" in the level filter.</div>`
+      return
+    }
+    el('idioms-area').innerHTML = `
+      <div class="ita-setup-panel">
+        <h3>Italian Idioms</h3>
+        <p class="text-muted">${idioms.length} expressions available at the current level.</p>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="btn btn-primary btn-lg" id="idioms-study-btn">Study Mode (Flip Cards)</button>
+          <button class="btn btn-outline-light btn-lg" id="idioms-quiz-btn">Quiz Mode</button>
+        </div>
+      </div>`
+    el('idioms-study-btn').addEventListener('click', () => {
+      state.idiomMode = 'study'
+      state.idiomStudyIndex = 0
+      renderIdiomStudy()
+    })
+    el('idioms-quiz-btn').addEventListener('click', () => {
+      state.idiomMode = 'quiz'
+      state.idiomQuizQueue = shuffle(idioms).slice(0, Math.min(15, idioms.length))
+      state.idiomQuizIndex = 0
+      state.idiomQuizCorrect = 0
+      state.idiomQuizTotal = state.idiomQuizQueue.length
+      renderIdiomQuiz()
+    })
+  }
+
+  function renderIdiomStudy() {
+    const idioms = appData.idioms
+    if (!idioms.length) return renderIdiomsSetup()
+    const i = state.idiomStudyIndex
+    const idiom = idioms[i]
+    const levelLabel = idiom.difficulty === 3 ? 'B1' : 'A2'
+    const levelBadge = `<span class="badge ${idiom.difficulty === 3 ? 'bg-warning text-dark' : 'bg-info text-dark'}">${levelLabel}</span>`
+    const audioHook = idiom.audioUrl
+      ? `<button class="btn btn-sm btn-outline-light mt-2" onclick="window.open('${idiom.audioUrl}')">&#9654; Listen</button>`
+      : ''
+
+    el('idioms-area').innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn btn-sm btn-outline-light" onclick="ItalianApp.startIdioms()">← Back</button>
+        <span class="text-muted">${i + 1} / ${idioms.length}</span>
+        ${levelBadge}
+      </div>
+      <div class="ita-idiom-card" id="idiom-flip-card">
+        <div class="ita-idiom-flip-inner" id="idiom-flip-inner">
+          <div class="ita-idiom-front">
+            <div class="ita-idiom-text">${idiom.idiom}</div>
+            <p class="text-muted mt-3 mb-0 small">Tap to reveal meaning</p>
+            ${audioHook}
+          </div>
+          <div class="ita-idiom-back">
+            <div class="ita-idiom-meaning"><strong>${idiom.meaning}</strong></div>
+            ${idiom.literalTranslation ? `<p class="text-muted mt-2 mb-1 small"><em>Literal:</em> ${idiom.literalTranslation}</p>` : ''}
+            <hr>
+            <div class="ita-idiom-example-it"><em>${idiom.example && idiom.example.it ? idiom.example.it : ''}</em></div>
+            <div class="ita-idiom-example-en text-muted small mt-1">${idiom.example && idiom.example.en ? idiom.example.en : ''}</div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-center gap-3 mt-4">
+        <button class="btn btn-outline-light" id="idiom-prev" ${i === 0 ? 'disabled' : ''}>← Prev</button>
+        <button class="btn btn-outline-light" id="idiom-next" ${i >= idioms.length - 1 ? 'disabled' : ''}>Next →</button>
+      </div>`
+
+    el('idiom-flip-card').addEventListener('click', () => {
+      el('idiom-flip-inner').classList.toggle('ita-idiom-flipped')
+    })
+    const prevBtn = el('idiom-prev')
+    const nextBtn = el('idiom-next')
+    if (prevBtn) prevBtn.addEventListener('click', () => { state.idiomStudyIndex--; renderIdiomStudy() })
+    if (nextBtn) nextBtn.addEventListener('click', () => { state.idiomStudyIndex++; renderIdiomStudy() })
+  }
+
+  function renderIdiomQuiz() {
+    if (state.idiomQuizIndex >= state.idiomQuizQueue.length) return renderIdiomResults()
+    const idiom = state.idiomQuizQueue[state.idiomQuizIndex]
+    const progress = `${state.idiomQuizIndex + 1} / ${state.idiomQuizQueue.length}`
+    // Quiz: show the Italian idiom, pick the correct English meaning
+    const wrongPool = appData.idioms.filter(x => x._id !== idiom._id)
+    const wrongs = pick(wrongPool, 3).map(x => x.meaning)
+    const options = shuffle([idiom.meaning, ...wrongs])
+
+    el('idioms-area').innerHTML = `
+      <div class="ita-quiz-header">
+        <span class="text-muted">${progress}</span>
+        <div class="ita-progress-bar"><div class="ita-progress-fill" style="width:${(state.idiomQuizIndex / state.idiomQuizQueue.length) * 100}%"></div></div>
+        <span class="text-muted">${state.idiomQuizCorrect} correct</span>
+      </div>
+      <div class="ita-quiz-prompt mb-3">
+        <span class="ita-lang-label">What does this idiom mean?</span>
+        <h3 class="mb-0">${idiom.idiom}</h3>
+        ${idiom.literalTranslation ? `<p class="text-muted small mb-0 mt-1"><em>Literal:</em> ${idiom.literalTranslation}</p>` : ''}
+      </div>
+      <div class="d-grid gap-2">
+        ${options.map(o => `<button class="btn btn-outline-light ita-option-btn" data-val="${o.replace(/"/g, '&quot;')}">${o}</button>`).join('')}
+      </div>
+      <div id="idiom-feedback" class="mt-3"></div>`
+
+    let answered = false
+    el('idioms-area').querySelectorAll('.ita-option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (answered) return
+        answered = true
+        const chosen = btn.dataset.val
+        const correct = chosen === idiom.meaning
+        if (correct) state.idiomQuizCorrect++
+        el('idioms-area').querySelectorAll('.ita-option-btn').forEach(b => {
+          b.disabled = true
+          if (b.dataset.val === idiom.meaning) b.classList.add('ita-correct')
+          else if (b === btn && !correct) b.classList.add('ita-wrong')
+        })
+        el('idiom-feedback').innerHTML = correct
+          ? `<p class="ita-feedback-correct">Esatto! <em>${idiom.example && idiom.example.it ? idiom.example.it : ''}</em></p>`
+          : `<p class="ita-feedback-wrong">It means: <strong>${idiom.meaning}</strong></p>`
+        setTimeout(() => { state.idiomQuizIndex++; renderIdiomQuiz() }, 1400)
+      })
+    })
+  }
+
+  function renderIdiomResults() {
+    const total   = state.idiomQuizTotal
+    const correct = state.idiomQuizCorrect
+    const pct     = total ? Math.round(correct / total * 100) : 0
+    const dash     = 2 * Math.PI * 52
+    saveStats('idioms', correct, total)
+    el('idioms-area').innerHTML = `
+      <div class="ita-results text-center">
+        <h3>Idioms Quiz Complete!</h3>
+        <div class="ita-score-ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border)" stroke-width="8"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--brand)" stroke-width="8"
+              stroke-dasharray="${dash}" stroke-dashoffset="${dash - (dash * pct / 100)}"
+              stroke-linecap="round" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="ita-score-text">${pct}%</div>
+        </div>
+        <p><strong>${correct}</strong> / ${total} correct</p>
+        <button class="btn btn-primary me-2" onclick="ItalianApp.startIdioms()">Try Again</button>
+        <button class="btn btn-outline-light" onclick="ItalianApp.showSection('dashboard')">Dashboard</button>
+      </div>`
+  }
+
   // ── Grammar Reference ────────────────────────────────────────────
+  // ── Verb Reference helpers ───────────────────────────────────────
+  const TENSE_LABELS = {
+    presenteIndicativo: 'Presente',
+    passatoProssimo:    'Passato Prossimo',
+    imperfetto:         'Imperfetto'
+  }
+  const DIFF_BADGE = { 1: ['bg-success',          'A1'],
+                       2: ['bg-info text-dark',    'A2'],
+                       3: ['bg-warning text-dark', 'B1'] }
+
+  function diffBadge(d) {
+    const [cls, label] = DIFF_BADGE[d] || ['bg-secondary', d]
+    return `<span class="badge ${cls}">${label}</span>`
+  }
+
+  function groupBadge(g) {
+    return `<span class="badge bg-secondary">${g}</span>`
+  }
+
+  function filteredVerbs() {
+    const search = state.verbRefSearch.toLowerCase().trim()
+    const group  = state.verbRefGroup
+    return appData.verbs.filter(v => {
+      if (group !== 'all' && v.group !== group) return false
+      if (search && !v.infinitive.includes(search) && !v.translation.toLowerCase().includes(search)) return false
+      return true
+    })
+  }
+
+  function renderVerbRefPage() {
+    const all      = filteredVerbs()
+    const perPage  = 20
+    const totalPg  = Math.max(1, Math.ceil(all.length / perPage))
+    if (state.verbRefPage >= totalPg) state.verbRefPage = totalPg - 1
+    if (state.verbRefPage < 0)        state.verbRefPage = 0
+    const slice   = all.slice(state.verbRefPage * perPage, (state.verbRefPage + 1) * perPage)
+    const prevDis = state.verbRefPage === 0 ? 'disabled' : ''
+    const nextDis = state.verbRefPage >= totalPg - 1 ? 'disabled' : ''
+
+    // collect unique groups for filter
+    const groups = ['all', ...new Set(appData.verbs.map(v => v.group))]
+
+    el('verb-ref-toolbar').innerHTML = `
+      <div class="ita-verb-ref-left">
+        <input id="verb-ref-search" type="search" class="ita-verb-ref-search form-control form-control-sm"
+          placeholder="Search verbs…" value="${state.verbRefSearch}" aria-label="Search verbs">
+        <select id="verb-ref-group" class="ita-verb-ref-filter form-select form-select-sm" aria-label="Filter by group">
+          ${groups.map(g => `<option value="${g}" ${g === state.verbRefGroup ? 'selected' : ''}>${g === 'all' ? 'All groups' : g}</option>`).join('')}
+        </select>
+      </div>
+      <div class="ita-verb-ref-right">
+        <button class="btn btn-sm btn-outline-secondary ${prevDis}" id="verb-ref-prev" ${prevDis}>&#8592; Prev</button>
+        <span class="ita-verb-ref-pginfo">Page ${state.verbRefPage + 1} of ${totalPg} <small class="text-muted">(${all.length} verbs)</small></span>
+        <button class="btn btn-sm btn-outline-secondary ${nextDis}" id="verb-ref-next" ${nextDis}>Next &#8594;</button>
+      </div>`
+
+    el('verb-ref-grid').innerHTML = slice.map((v, i) => {
+      const globalIdx = appData.verbs.indexOf(v)
+      return `
+        <div class="ita-verb-ref-card" data-verb-idx="${globalIdx}" role="button" tabindex="0">
+          <div class="ita-vrc-infinitive">${v.infinitive}</div>
+          <div class="ita-vrc-translation">${v.translation}</div>
+          <div class="ita-vrc-badges">${diffBadge(v.difficulty)} ${groupBadge(v.group)}</div>
+        </div>`
+    }).join('')
+
+    // toolbar events
+    const searchInput = el('verb-ref-search')
+    const groupSel    = el('verb-ref-group')
+    searchInput.addEventListener('input', () => {
+      state.verbRefSearch = searchInput.value
+      state.verbRefPage   = 0
+      renderVerbRefPage()
+    })
+    groupSel.addEventListener('change', () => {
+      state.verbRefGroup = groupSel.value
+      state.verbRefPage  = 0
+      renderVerbRefPage()
+    })
+    el('verb-ref-prev') && el('verb-ref-prev').addEventListener('click', () => {
+      if (state.verbRefPage > 0) { state.verbRefPage--; renderVerbRefPage() }
+    })
+    el('verb-ref-next') && el('verb-ref-next').addEventListener('click', () => {
+      if (state.verbRefPage < totalPg - 1) { state.verbRefPage++; renderVerbRefPage() }
+    })
+
+    // card click → modal
+    el('verb-ref-grid').querySelectorAll('.ita-verb-ref-card').forEach(card => {
+      card.addEventListener('click',   () => openVerbRefModal(appData.verbs[+card.dataset.verbIdx]))
+      card.addEventListener('keydown', e => { if (e.key === 'Enter') openVerbRefModal(appData.verbs[+card.dataset.verbIdx]) })
+    })
+  }
+
+  function openVerbRefModal(verb) {
+    state.verbRefTense = state.verbRefTense || 'presenteIndicativo'
+    const TENSE_KEYS = ['presenteIndicativo', 'passatoProssimo', 'imperfetto']
+    const PRONOUNS_LIST = ['io', 'tu', 'lui/lei', 'noi', 'voi', 'loro']
+
+    const renderTenseTable = (tenseKey) => {
+      const conj = (verb.tenses || {})[tenseKey] || verb.conjugation || {}
+      return `
+        <table class="ita-tense-table">
+          ${PRONOUNS_LIST.map(p => `<tr><td class="ita-pron">${p}</td><td class="ita-form">${conj[p] || '—'}</td></tr>`).join('')}
+        </table>`
+    }
+
+    const renderModal = () => {
+      el('verb-ref-modal-overlay').innerHTML = `
+        <div class="ita-verb-modal" role="dialog" aria-modal="true" aria-label="${verb.infinitive} conjugation">
+          <div class="ita-verb-modal-header">
+            <div>
+              <span class="ita-verb-modal-title">${verb.infinitive}</span>
+              ${diffBadge(verb.difficulty)} ${groupBadge(verb.group)}
+              <div class="ita-verb-modal-trans">${verb.translation}</div>
+            </div>
+            <button class="btn-close btn-close-white" id="verb-modal-close" aria-label="Close"></button>
+          </div>
+          <div class="ita-verb-modal-tabs" role="tablist">
+            ${TENSE_KEYS.map(k => `
+              <button class="ita-verb-modal-tab ${k === state.verbRefTense ? 'active' : ''}"
+                data-tense="${k}" role="tab" aria-selected="${k === state.verbRefTense}">
+                ${TENSE_LABELS[k]}
+              </button>`).join('')}
+          </div>
+          <div class="ita-verb-modal-body">
+            <div class="ita-tense-section">
+              <h6 class="ita-tense-heading">${TENSE_LABELS[state.verbRefTense]}</h6>
+              ${state.verbRefTense === 'passatoProssimo' ? `<p class="ita-aux-note">Auxiliary: <strong>${verb.auxiliaryVerb || '—'}</strong> + <em>${verb.pastParticiple || '—'}</em></p>` : ''}
+              ${renderTenseTable(state.verbRefTense)}
+            </div>
+            <div class="ita-verb-modal-examples">
+              <h6 class="ita-examples-heading">Examples</h6>
+              ${(verb.examples || [verb.example]).filter(Boolean).map(ex =>
+                `<div class="ita-ex-pair"><div class="ita-ex-it"><em>${ex.it}</em></div><div class="ita-ex-en">${ex.en}</div></div>`
+              ).join('')}
+            </div>
+          </div>
+        </div>`
+
+      el('verb-modal-close').addEventListener('click', closeModal)
+      el('verb-ref-modal-overlay').querySelectorAll('.ita-verb-modal-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.verbRefTense = btn.dataset.tense
+          renderModal()
+        })
+      })
+    }
+
+    const closeModal = () => {
+      el('verb-ref-modal-overlay').classList.add('d-none')
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', escHandler)
+    }
+    const escHandler = e => { if (e.key === 'Escape') closeModal() }
+
+    el('verb-ref-modal-overlay').classList.remove('d-none')
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', escHandler)
+    el('verb-ref-modal-overlay').onclick = e => { if (e.target === el('verb-ref-modal-overlay')) closeModal() }
+    renderModal()
+  }
+
   function renderGrammar() {
     showSection('grammar')
     el('grammar-area').innerHTML = `
@@ -1117,44 +1680,16 @@
           </div>
         `).join('')}
       </div>
+
       <div class="mt-4">
-        <h3>All 30 Verbs — Present Tense Reference</h3>
-        <p class="text-muted mb-3" style="font-size:0.9rem">Click any card to enlarge &amp; flip for examples</p>
-        <div class="ita-verb-ref-grid">
-          ${appData.verbs.map((v, idx) => `
-            <div class="ita-verb-ref-card" data-verb-idx="${idx}" role="button" tabindex="0">
-              <div class="ita-verb-flip-inner">
-                <div class="ita-verb-front">
-                  <h5 class="card-title mb-1">${v.infinitive} <span class="badge bg-secondary">${v.group}</span></h5>
-                  <p class="text-muted mb-2" style="font-size:0.85rem">${v.translation}</p>
-                  <table class="ita-conj-table">
-                    ${PRONOUNS.map(p => `<tr><td>${p}</td><td><strong>${v.conjugation[p]}</strong></td></tr>`).join('')}
-                  </table>
-                  <p class="text-muted mt-2 mb-0" style="font-size:0.82rem"><em>${v.example.it}</em><br>${v.example.en}</p>
-                </div>
-                <div class="ita-verb-back">
-                  <h5 class="card-title mb-1">${v.infinitive} <span class="badge bg-secondary">${v.group}</span></h5>
-                  <p class="text-muted mb-2" style="font-size:0.85rem">${v.translation}</p>
-                  <h6 style="color:var(--brand);margin-bottom:0.6rem">Usage Examples</h6>
-                  ${(v.examples || []).map(ex => `
-                    <div class="ita-example-pair">
-                      <div class="ita-example-it"><em>${ex.it}</em></div>
-                      <div class="ita-example-en">${ex.en}</div>
-                    </div>
-                  `).join('')}
-                  <p class="text-muted mt-2 mb-0" style="font-size:0.78rem">Click to flip back</p>
-                </div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
+        <h3 class="mb-1">Verb Reference</h3>
+        <p class="text-muted mb-3" style="font-size:0.9rem">Click any verb to see full conjugation across tenses.</p>
+        <div class="ita-verb-ref-toolbar" id="verb-ref-toolbar"></div>
+        <div class="ita-verb-ref-grid" id="verb-ref-grid"></div>
       </div>
 
-      <!-- Overlay for enlarged card -->
-      <div class="ita-card-overlay d-none" id="verb-card-overlay">
-        <div class="ita-card-overlay-backdrop"></div>
-        <div class="ita-card-enlarged" id="verb-card-enlarged"></div>
-      </div>`
+      <!-- Verb conjugation modal -->
+      <div class="ita-verb-modal-overlay d-none" id="verb-ref-modal-overlay"></div>`
 
     // accordion toggles
     el('grammar-area').querySelectorAll('.ita-grammar-toggle').forEach(toggle => {
@@ -1166,39 +1701,7 @@
       toggle.addEventListener('keydown', e => { if (e.key === 'Enter') toggle.click() })
     })
 
-    // verb card click-to-enlarge
-    el('grammar-area').querySelectorAll('.ita-verb-ref-card').forEach(card => {
-      card.addEventListener('click', () => openVerbCard(card))
-      card.addEventListener('keydown', e => { if (e.key === 'Enter') openVerbCard(card) })
-    })
-  }
-
-  function openVerbCard(card) {
-    const overlay = el('verb-card-overlay')
-    const enlarged = el('verb-card-enlarged')
-    const clone = card.cloneNode(true)
-    clone.classList.add('ita-enlarged-active')
-    enlarged.innerHTML = ''
-    enlarged.appendChild(clone)
-    overlay.classList.remove('d-none')
-    document.body.style.overflow = 'hidden'
-
-    // flip on click inside enlarged card
-    clone.addEventListener('click', e => {
-      e.stopPropagation()
-      clone.classList.toggle('ita-verb-flipped')
-    })
-
-    // close on backdrop or Escape
-    const close = () => {
-      overlay.classList.add('d-none')
-      document.body.style.overflow = ''
-    }
-    overlay.querySelector('.ita-card-overlay-backdrop').onclick = close
-    const escHandler = e => {
-      if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escHandler) }
-    }
-    document.addEventListener('keydown', escHandler)
+    renderVerbRefPage()
   }
 
   // ── Reset ────────────────────────────────────────────────────────
@@ -1212,24 +1715,43 @@
   // ── Public API ───────────────────────────────────────────────────
   window.ItalianApp = {
     showSection,
+    setLevel,
     startVocab,
     startVerbs,
     startGrammarQuiz,
     startSentences,
+    startReading,
+    openPassage,
+    startIdioms,
+    renderIdiomStudy,
+    renderReadingPassage: openPassage, // alias for results back-button
+    openVerbRefModal,
     renderGrammar,
     resetStats,
     async init() {
-      // Show loading spinner inside dash-content while data fetches from API
       const dashContent = el('dash-content')
       if (dashContent) {
         dashContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading…</span></div><p class="mt-3 text-muted">Loading Italian content…</p></div>'
       }
 
+      // Restore level preference
+      try {
+        const savedLevel = localStorage.getItem('italian_level') || 'all'
+        state.level = savedLevel
+        document.querySelectorAll('.ita-level-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.level === savedLevel)
+        })
+      } catch (_) { /* localStorage unavailable */ }
+
+      // Wire level selector
+      document.querySelectorAll('.ita-level-btn').forEach(btn => {
+        btn.addEventListener('click', () => setLevel(btn.dataset.level))
+      })
+
       try {
         await loadData()
       } catch (err) {
         console.error('Italian app failed to load data:', err)
-        const dashContent = el('dash-content')
         if (dashContent) {
           dashContent.innerHTML = '<div class="alert alert-danger m-3">Failed to load content. Please refresh the page.</div>'
         }
@@ -1240,11 +1762,13 @@
         tab.addEventListener('click', e => {
           e.preventDefault()
           const section = tab.dataset.section
-          if (section === 'vocab') startVocab()
-          else if (section === 'verbs') startVerbs()
+          if      (section === 'vocab')       startVocab()
+          else if (section === 'verbs')       startVerbs()
           else if (section === 'grammarquiz') startGrammarQuiz()
-          else if (section === 'sentences') startSentences()
-          else if (section === 'grammar') renderGrammar()
+          else if (section === 'sentences')   startSentences()
+          else if (section === 'reading')     startReading()
+          else if (section === 'idioms')      startIdioms()
+          else if (section === 'grammar')     renderGrammar()
           else showSection(section)
         })
       })
