@@ -6,10 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style-lascuola.css">
     <title>Italian — Intentional Owl</title>
 </head>
-<body>
+<body class="la-scuola">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/"><img src="/owl3.png" alt="Intentional Owl"></a>
@@ -76,6 +80,8 @@
                 <p class="lead">Build vocabulary, master verb conjugations, read Italian texts, and explore idioms &mdash; A1 through B1.</p>
             </div>
             <div id="dash-content"></div>
+            <!-- Lesson of the Day (populated by JS) -->
+            <div id="lesson-of-day"></div>
         </div>
 
         <!-- VOCABULARY -->
@@ -111,6 +117,12 @@
         <!-- GRAMMAR REFERENCE -->
         <div id="section-grammar" class="ita-section d-none">
             <div id="grammar-area"></div>
+            <!-- Grammar pagination -->
+            <div class="ls-grammar-nav" id="ls-grammar-nav" style="display:none">
+                <button class="btn btn-outline-secondary" id="ls-grammar-prev">← Prev</button>
+                <span class="ls-grammar-page-indicator" id="ls-grammar-indicator"></span>
+                <button class="btn btn-outline-secondary" id="ls-grammar-next">Next →</button>
+            </div>
         </div>
 
     </div><!-- /.page-shell -->
