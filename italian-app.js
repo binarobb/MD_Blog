@@ -1717,6 +1717,47 @@
     renderVerbRefPage()
   }
 
+  // ── Streak ───────────────────────────────────────────────────────
+  function initStreak() {
+    const STREAK_KEY = 'italian_streak'
+    const today = new Date().toISOString().slice(0, 10)
+    let data = {}
+    try { data = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}') } catch (_) {}
+    const last = data.lastDate || ''
+    const streak = data.streak || 0
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    let newStreak = streak
+    if (last === today) {
+      newStreak = streak
+    } else if (last === yesterday) {
+      newStreak = streak + 1
+    } else if (last !== today) {
+      newStreak = 1
+    }
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify({ streak: newStreak, lastDate: today })) } catch (_) {}
+    const countEl = document.getElementById('ita-streak-count')
+    const streakEl = document.getElementById('ita-streak')
+    if (countEl) countEl.textContent = newStreak
+    if (streakEl && newStreak > 1) streakEl.classList.add('streak-lit')
+  }
+
+  // Mark streak active on any answered question (call after any correct/wrong)
+  function bumpStreak() {
+    const STREAK_KEY = 'italian_streak'
+    const today = new Date().toISOString().slice(0, 10)
+    let data = {}
+    try { data = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}') } catch (_) {}
+    if (data.lastDate !== today) {
+      data.streak = (data.streak || 0) + 1
+      data.lastDate = today
+      try { localStorage.setItem(STREAK_KEY, JSON.stringify(data)) } catch (_) {}
+      const countEl = document.getElementById('ita-streak-count')
+      const streakEl = document.getElementById('ita-streak')
+      if (countEl) countEl.textContent = data.streak
+      if (streakEl) streakEl.classList.add('streak-lit')
+    }
+  }
+
   // ── Reset ────────────────────────────────────────────────────────
   function resetStats() {
     if (confirm('Reset all Italian learning progress?')) {
@@ -1785,6 +1826,8 @@
           else showSection(section)
         })
       })
+
+      initStreak()
       showSection('dashboard')
     }
   }

@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style-tuscan.css">
     <title>Italian — Intentional Owl</title>
 </head>
 <body>
@@ -48,6 +52,11 @@
                 <button class="ita-level-btn" data-level="a2">A2</button>
                 <button class="ita-level-btn" data-level="b1">B1</button>
             </div>
+            <div class="ita-streak" id="ita-streak" title="Your practice streak">
+                <span class="ita-streak-flame">🔥</span>
+                <span class="ita-streak-count" id="ita-streak-count">0</span>
+                <span class="ita-streak-label">day streak</span>
+            </div>
         </div>
     </div>
 
@@ -63,6 +72,7 @@
                 <a href="#" class="ita-tab" data-section="reading">Reading</a>
                 <a href="#" class="ita-tab" data-section="idioms">Idioms</a>
                 <a href="#" class="ita-tab" data-section="grammar">Reference</a>
+                <a href="#" class="ita-tab" data-section="speak">🎙 Speak</a>
             </div>
         </div>
     </div>
@@ -111,6 +121,21 @@
         <!-- GRAMMAR REFERENCE -->
         <div id="section-grammar" class="ita-section d-none">
             <div id="grammar-area"></div>
+        </div>
+
+        <!-- SPEAK (Gufo) -->
+        <div id="section-speak" class="ita-section d-none">
+            <div class="tuscan-speak-intro">
+                <div class="tuscan-speak-owl">🦉</div>
+                <h2>Speak with Gufo</h2>
+                <p class="lead">Gufo is your AI Italian tutor. Have a real conversation — ask for help with vocabulary, grammar, or just practice speaking freely.</p>
+                <div class="tuscan-speak-tips">
+                    <div class="tuscan-tip"><strong>Ciao Gufo!</strong> — Try a simple greeting</div>
+                    <div class="tuscan-tip"><strong>Come si dice...?</strong> — Ask how to say something</div>
+                    <div class="tuscan-tip"><strong>Correggimi, per favore</strong> — Ask to be corrected</div>
+                </div>
+                <p class="tuscan-speak-cta">Click the <strong>Gufo</strong> button in the bottom-right to start.</p>
+            </div>
         </div>
 
     </div><!-- /.page-shell -->
