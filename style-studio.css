@@ -1,0 +1,297 @@
+/*
+ * style-studio.css — Option B: Studio
+ * Sidebar navigation, colour-coded sections, Plus Jakarta Sans
+ * Layered on top of base style.css
+ */
+
+/* ── Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --bg:           #0f1117;
+  --surface:      #171b24;
+  --surface-soft: #1f2633;
+  --border:       #2b3444;
+  --text:         #e8edf5;
+  --text-soft:    #a6b0c0;
+  --brand:        #6cb7ff;
+
+  /* Per-section accent palette */
+  --c-vocab:    #2dd4bf;  /* teal */
+  --c-verbs:    #a78bfa;  /* violet */
+  --c-grammar:  #fb923c;  /* orange */
+  --c-sentences:#86efac;  /* green */
+  --c-reading:  #6ee7b7;  /* emerald */
+  --c-idioms:   #fbbf24;  /* amber */
+  --c-ref:      #94a3b8;  /* slate */
+
+  --sidebar-w: 220px;
+}
+
+/* ── Typography ──────────────────────────────────────────────────── */
+body {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+}
+
+/* ── Hide original level/tabs bars (now in sidebar) ─────────────── */
+.ita-level-bar,
+.ita-tabs-bar { display: none !important; }
+
+/* ── Layout ──────────────────────────────────────────────────────── */
+.studio-layout {
+  display: flex;
+  min-height: calc(100vh - 56px); /* below navbar */
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+.studio-sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: #0b0e14;
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 1.25rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.studio-level-group {
+  padding: 0 1rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+}
+.studio-levels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+.studio-levels .ita-level-btn {
+  font-size: 0.8rem;
+  padding: 0.25rem 0;
+  border-color: var(--border);
+  color: var(--text-soft);
+  background: transparent;
+  border-radius: 6px;
+  width: 100%;
+}
+.studio-levels .ita-level-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: rgba(108, 183, 255, 0.08);
+}
+.studio-levels .ita-level-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #0a0d14;
+  font-weight: 600;
+}
+
+.studio-section-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 0.25rem 1rem 0.1rem;
+  opacity: 0.6;
+}
+
+.studio-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0.5rem;
+}
+
+.studio-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  margin: 1px 0;
+  color: var(--text-soft) !important;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  transition: background 0.15s, color 0.15s;
+}
+.studio-nav-item:hover { background: var(--surface-soft); }
+
+.studio-nav-item.active              { background: rgba(108, 183, 255, 0.12); color: var(--brand) !important; }
+.studio-nav-item.s-vocab.active      { background: rgba(45, 212, 191, 0.1);   color: var(--c-vocab) !important; }
+.studio-nav-item.s-verbs.active      { background: rgba(167, 139, 250, 0.1);  color: var(--c-verbs) !important; }
+.studio-nav-item.s-grammarquiz.active{ background: rgba(251, 146, 60, 0.1);   color: var(--c-grammar) !important; }
+.studio-nav-item.s-sentences.active  { background: rgba(134, 239, 172, 0.1);  color: var(--c-sentences) !important; }
+.studio-nav-item.s-reading.active    { background: rgba(110, 231, 183, 0.1);  color: var(--c-reading) !important; }
+.studio-nav-item.s-idioms.active     { background: rgba(251, 191, 36, 0.1);   color: var(--c-idioms) !important; }
+.studio-nav-item.s-grammar.active    { background: rgba(148, 163, 184, 0.08); color: var(--c-ref) !important; }
+
+.studio-nav-icon { font-size: 1rem; width: 1.4rem; text-align: center; flex-shrink: 0; }
+
+/* ── Main content area ───────────────────────────────────────────── */
+.studio-main {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 2rem;
+  max-width: 900px;
+}
+
+/* ── Section colour accents on headings ──────────────────────────── */
+#section-vocab h2,
+#section-vocab .ita-quiz-prompt h2      { color: var(--c-vocab); }
+#section-verbs h2,
+#section-verbs .ita-quiz-prompt h2      { color: var(--c-verbs); }
+#section-grammarquiz h2,
+#section-grammarquiz .ita-quiz-prompt h2{ color: var(--c-grammar); }
+#section-sentences h2,
+#section-sentences .ita-quiz-prompt h2  { color: var(--c-sentences); }
+#section-reading h2,
+#section-reading .ita-quiz-prompt h2    { color: var(--c-reading); }
+#section-idioms h2,
+#section-idioms .ita-quiz-prompt h2     { color: var(--c-idioms); }
+#section-grammar h2                      { color: var(--c-ref); }
+
+/* Section border accent on content cards */
+#section-vocab     .content-card { border-top: 3px solid var(--c-vocab) !important; }
+#section-verbs     .content-card { border-top: 3px solid var(--c-verbs) !important; }
+#section-grammarquiz .content-card { border-top: 3px solid var(--c-grammar) !important; }
+#section-sentences .content-card { border-top: 3px solid var(--c-sentences) !important; }
+#section-reading   .content-card { border-top: 3px solid var(--c-reading) !important; }
+#section-idioms    .content-card { border-top: 3px solid var(--c-idioms) !important; }
+
+/* ── Dashboard cards with colour strips ──────────────────────────── */
+.studio-main #section-dashboard .ita-progress-bar + * { }
+
+/* Progress fill colours per section */
+.ita-dash-card[data-section="vocab"]     .ita-progress-fill { background: var(--c-vocab); }
+.ita-dash-card[data-section="verbs"]     .ita-progress-fill { background: var(--c-verbs); }
+.ita-dash-card[data-section="grammarquiz"] .ita-progress-fill { background: var(--c-grammar); }
+.ita-dash-card[data-section="sentences"] .ita-progress-fill { background: var(--c-sentences); }
+.ita-dash-card[data-section="reading"]   .ita-progress-fill { background: var(--c-reading); }
+.ita-dash-card[data-section="idioms"]    .ita-progress-fill { background: var(--c-idioms); }
+
+/* ── Grammar handbook layout ─────────────────────────────────────── */
+.studio-main .ita-grammar-card .card-body {
+  padding: 1.5rem 2rem;
+}
+.studio-main .ita-grammar-card h3.ita-grammar-toggle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.studio-main .ita-grammar-card h3.ita-grammar-toggle:hover {
+  color: var(--c-ref);
+}
+.studio-main .ita-grammar-body {
+  border-left: 3px solid var(--c-grammar);
+  padding-left: 1.25rem;
+  margin-top: 0.75rem;
+  font-size: 0.97rem;
+  line-height: 1.8;
+  color: var(--text-soft);
+}
+
+/* ── Buttons inherit section colours ─────────────────────────────── */
+.studio-main .btn-primary {
+  background-color: var(--brand) !important;
+  border-color: var(--brand) !important;
+  color: #08101e !important;
+  font-weight: 600;
+}
+
+/* ── Activity stats bar ──────────────────────────────────────────── */
+.studio-stats-bar {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.studio-stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  min-width: 90px;
+  gap: 0.2rem;
+}
+.studio-stat-chip strong {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+.studio-stat-chip span {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Bottom nav (mobile) ─────────────────────────────────────────── */
+.studio-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #0b0e14;
+  border-top: 1px solid var(--border);
+  padding: 0;
+}
+.studio-bnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.25rem;
+  color: var(--text-soft) !important;
+  font-size: 1.3rem;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  flex: 1;
+  transition: color 0.15s;
+}
+.studio-bnav-item small {
+  font-size: 0.62rem;
+  margin-top: 2px;
+  color: var(--text-soft);
+}
+.studio-bnav-item.active { color: var(--brand) !important; }
+.studio-bnav-item.active small { color: var(--brand); }
+.studio-bnav-item.s-vocab.active small,
+.studio-bnav-item.s-vocab.active  { color: var(--c-vocab) !important; }
+.studio-bnav-item.s-verbs.active small,
+.studio-bnav-item.s-verbs.active  { color: var(--c-verbs) !important; }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .studio-sidebar  { display: none; }
+  .studio-bottom-nav { display: flex; }
+  .studio-main {
+    padding: 1rem;
+    padding-bottom: 80px; /* space for bottom nav */
+  }
+  .studio-layout { min-height: auto; }
+}
+
+@media (min-width: 769px) {
+  .studio-bottom-nav { display: none !important; }
+}
+
+/* ── Make page-shell a no-op (content now in .studio-main) ──────── */
+.studio-main .page-shell,
+.studio-main > .page-shell {
+  padding: 0 !important;
+  max-width: none !important;
+}
