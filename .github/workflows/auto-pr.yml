@@ -33,8 +33,13 @@ jobs:
             # Fetch main so we can diff against it
             git fetch origin main --depth=50
 
-            # Commits on this branch not yet in main
-            COMMITS=$(git log origin/main..HEAD --oneline --no-decorate 2>/dev/null || echo "_(no commits found)_")
+            # Separate meaningful commits (feat/fix) from housekeeping (ci/chore/docs)
+            FEAT_FIX_COMMITS=$(git log origin/main..HEAD --no-merges \
+              --format="### %s%n%n%b" \
+              --grep="^feat\|^fix" 2>/dev/null | sed '/^$/d' || true)
+            OTHER_COMMITS=$(git log origin/main..HEAD --no-merges \
+              --oneline --no-decorate \
+              --invert-grep --grep="^feat\|^fix" 2>/dev/null || true)
 
             # Changed files summary
             DIFF_STAT=$(git diff --stat origin/main...HEAD 2>/dev/null || echo "_(diff unavailable)_")
@@ -43,8 +48,15 @@ jobs:
             BODY+=$'\n### Why this branch was created\n'
             BODY+="<!-- Edit this PR to add more context about the purpose of this branch. -->"$'\n'
             BODY+="Branch name suggests: **$TITLE**"$'\n'
-            BODY+=$'\n### Commits in this branch\n'
-            BODY+='```'$'\n'"$COMMITS"$'\n''```'$'\n'
+            if [ -n "$FEAT_FIX_COMMITS" ]; then
+              BODY+=$'\n---\n\n## Changes\n\n'
+              BODY+="$FEAT_FIX_COMMITS"$'\n'
+            fi
+            if [ -n "$OTHER_COMMITS" ]; then
+              BODY+=$'\n<details><summary>CI / housekeeping commits</summary>\n\n'
+              BODY+='```'$'\n'"$OTHER_COMMITS"$'\n''```'$'\n'
+              BODY+=$'</details>\n'
+            fi
             BODY+=$'\n### Changed files\n'
             BODY+='```'$'\n'"$DIFF_STAT"$'\n''```'$'\n'
             BODY+=$'\n---\n'
