@@ -20,8 +20,9 @@ jobs:
         run: |
           BRANCH="${GITHUB_REF_NAME}"
 
-          if gh pr view "$BRANCH" --json number --jq '.number' > /dev/null 2>&1; then
-            echo "PR already exists for $BRANCH — skipping."
+          OPEN_PR=$(gh pr list --state open --head "$BRANCH" --json number --jq '.[0].number' 2>/dev/null)
+          if [ -n "$OPEN_PR" ]; then
+            echo "Open PR #$OPEN_PR already exists for $BRANCH — skipping."
           else
             # Derive a human-readable title from the branch name:
             # strip common prefixes (feature/, fix/, chore/, etc.) and replace - with spaces
