@@ -19,13 +19,49 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BRANCH="${GITHUB_REF_NAME}"
+
           if gh pr view "$BRANCH" --json number --jq '.number' > /dev/null 2>&1; then
             echo "PR already exists for $BRANCH — skipping."
           else
+            # Derive a human-readable title from the branch name:
+            # strip common prefixes (feature/, fix/, chore/, etc.) and replace - with spaces
+            TITLE=$(echo "$BRANCH" \
+              | sed 's|^feature/||;s|^fix/||;s|^chore/||;s|^hotfix/||;s|^docs/||' \
+              | tr '-' ' ')
+
+            # Fetch main so we can diff against it
+            git fetch origin main --depth=50
+
+            # Commits on this branch not yet in main
+            COMMITS=$(git log origin/main..HEAD --oneline --no-decorate 2>/dev/null || echo "_(no commits found)_")
+
+            # Changed files summary
+            DIFF_STAT=$(git diff --stat origin/main...HEAD 2>/dev/null || echo "_(diff unavailable)_")
+
+            BODY="## Branch: \`$BRANCH\`
+
+### Why this branch was created
+<!-- Auto-generated. Edit this PR to add more context about the purpose of this branch. -->
+Branch name suggests: **$TITLE**
+
+### Commits in this branch
+\`\`\`
+$COMMITS
+\`\`\`
+
+### Changed files
+\`\`\`
+$DIFF_STAT
+\`\`\`
+
+---
+_Automated PR opened by GitHub Actions on push to \`$BRANCH\`._"
+
             gh pr create \
               --base main \
               --head "$BRANCH" \
-              --title "Merge $BRANCH into main" \
-              --body "Automated PR opened by GitHub Actions on push to \`$BRANCH\`."
+              --title "$TITLE" \
+              --body "$BODY"
+
             echo "PR created for $BRANCH"
           fi
