@@ -1,0 +1,415 @@
+/*
+ * style-lascuola.css — Option C: La Scuola
+ * Parchment light theme, Lora + Nunito, terracotta + sage accents
+ * Scoped to .la-scuola body class
+ */
+
+/* ── Tokens ──────────────────────────────────────────────────────── */
+.la-scuola {
+  --bg:           #faf7f2;
+  --surface:      #ffffff;
+  --surface-soft: #f2ede6;
+  --border:       #e0d7cb;
+  --text:         #2d2620;
+  --text-soft:    #7a6b5b;
+  --brand:        #c0552a;       /* terracotta */
+  --brand-strong: #a03e1d;
+  --sage:         #5a7d5a;       /* sage green */
+  --sage-light:   #d9ead9;
+  --cream:        #faf7f2;
+}
+
+/* ── Base ────────────────────────────────────────────────────────── */
+.la-scuola {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', 'Segoe UI', sans-serif;
+}
+
+/* ── Navbar ──────────────────────────────────────────────────────── */
+.la-scuola .navbar {
+  background-color: #2d2620 !important;
+  border-bottom: 2px solid var(--brand);
+}
+.la-scuola .navbar-brand img { filter: brightness(1.1); }
+.la-scuola .nav-link { color: #e0d7cb !important; }
+.la-scuola .nav-link:hover,
+.la-scuola .nav-link.active { color: #f5c8a8 !important; }
+
+/* ── Level bar ───────────────────────────────────────────────────── */
+.la-scuola .ita-level-bar {
+  background: #f0e8de;
+  border-bottom: 1px solid var(--border);
+}
+.la-scuola .ita-level-label { color: var(--text-soft); }
+.la-scuola .ita-level-btn {
+  border-color: #c8b9a5;
+  color: var(--text-soft);
+  background: transparent;
+}
+.la-scuola .ita-level-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: rgba(192, 85, 42, 0.06);
+}
+.la-scuola .ita-level-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Tabs bar ────────────────────────────────────────────────────── */
+.la-scuola .ita-tabs-bar {
+  background: #f0e8de;
+  border-bottom: 1px solid var(--border);
+}
+.la-scuola .ita-tab {
+  color: var(--text-soft);
+  border-bottom: 2px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.la-scuola .ita-tab:hover {
+  color: var(--brand);
+  text-decoration: none;
+}
+.la-scuola .ita-tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.la-scuola .content-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(45, 38, 32, 0.06);
+}
+
+/* ── Typography ──────────────────────────────────────────────────── */
+.la-scuola h1,
+.la-scuola h2,
+.la-scuola h3,
+.la-scuola h4 {
+  font-family: 'Lora', Georgia, serif;
+  color: var(--text);
+}
+.la-scuola .hero h1 {
+  font-size: 2.4rem;
+  color: var(--brand);
+}
+.la-scuola .lead { color: var(--text-soft); }
+.la-scuola .text-muted { color: var(--text-soft) !important; }
+
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.la-scuola .btn-primary {
+  background-color: var(--brand) !important;
+  border-color: var(--brand) !important;
+  color: #fff !important;
+  font-weight: 700;
+  border-radius: 8px;
+}
+.la-scuola .btn-primary:hover {
+  background-color: var(--brand-strong) !important;
+  border-color: var(--brand-strong) !important;
+}
+.la-scuola .btn-outline-light {
+  color: var(--text-soft);
+  border-color: var(--border);
+  background: transparent;
+}
+.la-scuola .btn-outline-light:hover {
+  background: rgba(192, 85, 42, 0.08);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.la-scuola .btn-outline-light.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.la-scuola .btn-check:checked + .btn-outline-light {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.la-scuola .btn-outline-secondary {
+  color: var(--text-soft);
+  border-color: var(--border);
+}
+.la-scuola .btn-outline-secondary:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+/* ── Progress ────────────────────────────────────────────────────── */
+.la-scuola .ita-progress-bar {
+  background: #ead5c8;
+  border-radius: 999px;
+}
+.la-scuola .ita-progress-fill {
+  background: linear-gradient(90deg, var(--brand-strong), var(--brand));
+  border-radius: 999px;
+}
+
+/* ── Dashboard cards ─────────────────────────────────────────────── */
+.la-scuola .ita-dash-card-title {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Quiz prompt ─────────────────────────────────────────────────── */
+.la-scuola .ita-quiz-prompt h2 {
+  font-family: 'Lora', serif;
+  font-size: 2rem;
+  font-style: italic;
+  color: var(--text);
+}
+.la-scuola .ita-mc-btn {
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  background: #fff !important;
+}
+.la-scuola .ita-mc-btn:hover {
+  border-color: var(--brand) !important;
+  background: rgba(192, 85, 42, 0.06) !important;
+}
+.la-scuola .ita-mc-btn.correct  { background: var(--sage-light) !important; border-color: var(--sage) !important; color: var(--sage) !important; }
+.la-scuola .ita-mc-btn.wrong    { background: #fde8e3 !important; border-color: #c0552a !important; color: var(--brand) !important; }
+
+/* ── Score ring ──────────────────────────────────────────────────── */
+.la-scuola .ita-score-text { fill: var(--brand) !important; color: var(--brand); }
+.la-scuola .ita-score-ring-fill { stroke: var(--brand) !important; }
+.la-scuola .ita-score-ring-bg   { stroke: #ead5c8 !important; }
+
+/* ── Grammar: chapter / textbook layout ─────────────────────────── */
+.la-scuola .ita-grammar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 720px;
+}
+.la-scuola .ita-grammar-card {
+  border-left: 4px solid var(--brand) !important;
+  border-top: none !important;
+  border-radius: 0 12px 12px 0 !important;
+  background: #fff !important;
+}
+.la-scuola .ita-grammar-card .card-body {
+  padding: 1.5rem 2rem;
+}
+.la-scuola .ita-grammar-toggle {
+  font-family: 'Lora', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--brand) !important;
+}
+.la-scuola .ita-grammar-body {
+  font-family: 'Lora', serif;
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: var(--text-soft);
+}
+.la-scuola .ita-grammar-body table { --bs-table-bg: transparent; }
+.la-scuola .ita-grammar-body table th { color: var(--brand); }
+.la-scuola .ita-grammar-body table td,
+.la-scuola .ita-grammar-body table th { border-color: var(--border); color: var(--text); }
+
+/* Grammar pagination ──────────────────────────────────────────────  */
+.la-scuola .ls-grammar-nav {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+.la-scuola .ls-grammar-page-indicator {
+  font-family: 'Nunito', sans-serif;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+/* ── Reading: wide margins, Lora body ───────────────────────────── */
+.la-scuola .ita-reading-body,
+.la-scuola .ita-passage-text {
+  font-family: 'Lora', serif;
+  font-size: 1.1rem;
+  line-height: 1.9;
+  color: var(--text);
+  max-width: 660px;
+}
+
+/* Vocab mark tooltips in reading ──────────────────────────────────  */
+.la-scuola mark[data-word] {
+  background: rgba(192, 85, 42, 0.15);
+  color: var(--brand);
+  border-radius: 3px;
+  padding: 0 2px;
+  cursor: help;
+  position: relative;
+  font-style: normal;
+  border-bottom: 1px dashed var(--brand);
+}
+.la-scuola mark[data-word]:hover::after {
+  content: attr(data-translation);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: #2d2620;
+  color: #faf7f2;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: 'Nunito', sans-serif;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* ── Lesson of the Day ───────────────────────────────────────────── */
+.ls-lotd {
+  background: linear-gradient(135deg, #fff8f3 0%, #fff 100%);
+  border: 1px solid #e8d4c4;
+  border-left: 5px solid var(--brand);
+  border-radius: 0 14px 14px 0;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+}
+.ls-lotd-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.ls-lotd-header h3 {
+  font-family: 'Lora', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--brand);
+  margin: 0;
+}
+.ls-lotd-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: var(--brand);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+.ls-lotd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.ls-lotd-word {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+}
+.ls-lotd-word .ls-word-it {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.ls-lotd-word .ls-word-en {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+.ls-lotd-grammar {
+  background: var(--sage-light);
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+.ls-lotd-grammar strong { color: var(--sage); }
+.ls-lotd-idiom {
+  background: #fef3dc;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+.ls-lotd-idiom strong { font-style: normal; }
+.ls-lotd-footer {
+  margin-top: 1rem;
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Verb flip cards (light) ─────────────────────────────────────── */
+.la-scuola .ita-verb-ref-card .ita-verb-front {
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.la-scuola .ita-verb-ref-card .ita-verb-back {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.la-scuola .ita-verb-ref-card .ita-verb-front h4 { color: var(--brand); font-family: 'Lora', serif; }
+
+/* ── Sentence builder tokens (light) ────────────────────────────── */
+.la-scuola .ita-word-token {
+  background: #fff !important;
+  border: 1px solid #c8b9a5 !important;
+  color: var(--text) !important;
+}
+.la-scuola .ita-word-token:hover { border-color: var(--brand) !important; color: var(--brand) !important; }
+.la-scuola .ita-word-slot        { background: var(--surface-soft) !important; border-color: var(--border) !important; }
+
+/* ── Input fields ────────────────────────────────────────────────── */
+.la-scuola .form-control {
+  background: #fff;
+  border-color: var(--border);
+  color: var(--text);
+}
+.la-scuola .form-control:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(192, 85, 42, 0.15);
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+.la-scuola footer {
+  background-color: #2d2620 !important;
+  color: #e0d7cb;
+}
+
+/* ── Gufo button (terracotta tint) ───────────────────────────────── */
+.la-scuola #gufo-container[data-state="idle"] #gufo-btn {
+  background: radial-gradient(circle at 40% 35%, #faf0e6 0%, #e8c89a 100%);
+  box-shadow: 0 4px 20px rgba(192, 85, 42, 0.2);
+}
+.la-scuola #gufo-label { color: var(--brand); }
+.la-scuola #gufo-status { color: var(--text-soft); }
+
+/* ── Spinner ─────────────────────────────────────────────────────── */
+.la-scuola .spinner-border { border-color: var(--brand) transparent var(--brand) transparent; }
+
+/* ── Alert ───────────────────────────────────────────────────────── */
+.la-scuola .alert-danger {
+  background: #fde8e3;
+  border-color: #f0b8a8;
+  color: var(--brand-strong);
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .la-scuola .ita-quiz-prompt h2 { font-size: 1.5rem; }
+  .la-scuola .hero h1 { font-size: 1.8rem; }
+}

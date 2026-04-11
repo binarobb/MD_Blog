@@ -219,8 +219,7 @@
     document.querySelectorAll('.ita-section').forEach(s => s.classList.add('d-none'))
     el('section-' + name).classList.remove('d-none')
     document.querySelectorAll('.ita-tab').forEach(t => t.classList.remove('active'))
-    const tab = document.querySelector(`.ita-tab[data-section="${name}"]`)
-    if (tab) tab.classList.add('active')
+    document.querySelectorAll(`.ita-tab[data-section="${name}"]`).forEach(t => t.classList.add('active'))
     if (name === 'dashboard') renderDashboard()
   }
 
@@ -1675,18 +1674,34 @@
     renderModal()
   }
 
+  // ── Grammar Reference ────────────────────────────────────────────
+  let grammarPage = 0
+  const GRAMMAR_PER_PAGE = 3
+
   function renderGrammar() {
     showSection('grammar')
+    renderGrammarPage()
+  }
+
+  function renderGrammarPage() {
+    const total = appData.grammar.length
+    const perPage = GRAMMAR_PER_PAGE
+    const start = grammarPage * perPage
+    const slice = appData.grammar.slice(start, start + perPage)
+    const isLaScuola = document.body.classList.contains('la-scuola')
+    const navEl = document.getElementById('ls-grammar-nav')
+    const indEl = document.getElementById('ls-grammar-indicator')
+
     el('grammar-area').innerHTML = `
       <div class="ita-grammar-list">
-        ${appData.grammar.map((g, i) => `
+        ${slice.map((g, i) => `
           <div class="content-card mb-3 ita-grammar-card">
             <div class="card-body">
-              <h3 class="card-title ita-grammar-toggle" data-idx="${i}" role="button" tabindex="0">
+              <h3 class="card-title ita-grammar-toggle" data-idx="${start + i}" role="button" tabindex="0">
                 ${g.title}
                 <span class="ita-chevron">&#9662;</span>
               </h3>
-              <div class="ita-grammar-body d-none" id="grammar-body-${i}">
+              <div class="ita-grammar-body ${isLaScuola ? '' : 'd-none'}" id="grammar-body-${start + i}">
                 ${g.body}
               </div>
             </div>
@@ -1704,7 +1719,7 @@
       <!-- Verb conjugation modal -->
       <div class="ita-verb-modal-overlay d-none" id="verb-ref-modal-overlay"></div>`
 
-    // accordion toggles
+    // accordion toggles (not used in La Scuola paged mode but kept for fallback)
     el('grammar-area').querySelectorAll('.ita-grammar-toggle').forEach(toggle => {
       toggle.addEventListener('click', () => {
         const body = el('grammar-body-' + toggle.dataset.idx)
@@ -1714,7 +1729,85 @@
       toggle.addEventListener('keydown', e => { if (e.key === 'Enter') toggle.click() })
     })
 
+    // Pagination controls (La Scuola only)
+    if (navEl && isLaScuola) {
+      const totalPages = Math.ceil(total / perPage)
+      navEl.style.display = totalPages > 1 ? 'flex' : 'none'
+      if (indEl) indEl.textContent = `${grammarPage + 1} / ${totalPages}`
+      const prevBtn = document.getElementById('ls-grammar-prev')
+      const nextBtn = document.getElementById('ls-grammar-next')
+      if (prevBtn) prevBtn.disabled = grammarPage === 0
+      if (nextBtn) nextBtn.disabled = grammarPage >= totalPages - 1
+    }
+
     renderVerbRefPage()
+  }
+
+  // ── Streak ───────────────────────────────────────────────────────
+  function initStreak() {
+    const STREAK_KEY = 'italian_streak'
+    const today = new Date().toISOString().slice(0, 10)
+    let data = {}
+    try { data = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}') } catch (_) {}
+    const last = data.lastDate || ''
+    const streak = data.streak || 0
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    let newStreak = last === today ? streak : last === yesterday ? streak + 1 : 1
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify({ streak: newStreak, lastDate: today })) } catch (_) {}
+    const countEl = document.getElementById('ita-streak-count')
+    const streakEl = document.getElementById('ita-streak')
+    if (countEl) countEl.textContent = newStreak
+    if (streakEl && newStreak > 1) streakEl.classList.add('streak-lit')
+  }
+
+  // ── Lesson of the Day ────────────────────────────────────────────
+  function renderLessonOfDay() {
+    const container = document.getElementById('lesson-of-day')
+    if (!container) return
+    const vocab   = (appData.vocab   || []).filter(v => v.italian && v.english)
+    const grammar = (appData.grammar || [])
+    const idioms  = (appData.idioms  || [])
+    if (!vocab.length && !grammar.length) return
+
+    // Seed today's lesson deterministically from date
+    const today = new Date().toISOString().slice(0, 10)
+    const seed = today.replace(/-/g, '') | 0
+    const pick = (arr, n) => {
+      const out = []
+      for (let i = 0; i < n && arr.length; i++) { out.push(arr[(seed + i * 7) % arr.length]) }
+      return out
+    }
+    const words = pick(vocab, 5)
+    const grammarTip = grammar.length ? grammar[seed % grammar.length] : null
+    const idiom = idioms.length ? idioms[seed % idioms.length] : null
+
+    container.innerHTML = `
+      <div class="ls-lotd">
+        <div class="ls-lotd-header">
+          <span class="ls-lotd-badge">Today</span>
+          <h3>&#x1F4DA; Lesson of the Day</h3>
+        </div>
+        ${words.length ? `
+          <div class="ls-lotd-grid">
+            ${words.map(w => `
+              <div class="ls-lotd-word">
+                <div class="ls-word-it">${w.italian}</div>
+                <div class="ls-word-en">${w.english}</div>
+              </div>`).join('')}
+          </div>` : ''}
+        ${grammarTip ? `
+          <div class="ls-lotd-grammar">
+            <strong>Grammar tip:</strong> ${grammarTip.title}
+          </div>` : ''}
+        ${idiom ? `
+          <div class="ls-lotd-idiom">
+            <strong>${idiom.expression || idiom.italian || ''}</strong>
+            ${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}
+          </div>` : ''}
+        <div class="ls-lotd-footer">
+          <span>&#x1F550;</span> Updated daily &mdash; come back tomorrow for a new lesson!
+        </div>
+      </div>`
   }
 
   // ── Reset ────────────────────────────────────────────────────────
@@ -1740,6 +1833,8 @@
     renderReadingPassage: openPassage, // alias for results back-button
     openVerbRefModal,
     renderGrammar,
+    renderGrammarPage,
+    renderLessonOfDay,
     resetStats,
     async init() {
       const dashContent = el('dash-content')
@@ -1785,6 +1880,19 @@
           else showSection(section)
         })
       })
+
+      // Grammar pagination (La Scuola)
+      const lsPrevBtn = document.getElementById('ls-grammar-prev')
+      const lsNextBtn = document.getElementById('ls-grammar-next')
+      if (lsPrevBtn) lsPrevBtn.addEventListener('click', () => {
+        if (grammarPage > 0) { grammarPage--; renderGrammarPage() }
+      })
+      if (lsNextBtn) lsNextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil((appData.grammar || []).length / GRAMMAR_PER_PAGE)
+        if (grammarPage < totalPages - 1) { grammarPage++; renderGrammarPage() }
+      })
+
+      renderLessonOfDay()
       showSection('dashboard')
     }
   }
