@@ -249,23 +249,15 @@ h1, h2, h3, h4, h5 {
   color: var(--brand);
 }
 .ita-grammar-body {
-  /* No display override here — let .d-none control visibility */
-  gap: 1rem;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
   color: var(--text-soft);
-  font-size: 0.97rem;
-  line-height: 1.75;
+  font-size: 0.95rem;
+  line-height: 1.7;
 }
-/* Only apply grid layout when the body is actually visible */
-.ita-grammar-body:not(.d-none) {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-@media (min-width: 640px) {
-  .ita-grammar-body:not(.d-none) {
-    display: grid;
-  }
-}
+.ita-grammar-body strong { color: var(--text); }
+.ita-grammar-body em { color: var(--brand); font-style: normal; }
 /* Rule: left half, example callout: right half */
 .ita-grammar-body .grammar-example-callout {
   background: rgba(232, 168, 80, 0.08);
