@@ -219,8 +219,7 @@
     document.querySelectorAll('.ita-section').forEach(s => s.classList.add('d-none'))
     el('section-' + name).classList.remove('d-none')
     document.querySelectorAll('.ita-tab').forEach(t => t.classList.remove('active'))
-    const tab = document.querySelector(`.ita-tab[data-section="${name}"]`)
-    if (tab) tab.classList.add('active')
+    document.querySelectorAll(`.ita-tab[data-section="${name}"]`).forEach(t => t.classList.add('active'))
     if (name === 'dashboard') renderDashboard()
   }
 

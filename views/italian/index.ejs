@@ -6,7 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style-studio.css">
     <title>Italian — Intentional Owl</title>
 </head>
 <body>
@@ -39,35 +43,69 @@
     </nav>
 
     <!-- Level selector bar -->
-    <div class="ita-level-bar">
-        <div class="page-shell" style="padding-top:0;padding-bottom:0;">
-            <div class="ita-levels">
-                <span class="ita-level-label">Level:</span>
-                <button class="ita-level-btn active" data-level="all">All</button>
-                <button class="ita-level-btn" data-level="a1">A1</button>
-                <button class="ita-level-btn" data-level="a2">A2</button>
-                <button class="ita-level-btn" data-level="b1">B1</button>
-            </div>
-        </div>
-    </div>
+    <!-- Studio: replaced by sidebar -->
 
     <!-- SPA sub-nav tabs -->
-    <div class="ita-tabs-bar">
-        <div class="page-shell" style="padding-top:0;padding-bottom:0;">
-            <div class="ita-tabs">
-                <a href="#" class="ita-tab active" data-section="dashboard">Dashboard</a>
-                <a href="#" class="ita-tab" data-section="vocab">Vocabulary</a>
-                <a href="#" class="ita-tab" data-section="verbs">Verbs</a>
-                <a href="#" class="ita-tab" data-section="grammarquiz">Grammar Quiz</a>
-                <a href="#" class="ita-tab" data-section="sentences">Sentences</a>
-                <a href="#" class="ita-tab" data-section="reading">Reading</a>
-                <a href="#" class="ita-tab" data-section="idioms">Idioms</a>
-                <a href="#" class="ita-tab" data-section="grammar">Reference</a>
-            </div>
-        </div>
-    </div>
+    <!-- Studio: replaced by sidebar -->
 
-    <div class="page-shell">
+    <!-- Studio layout wrapper -->
+    <div class="studio-layout">
+
+      <!-- Sidebar -->
+      <aside class="studio-sidebar" id="studio-sidebar">
+        <!-- Level selector -->
+        <div class="studio-level-group">
+          <span class="studio-section-label">Level</span>
+          <div class="studio-levels">
+            <button class="ita-level-btn active" data-level="all">All</button>
+            <button class="ita-level-btn" data-level="a1">A1</button>
+            <button class="ita-level-btn" data-level="a2">A2</button>
+            <button class="ita-level-btn" data-level="b1">B1</button>
+          </div>
+        </div>
+        <!-- Nav items -->
+        <nav class="studio-nav">
+          <span class="studio-section-label">Practice</span>
+          <a href="#" class="ita-tab studio-nav-item active" data-section="dashboard">
+            <span class="studio-nav-icon">🏠</span> Dashboard
+          </a>
+          <a href="#" class="ita-tab studio-nav-item s-vocab" data-section="vocab">
+            <span class="studio-nav-icon">📝</span> Vocabulary
+          </a>
+          <a href="#" class="ita-tab studio-nav-item s-verbs" data-section="verbs">
+            <span class="studio-nav-icon">⚡</span> Verbs
+          </a>
+          <a href="#" class="ita-tab studio-nav-item s-grammarquiz" data-section="grammarquiz">
+            <span class="studio-nav-icon">❓</span> Grammar Quiz
+          </a>
+          <a href="#" class="ita-tab studio-nav-item s-sentences" data-section="sentences">
+            <span class="studio-nav-icon">🧩</span> Sentences
+          </a>
+          <a href="#" class="ita-tab studio-nav-item s-reading" data-section="reading">
+            <span class="studio-nav-icon">📖</span> Reading
+          </a>
+          <a href="#" class="ita-tab studio-nav-item s-idioms" data-section="idioms">
+            <span class="studio-nav-icon">💬</span> Idioms
+          </a>
+          <span class="studio-section-label" style="margin-top:1rem">Reference</span>
+          <a href="#" class="ita-tab studio-nav-item s-grammar" data-section="grammar">
+            <span class="studio-nav-icon">📚</span> Grammar Guide
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Mobile bottom nav -->
+      <nav class="studio-bottom-nav" id="studio-bottom-nav">
+        <a href="#" class="ita-tab studio-bnav-item active" data-section="dashboard"><span>🏠</span><small>Home</small></a>
+        <a href="#" class="ita-tab studio-bnav-item s-vocab" data-section="vocab"><span>📝</span><small>Vocab</small></a>
+        <a href="#" class="ita-tab studio-bnav-item s-verbs" data-section="verbs"><span>⚡</span><small>Verbs</small></a>
+        <a href="#" class="ita-tab studio-bnav-item s-grammarquiz" data-section="grammarquiz"><span>❓</span><small>Quiz</small></a>
+        <a href="#" class="ita-tab studio-bnav-item s-reading" data-section="reading"><span>📖</span><small>Read</small></a>
+        <a href="#" class="ita-tab studio-bnav-item s-grammar" data-section="grammar"><span>📚</span><small>Ref</small></a>
+      </nav>
+
+      <!-- Main content -->
+      <main class="studio-main">
 
         <!-- DASHBOARD -->
         <div id="section-dashboard" class="ita-section">
@@ -113,7 +151,8 @@
             <div id="grammar-area"></div>
         </div>
 
-    </div><!-- /.page-shell -->
+    </div><!-- /.studio-main -->
+    </div><!-- /.studio-layout -->
 
     <!-- Gufo: Italian Voice Tutor -->
     <div id="gufo-container">
