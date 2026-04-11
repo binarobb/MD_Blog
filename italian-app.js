@@ -203,6 +203,19 @@
   // ── Navigation ───────────────────────────────────────────────────
   function showSection(name) {
     state.section = name
+    // Always restore scroll — modals and overlays set overflow:hidden when open.
+    // If the user navigates away (e.g. taps the tab bar while a modal is visible)
+    // without dismissing it first, scroll would stay locked forever.
+    document.body.style.overflow = ''
+    // Dismiss any lingering overlays so they can't ghost behind the new section
+    const fcOverlay = el('fc-overlay')
+    if (fcOverlay && !fcOverlay.classList.contains('d-none')) {
+      fcOverlay.classList.add('d-none')
+    }
+    const verbModal = el('verb-ref-modal-overlay')
+    if (verbModal && !verbModal.classList.contains('d-none')) {
+      verbModal.classList.add('d-none')
+    }
     document.querySelectorAll('.ita-section').forEach(s => s.classList.add('d-none'))
     el('section-' + name).classList.remove('d-none')
     document.querySelectorAll('.ita-tab').forEach(t => t.classList.remove('active'))

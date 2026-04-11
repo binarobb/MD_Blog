@@ -209,6 +209,14 @@
             statusEl.classList.remove('d-none');
             statusEl.textContent = detail || 'Listening…';
             break;
+          case 'error':
+            waves.className = 'gufo-waves-hidden';
+            label.textContent = 'Gufo';
+            statusEl.classList.remove('d-none');
+            statusEl.textContent = detail || 'Error';
+            // Auto-reset to idle so the button is usable again
+            setTimeout(() => setState('idle'), 4000);
+            break;
         }
       }
 
@@ -222,6 +230,14 @@
           return;
         }
 
+        // Guard: agentId must be configured on the server
+        const agentId = '<%= agentId %>';
+        if (!agentId) {
+          setState('error', 'Not configured');
+          console.error('Gufo: ELEVENLABS_AGENT_ID is not set on the server.');
+          return;
+        }
+
         setState('connecting');
         try {
           if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -231,8 +247,17 @@
           }
           await navigator.mediaDevices.getUserMedia({ audio: true });
 
+          // Use a server-issued signed URL so the agent ID is never exposed in
+          // page source and private agents aren't rejected by ElevenLabs.
+          const urlRes = await fetch('/api/elevenlabs/signed-url');
+          if (!urlRes.ok) {
+            const body = await urlRes.json().catch(() => ({}));
+            throw new Error(body.error || `Signed URL request failed (${urlRes.status})`);
+          }
+          const signedUrl = await urlRes.text();
+
           conversation = await Conversation.startSession({
-            agentId: '<%= agentId %>',  
+            signedUrl,
             onConnect: ({ conversationId }) => {
               console.log('Gufo connected, id:', conversationId);
               setState('connected', 'Listening…');
@@ -245,7 +270,7 @@
             onError: (err) => {
               console.error('Gufo error:', err);
               conversation = null;
-              setState('idle');
+              setState('error', 'Connection error');
             },
             onMessage: (message) => {
               console.log('Gufo message:', message);
@@ -264,7 +289,8 @@
           });
         } catch (err) {
           console.error('Failed to start Gufo:', err);
-          setState('idle');
+          conversation = null;
+          setState('error', err.message || 'Failed to connect');
         }
       });
     </script>
