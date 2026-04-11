@@ -38,24 +38,16 @@ jobs:
             # Changed files summary
             DIFF_STAT=$(git diff --stat origin/main...HEAD 2>/dev/null || echo "_(diff unavailable)_")
 
-            BODY="## Branch: \`$BRANCH\`
-
-### Why this branch was created
-<!-- Auto-generated. Edit this PR to add more context about the purpose of this branch. -->
-Branch name suggests: **$TITLE**
-
-### Commits in this branch
-\`\`\`
-$COMMITS
-\`\`\`
-
-### Changed files
-\`\`\`
-$DIFF_STAT
-\`\`\`
-
----
-_Automated PR opened by GitHub Actions on push to \`$BRANCH\`._"
+            BODY="## Branch: \`$BRANCH\`"$'\n'
+            BODY+=$'\n### Why this branch was created\n'
+            BODY+="<!-- Edit this PR to add more context about the purpose of this branch. -->"$'\n'
+            BODY+="Branch name suggests: **$TITLE**"$'\n'
+            BODY+=$'\n### Commits in this branch\n'
+            BODY+='```'$'\n'"$COMMITS"$'\n''```'$'\n'
+            BODY+=$'\n### Changed files\n'
+            BODY+='```'$'\n'"$DIFF_STAT"$'\n''```'$'\n'
+            BODY+=$'\n---\n'
+            BODY+="_Automated PR opened by GitHub Actions on push to \`$BRANCH\`._"
 
             gh pr create \
               --base main \
