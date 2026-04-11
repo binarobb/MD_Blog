@@ -123,7 +123,9 @@ a:hover {
     margin: 0 auto;
     padding: 2rem 1rem;
     position: relative;
-    z-index: 1;
+    /* z-index intentionally removed — setting it created a stacking context that
+       buried fixed overlays (verb modal, vocab card overlay) below the sticky
+       tabs bar, hiding the close button on mobile. */
 }
 
 .hero {

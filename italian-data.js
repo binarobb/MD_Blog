@@ -1615,6 +1615,62 @@ const VOCAB = {
     { it: 'fresco', en: 'cool / fresh', difficulty: 2 },
     { it: 'umido', en: 'humid / damp', difficulty: 2 },
     { it: 'il grado', en: 'degree (temperature)', difficulty: 2 }
+  ],
+
+  // ── B1 Vocabulary (difficulty: 3) ──────────────────────────────
+  'Work & Professions': [
+    { it: "l'avvocato", en: 'the lawyer', difficulty: 3 },
+    { it: "l'ingegnere", en: 'the engineer', difficulty: 3 },
+    { it: "l'architetto", en: 'the architect', difficulty: 3 },
+    { it: 'il/la giornalista', en: 'the journalist', difficulty: 3 },
+    { it: "l'insegnante", en: 'the teacher', difficulty: 3 },
+    { it: 'il chirurgo', en: 'the surgeon', difficulty: 3 },
+    { it: "l'imprenditore", en: 'the entrepreneur', difficulty: 3 },
+    { it: 'il contabile', en: 'the accountant', difficulty: 3 },
+    { it: 'il collega', en: 'the colleague', difficulty: 3 },
+    { it: "l'ufficio", en: 'the office', difficulty: 3 },
+    { it: 'il contratto', en: 'the contract', difficulty: 3 },
+    { it: 'lo stipendio', en: 'the salary', difficulty: 3 },
+    { it: "l'azienda", en: 'the company / firm', difficulty: 3 },
+    { it: 'la riunione', en: 'the meeting', difficulty: 3 },
+    { it: 'la carriera', en: 'the career', difficulty: 3 },
+    { it: 'il colloquio', en: 'the job interview', difficulty: 3 },
+    { it: 'licenziare', en: 'to fire / to dismiss', difficulty: 3 },
+    { it: 'assumere', en: 'to hire', difficulty: 3 }
+  ],
+  'Technology': [
+    { it: 'il computer', en: 'the computer', difficulty: 3 },
+    { it: 'lo smartphone', en: 'the smartphone', difficulty: 3 },
+    { it: 'la rete', en: 'the network / the web', difficulty: 3 },
+    { it: 'il sito web', en: 'the website', difficulty: 3 },
+    { it: "l'applicazione / l'app", en: 'the app', difficulty: 3 },
+    { it: 'il file', en: 'the file', difficulty: 3 },
+    { it: 'il programma', en: 'the programme / software', difficulty: 3 },
+    { it: 'il codice', en: 'the code', difficulty: 3 },
+    { it: 'il dato', en: 'the data / piece of data', difficulty: 3 },
+    { it: "l'intelligenza artificiale", en: 'artificial intelligence', difficulty: 3 },
+    { it: 'la batteria', en: 'the battery', difficulty: 3 },
+    { it: 'il cavo', en: 'the cable', difficulty: 3 },
+    { it: 'scaricare', en: 'to download', difficulty: 3 },
+    { it: 'caricare', en: 'to upload / to charge', difficulty: 3 },
+    { it: 'connettersi', en: 'to connect (oneself)', difficulty: 3 }
+  ],
+  'Sport & Hobbies': [
+    { it: 'il calcio', en: 'football / soccer', difficulty: 3 },
+    { it: 'il nuoto', en: 'swimming', difficulty: 3 },
+    { it: 'la palestra', en: 'the gym', difficulty: 3 },
+    { it: "l'allenamento", en: 'training / workout', difficulty: 3 },
+    { it: "l'allenatore", en: 'the coach / trainer', difficulty: 3 },
+    { it: 'la squadra', en: 'the team', difficulty: 3 },
+    { it: "l'arbitro", en: 'the referee', difficulty: 3 },
+    { it: 'il campionato', en: 'the championship / league', difficulty: 3 },
+    { it: 'la fotografia', en: 'photography', difficulty: 3 },
+    { it: 'il disegno', en: 'drawing', difficulty: 3 },
+    { it: "l'escursione", en: 'the hike / excursion', difficulty: 3 },
+    { it: 'il giardinaggio', en: 'gardening', difficulty: 3 },
+    { it: 'la cucina', en: 'cooking / cuisine', difficulty: 3 },
+    { it: 'il volontariato', en: 'volunteering', difficulty: 3 },
+    { it: 'appassionato di', en: 'passionate about / enthusiast of', difficulty: 3 }
   ]
 }
 
@@ -1720,6 +1776,134 @@ It's that simple — just add <strong>non</strong> right before the conjugated v
 <strong>perché</strong> — why / because<br>
 <strong>come</strong> — how<br>
 <strong>quanto/a/i/e</strong> — how much / how many`
+  },
+
+  // ── A2 Grammar Reference ──────────────────────────────────────────
+  {
+    title: 'Passato Prossimo (Present Perfect)',
+    body: `The <strong>passato prossimo</strong> expresses completed past actions. It is the most common past tense in spoken Italian.<br><br>
+<strong>Formula:</strong> <em>avere</em> or <em>essere</em> (present) + <strong>past participle</strong><br><br>
+<strong>Past participle formation:</strong><br>
+• -are → <strong>-ato</strong> : <em>parlare → parlato</em><br>
+• -ere → <strong>-uto</strong> : <em>vendere → venduto</em><br>
+• -ire → <strong>-ito</strong> : <em>finire → finito</em><br><br>
+<strong>With <em>avere</em></strong> (transitive verbs):<br>
+<em>Ho mangiato la pizza.</em> — I ate the pizza.<br>
+<em>Abbiamo lavorato tutto il giorno.</em> — We worked all day.<br><br>
+<strong>With <em>essere</em></strong> (intransitive movement/state verbs + reflexives). Past participle agrees with subject:<br>
+<em>Sono andato/a al mercato.</em> — I went to the market.<br>
+<em>Siamo arrivati tardi.</em> — We arrived late.<br><br>
+<strong>Common essere verbs:</strong> andare, venire, partire, arrivare, nascere, morire, stare, essere, diventare, restare, tornare, uscire, salire, scendere + all reflexives.`
+  },
+  {
+    title: 'Imperfetto (Imperfect)',
+    body: `The <strong>imperfetto</strong> describes ongoing past states, habits, or repeated actions. It sets the scene.<br><br>
+<table class="grammar-table">
+<tr><th></th><th>-are (parlare)</th><th>-ere (leggere)</th><th>-ire (dormire)</th></tr>
+<tr><td><strong>io</strong></td><td>parl<strong>avo</strong></td><td>legg<strong>evo</strong></td><td>dorm<strong>ivo</strong></td></tr>
+<tr><td><strong>tu</strong></td><td>parl<strong>avi</strong></td><td>legg<strong>evi</strong></td><td>dorm<strong>ivi</strong></td></tr>
+<tr><td><strong>lui/lei</strong></td><td>parl<strong>ava</strong></td><td>legg<strong>eva</strong></td><td>dorm<strong>iva</strong></td></tr>
+<tr><td><strong>noi</strong></td><td>parl<strong>avamo</strong></td><td>legg<strong>evamo</strong></td><td>dorm<strong>ivamo</strong></td></tr>
+<tr><td><strong>voi</strong></td><td>parl<strong>avate</strong></td><td>legg<strong>evate</strong></td><td>dorm<strong>ivate</strong></td></tr>
+<tr><td><strong>loro</strong></td><td>parl<strong>avano</strong></td><td>legg<strong>evano</strong></td><td>dorm<strong>ivano</strong></td></tr>
+</table><br>
+<strong>Use imperfetto for:</strong><br>
+• Habits: <em>Da bambino giocavo sempre fuori.</em> — As a child I always played outside.<br>
+• States: <em>Ero stanco.</em> — I was tired.<br>
+• Background action: <em>Mentre dormivo, squillò il telefono.</em> — While I was sleeping, the phone rang.`
+  },
+  {
+    title: 'Reflexive Verbs',
+    body: `Reflexive verbs indicate the subject acts on themselves. They use reflexive pronouns and conjugate with <strong>essere</strong> in compound tenses.<br><br>
+<strong>Reflexive pronouns:</strong><br>
+<table class="grammar-table">
+<tr><th>Subject</th><th>Pronoun</th><th>Example (alzarsi)</th></tr>
+<tr><td>io</td><td><strong>mi</strong></td><td>mi alzo</td></tr>
+<tr><td>tu</td><td><strong>ti</strong></td><td>ti alzi</td></tr>
+<tr><td>lui/lei</td><td><strong>si</strong></td><td>si alza</td></tr>
+<tr><td>noi</td><td><strong>ci</strong></td><td>ci alziamo</td></tr>
+<tr><td>voi</td><td><strong>vi</strong></td><td>vi alzate</td></tr>
+<tr><td>loro</td><td><strong>si</strong></td><td>si alzano</td></tr>
+</table><br>
+<strong>Common reflexive verbs:</strong><br>
+<em>alzarsi</em> — to get up &nbsp;|&nbsp; <em>svegliarsi</em> — to wake up &nbsp;|&nbsp; <em>vestirsi</em> — to get dressed<br>
+<em>lavarsi</em> — to wash &nbsp;|&nbsp; <em>sentirsi</em> — to feel &nbsp;|&nbsp; <em>chiamarsi</em> — to be named<br><br>
+<strong>Passato prossimo:</strong><br>
+<em>Mi sono alzato/a alle sette.</em> — I got up at seven.`
+  },
+  {
+    title: 'Modal Verbs',
+    body: `Modal verbs express ability, necessity, or desire. They are followed by an infinitive.<br><br>
+<table class="grammar-table">
+<tr><th>Infinitive</th><th>Meaning</th><th>io</th><th>tu</th><th>lui/lei</th><th>noi</th><th>voi</th><th>loro</th></tr>
+<tr><td><strong>potere</strong></td><td>can / to be able to</td><td>posso</td><td>puoi</td><td>può</td><td>possiamo</td><td>potete</td><td>possono</td></tr>
+<tr><td><strong>volere</strong></td><td>to want</td><td>voglio</td><td>vuoi</td><td>vuole</td><td>vogliamo</td><td>volete</td><td>vogliono</td></tr>
+<tr><td><strong>dovere</strong></td><td>must / to have to</td><td>devo</td><td>devi</td><td>deve</td><td>dobbiamo</td><td>dovete</td><td>devono</td></tr>
+<tr><td><strong>sapere</strong></td><td>to know how to</td><td>so</td><td>sai</td><td>sa</td><td>sappiamo</td><td>sapete</td><td>sanno</td></tr>
+</table><br>
+<strong>Examples:</strong><br>
+<em>Non posso venire stasera.</em> — I can't come tonight.<br>
+<em>Vuole mangiare qualcosa.</em> — She wants to eat something.<br>
+<em>Dobbiamo partire domani.</em> — We have to leave tomorrow.<br>
+<em>Sa suonare il pianoforte.</em> — He knows how to play the piano.`
+  },
+
+  // ── B1 Grammar Reference ──────────────────────────────────────────
+  {
+    title: 'Future Tense (Futuro Semplice)',
+    body: `The <strong>futuro semplice</strong> describes future events, predictions, or suppositions.<br><br>
+<table class="grammar-table">
+<tr><th></th><th>-are (parlare)</th><th>-ere (scrivere)</th><th>-ire (partire)</th></tr>
+<tr><td><strong>io</strong></td><td>parl<strong>erò</strong></td><td>scriv<strong>erò</strong></td><td>part<strong>irò</strong></td></tr>
+<tr><td><strong>tu</strong></td><td>parl<strong>erai</strong></td><td>scriv<strong>erai</strong></td><td>part<strong>irai</strong></td></tr>
+<tr><td><strong>lui/lei</strong></td><td>parl<strong>erà</strong></td><td>scriv<strong>erà</strong></td><td>part<strong>irà</strong></td></tr>
+<tr><td><strong>noi</strong></td><td>parl<strong>eremo</strong></td><td>scriv<strong>eremo</strong></td><td>part<strong>iremo</strong></td></tr>
+<tr><td><strong>voi</strong></td><td>parl<strong>erete</strong></td><td>scriv<strong>erete</strong></td><td>part<strong>irete</strong></td></tr>
+<tr><td><strong>loro</strong></td><td>parl<strong>eranno</strong></td><td>scriv<strong>eranno</strong></td><td>part<strong>iranno</strong></td></tr>
+</table><br>
+<strong>Irregular stems (drop vowel of ending):</strong><br>
+<em>andare → andr-</em> &nbsp;|&nbsp; <em>avere → avr-</em> &nbsp;|&nbsp; <em>essere → sar-</em><br>
+<em>fare → far-</em> &nbsp;|&nbsp; <em>venire → verr-</em> &nbsp;|&nbsp; <em>volere → vorr-</em><br><br>
+<strong>Examples:</strong><br>
+<em>L'anno prossimo andrò in Italia.</em> — Next year I will go to Italy.<br>
+<em>Avrà circa trent'anni.</em> — She must be about thirty. (supposition)`
+  },
+  {
+    title: 'Direct & Indirect Object Pronouns',
+    body: `<strong>Direct object pronouns</strong> replace the person/thing receiving the action directly.<br>
+<table class="grammar-table">
+<tr><th>Person</th><th>Direct</th><th>Indirect</th></tr>
+<tr><td>io</td><td><strong>mi</strong></td><td><strong>mi</strong></td></tr>
+<tr><td>tu</td><td><strong>ti</strong></td><td><strong>ti</strong></td></tr>
+<tr><td>lui</td><td><strong>lo</strong></td><td><strong>gli</strong></td></tr>
+<tr><td>lei</td><td><strong>la</strong></td><td><strong>le</strong></td></tr>
+<tr><td>noi</td><td><strong>ci</strong></td><td><strong>ci</strong></td></tr>
+<tr><td>voi</td><td><strong>vi</strong></td><td><strong>vi</strong></td></tr>
+<tr><td>loro</td><td><strong>li / le</strong></td><td><strong>gli / loro</strong></td></tr>
+</table><br>
+Pronouns go <strong>before</strong> conjugated verbs, or attach to infinitives (drop final -e).<br><br>
+<em>Vedo <strong>Marco</strong>.</em> → <em><strong>Lo</strong> vedo.</em> — I see him.<br>
+<em>Scrivo <strong>a Maria</strong>.</em> → <em><strong>Le</strong> scrivo.</em> — I write to her.<br>
+<em>Voglio <strong>vederti</strong>.</em> — I want to see you.`
+  },
+  {
+    title: 'Comparatives & Superlatives',
+    body: `<strong>Comparatives</strong> compare two things.<br><br>
+<strong>più ... di/che</strong> — more ... than<br>
+<strong>meno ... di/che</strong> — less ... than<br>
+<strong>tanto ... quanto / così ... come</strong> — as ... as<br><br>
+Use <strong>di</strong> when comparing two different nouns/pronouns:<br>
+<em>Marco è più alto <strong>di</strong> Luca.</em> — Marco is taller than Luca.<br><br>
+Use <strong>che</strong> when comparing two qualities, actions, or quantities about the same noun:<br>
+<em>Questo film è più interessante <strong>che</strong> divertente.</em><br><br>
+<strong>Relative superlative</strong> (the most / least):<br>
+<em>il/la/i/le più + adjective</em><br>
+<em>È il ristorante <strong>più</strong> buono della città.</em> — It's the best restaurant in the city.<br><br>
+<strong>Irregular forms:</strong><br>
+buono → <em>migliore</em> (better) / <em>il migliore</em> (the best)<br>
+cattivo → <em>peggiore</em> (worse) / <em>il peggiore</em> (the worst)<br>
+grande → <em>maggiore</em> (greater/older)<br>
+piccolo → <em>minore</em> (lesser/younger)`
   }
 ]
 
@@ -1772,7 +1956,55 @@ const GRAMMAR_QUIZ = [
   { q: '___ abiti? — Where do you live?', a: 'Dove', opts: ['Dove', 'Come', 'Chi', 'Quando'], topic: 'Questions' },
   { q: '___ viene alla festa? — Who is coming?', a: 'Chi', opts: ['Chi', 'Che', 'Come', 'Dove'], topic: 'Questions' },
   { q: '___ costa? — How much does it cost?', a: 'Quanto', opts: ['Quanto', 'Come', 'Che', 'Dove'], topic: 'Questions' },
-  { q: '___ studi italiano? — Why do you study Italian?', a: 'Perché', opts: ['Perché', 'Come', 'Quando', 'Dove'], topic: 'Questions' }
+  { q: '___ studi italiano? — Why do you study Italian?', a: 'Perché', opts: ['Perché', 'Come', 'Quando', 'Dove'], topic: 'Questions' },
+
+  // ── A2 Grammar Quiz Questions (difficulty: 2) ──────────────────
+  // Passato Prossimo
+  { q: 'Ho ___ la pizza. (to eat)', a: 'mangiato', opts: ['mangiato', 'mangiare', 'mangio', 'mangiava'], topic: 'Passato Prossimo', difficulty: 2 },
+  { q: 'Ieri sera ___ molto. (noi / to work)', a: 'abbiamo lavorato', opts: ['abbiamo lavorato', 'avevamo lavorato', 'lavoriamo', 'lavoravamo'], topic: 'Passato Prossimo', difficulty: 2 },
+  { q: 'Lei ___ alle otto. (to arrive)', a: 'è arrivata', opts: ['è arrivata', 'ha arrivato', 'è arrivato', 'arrivava'], topic: 'Passato Prossimo', difficulty: 2 },
+  { q: 'I ragazzi ___ in centro. (to go)', a: 'sono andati', opts: ['sono andati', 'hanno andato', 'andavano', 'vanno'], topic: 'Passato Prossimo', difficulty: 2 },
+  { q: '"Leggere" (to read) past participle is...', a: 'letto', opts: ['letto', 'legguto', 'leggiuto', 'leggo'], topic: 'Passato Prossimo', difficulty: 2 },
+  { q: '"Essere" (to be) uses ___ as auxiliary in passato prossimo.', a: 'essere', opts: ['essere', 'avere', 'stare', 'fare'], topic: 'Passato Prossimo', difficulty: 2 },
+  { q: 'Mi ___ alle sette. (to wake up)', a: 'sono svegliato/a', opts: ['sono svegliato/a', 'ho svegliato', 'mi sveglio', 'mi svegliavo'], topic: 'Passato Prossimo', difficulty: 2 },
+
+  // Imperfetto
+  { q: 'Da bambino ___ sempre la televisione. (io / to watch)', a: 'guardavo', opts: ['guardavo', 'ho guardato', 'guarderò', 'guardo'], topic: 'Imperfetto', difficulty: 2 },
+  { q: 'Quando ___ giovane, abitava a Napoli. (lui)', a: 'era', opts: ['era', 'è stato', 'sarà', 'stava'], topic: 'Imperfetto', difficulty: 2 },
+  { q: 'Ogni estate ___ al mare. (noi / to go)', a: 'andavamo', opts: ['andavamo', 'siamo andati', 'andiamo', 'andremo'], topic: 'Imperfetto', difficulty: 2 },
+  { q: 'The imperfetto is used to describe...', a: 'past habits and ongoing states', opts: ['past habits and ongoing states', 'completed one-off actions', 'future plans', 'commands'], topic: 'Imperfetto', difficulty: 2 },
+
+  // Reflexive Verbs
+  { q: '___ molto tardi ogni mattina. (lui / alzarsi)', a: 'Si alza', opts: ['Si alza', 'Si è alzato', 'Lo alza', 'Alza'], topic: 'Reflexive Verbs', difficulty: 2 },
+  { q: 'Come ___ ? — What is your name?', a: 'ti chiami', opts: ['ti chiami', 'si chiama', 'mi chiamo', 'vi chiamate'], topic: 'Reflexive Verbs', difficulty: 2 },
+  { q: '___ le mani prima di mangiare. (voi / lavarsi)', a: 'Lavatevi', opts: ['Lavatevi', 'Vi lavate', 'Vi lavi', 'Si lavano'], topic: 'Reflexive Verbs', difficulty: 2 },
+  { q: 'In passato prossimo, reflexive verbs use ___ as auxiliary.', a: 'essere', opts: ['essere', 'avere', 'stare', 'fare'], topic: 'Reflexive Verbs', difficulty: 2 },
+
+  // Modal Verbs
+  { q: '___ parlare più lentamente? (tu / potere)', a: 'Puoi', opts: ['Puoi', 'Posso', 'Può', 'Potete'], topic: 'Modal Verbs', difficulty: 2 },
+  { q: '___ finire i compiti prima di uscire. (voi / dovere)', a: 'Dovete', opts: ['Dovete', 'Deve', 'Dobbiamo', 'Devi'], topic: 'Modal Verbs', difficulty: 2 },
+  { q: 'Non ___ dove abita. (io / sapere)', a: 'so', opts: ['so', 'sai', 'sa', 'sappio'], topic: 'Modal Verbs', difficulty: 2 },
+  { q: 'Loro ___ venire alla festa. (volere)', a: 'vogliono', opts: ['vogliono', 'vogliamo', 'vogliate', 'volete'], topic: 'Modal Verbs', difficulty: 2 },
+
+  // ── B1 Grammar Quiz Questions (difficulty: 3) ──────────────────
+  // Future Tense
+  { q: 'L\'anno prossimo ___ in Giappone. (io / andare)', a: 'andrò', opts: ['andrò', 'anderò', 'vado', 'sono andato'], topic: 'Future Tense', difficulty: 3 },
+  { q: 'Domani ___ molto occupata. (lei / essere)', a: 'sarà', opts: ['sarà', 'è stata', 'è', 'stava'], topic: 'Future Tense', difficulty: 3 },
+  { q: 'Quando ___ i soldi, compro la macchina. (io / avere)', a: 'avrò', opts: ['avrò', 'ho', 'avevo', 'avrei'], topic: 'Future Tense', difficulty: 3 },
+  { q: 'The future stem of "venire" is...', a: 'verr-', opts: ['verr-', 'veni-', 'venr-', 'verà-'], topic: 'Future Tense', difficulty: 3 },
+  { q: '___ trenta anni. (lui / avere) — He must be thirty. (supposition)', a: 'Avrà', opts: ['Avrà', 'Ha', 'Aveva', 'Avreva'], topic: 'Future Tense', difficulty: 3 },
+
+  // Object Pronouns
+  { q: 'Vedo Marco ogni giorno. → ___ vedo ogni giorno.', a: 'Lo', opts: ['Lo', 'Gli', 'La', 'Li'], topic: 'Object Pronouns', difficulty: 3 },
+  { q: 'Scrivo una lettera a Sofia. → ___ scrivo una lettera.', a: 'Le', opts: ['Le', 'La', 'Gli', 'Lo'], topic: 'Object Pronouns', difficulty: 3 },
+  { q: 'Chiami i tuoi amici? → ___ chiami?', a: 'Li', opts: ['Li', 'Lo', 'Le', 'Gli'], topic: 'Object Pronouns', difficulty: 3 },
+  { q: 'Indirect pronouns go ___ the conjugated verb.', a: 'before', opts: ['before', 'after', 'at the end of the sentence', 'after the subject'], topic: 'Object Pronouns', difficulty: 3 },
+
+  // Comparatives & Superlatives
+  { q: 'Roma è ___ grande ___ Firenze.', a: 'più ... di', opts: ['più ... di', 'più ... che', 'tanto ... di', 'meno ... che'], topic: 'Comparatives', difficulty: 3 },
+  { q: 'Questo libro è ___ interessante ___ divertente.', a: 'più ... che', opts: ['più ... che', 'più ... di', 'tanto ... quanto', 'meno ... di'], topic: 'Comparatives', difficulty: 3 },
+  { q: 'The superlative of "buono" is...', a: 'il migliore', opts: ['il migliore', 'il più buono', 'il meglio', 'il buonissimo'], topic: 'Comparatives', difficulty: 3 },
+  { q: 'Luca è ___ di tutti i suoi fratelli. (young / youngest)', a: 'il minore', opts: ['il minore', 'il più piccolo', 'il meno grande', 'il minimo'], topic: 'Comparatives', difficulty: 3 }
 ]
 
 // ── A1 Sentence Builder ─────────────────────────────────────────────
@@ -1806,7 +2038,31 @@ const SENTENCES = [
   { en: 'She buys fruit at the market.', words: ['Compra', 'la', 'frutta', 'al', 'mercato.'] },
   { en: 'I think so.', words: ['Penso', 'di', 'sì.'] },
   { en: 'I can\'t come tomorrow.', words: ['Non', 'posso', 'venire', 'domani.'] },
-  { en: 'What time do you eat?', words: ['A', 'che', 'ora', 'mangi?'] }
+  { en: "What time do you eat?", words: ['A', 'che', 'ora', 'mangi?'] },
+
+  // ── A2 Sentences (difficulty: 2) ───────────────────────────────
+  { en: 'Yesterday I ate at a restaurant.', words: ['Ieri', 'ho', 'mangiato', 'in', 'un', 'ristorante.'], difficulty: 2 },
+  { en: 'She woke up very early this morning.', words: ['Stamattina', 'si', 'è', 'svegliata', 'molto', 'presto.'], difficulty: 2 },
+  { en: 'We went to the museum last Sunday.', words: ['Domenica', 'scorsa', 'siamo', 'andati', 'al', 'museo.'], difficulty: 2 },
+  { en: 'When I was young I played football every day.', words: ['Quando', 'ero', 'giovane', 'giocavo', 'a', 'calcio', 'ogni', 'giorno.'], difficulty: 2 },
+  { en: "I can't help you right now.", words: ['Non', 'posso', 'aiutarti', 'adesso.'], difficulty: 2 },
+  { en: 'He wants to learn to speak Italian.', words: ['Vuole', 'imparare', 'a', 'parlare', 'italiano.'], difficulty: 2 },
+  { en: 'They have been living in Rome for two years.', words: ['Vivono', 'a', 'Roma', 'da', 'due', 'anni.'], difficulty: 2 },
+  { en: 'Do you want to come to the party with us?', words: ['Vuoi', 'venire', 'alla', 'festa', 'con', 'noi?'], difficulty: 2 },
+  { en: 'I had to work all weekend.', words: ['Ho', 'dovuto', 'lavorare', 'tutto', 'il', 'fine', 'settimana.'], difficulty: 2 },
+  { en: 'The weather was beautiful yesterday.', words: ['Ieri', 'il', 'tempo', 'era', 'bellissimo.'], difficulty: 2 },
+  { en: 'She gets dressed quickly and leaves the house.', words: ['Si', 'veste', 'in', 'fretta', 'e', 'esce', 'di', 'casa.'], difficulty: 2 },
+  { en: 'We have never been to Sicily.', words: ['Non', 'siamo', 'mai', 'stati', 'in', 'Sicilia.'], difficulty: 2 },
+
+  // ── B1 Sentences (difficulty: 3) ───────────────────────────────
+  { en: 'Next summer I will travel around Europe.', words: ['La', 'prossima', 'estate', 'viaggerò', 'per', "l'Europa."], difficulty: 3 },
+  { en: 'I wrote her a long letter to explain everything.', words: ['Le', 'ho', 'scritto', 'una', 'lunga', 'lettera', 'per', 'spiegare', 'tutto.'], difficulty: 3 },
+  { en: 'He must be about forty years old.', words: ['Avrà', 'circa', 'quarant\'anni.'], difficulty: 3 },
+  { en: 'The situation is more complicated than I thought.', words: ['La', 'situazione', 'è', 'più', 'complicata', 'di', 'quanto', 'pensassi.'], difficulty: 3 },
+  { en: 'Can you call them and tell them we are late?', words: ['Puoi', 'chiamarli', 'e', 'dirgli', 'che', 'siamo', 'in', 'ritardo?'], difficulty: 3 },
+  { en: 'If I had more time, I would study medicine.', words: ['Se', 'avessi', 'più', 'tempo,', 'studierei', 'medicina.'], difficulty: 3 },
+  { en: "The film that I saw last night was the best of the year.", words: ['Il', 'film', 'che', 'ho', 'visto', 'ieri', 'sera', 'era', 'il', 'migliore', "dell'anno."], difficulty: 3 },
+  { en: 'She has been working at this company for over ten years.', words: ['Lavora', 'in', 'questa', 'azienda', 'da', 'più', 'di', 'dieci', 'anni.'], difficulty: 3 }
 ]
 
 // ── A2/B1 Reading Passages ──────────────────────────────────────────
@@ -2223,10 +2479,173 @@ const READING_PASSAGES = [
       }
     ],
     audioUrl: null
+  },
+
+  // ── Additional A2 Passages ───────────────────────────────────────
+  {
+    title: 'Un weekend in montagna',
+    level: 2,
+    tags: ['travel', 'past tense', 'nature', 'weather'],
+    body: `<p>Il weekend scorso sono andato in montagna con un gruppo di amici. <mark data-word="Siamo partiti">Siamo partiti</mark> sabato mattina presto con la macchina di Giulia. Il viaggio è durato circa due ore.</p>
+<p>Quando siamo <mark data-word="arrivati">arrivati</mark>, il tempo era <mark data-word="nuvoloso">nuvoloso</mark> ma non pioveva. Abbiamo <mark data-word="fatto un'escursione">fatto un'escursione</mark> di tre ore lungo i sentieri del bosco. Il paesaggio era bellissimo — gli alberi avevano ancora le foglie <mark data-word="autunnali">autunnali</mark> rosse e gialle.</p>
+<p>La sera abbiamo <mark data-word="cenato">cenato</mark> in un piccolo rifugio, che serviva piatti tipici della regione. Ho mangiato una zuppa di fagioli deliziosa. La domenica mattina, prima di tornare a casa, abbiamo fatto colazione con il pane fresco e il miele locale.</p>`,
+    vocabGlossary: [
+      { italian: 'Siamo partiti', english: 'We left (passato prossimo of partire)' },
+      { italian: 'arrivati', english: 'arrived (past participle, m.pl.)' },
+      { italian: 'nuvoloso', english: 'cloudy' },
+      { italian: "fatto un'escursione", english: 'went on a hike' },
+      { italian: 'autunnali', english: 'autumnal / of autumn' },
+      { italian: 'cenato', english: 'had dinner (past participle)' },
+      { italian: 'rifugio', english: 'mountain hut / shelter' },
+      { italian: 'il miele', english: 'honey' }
+    ],
+    questions: [
+      {
+        text: 'How did the group travel to the mountains?',
+        options: ['By train', 'By bus', 'By car', 'On foot'],
+        correctIndex: 2
+      },
+      {
+        text: 'What was the weather like when they arrived?',
+        options: ['Sunny and warm', 'Cloudy but dry', 'Rainy and cold', 'Snowing'],
+        correctIndex: 1
+      },
+      {
+        text: 'How long did the hike last?',
+        options: ['One hour', 'Two hours', 'Three hours', 'All day'],
+        correctIndex: 2
+      },
+      {
+        text: 'What did the narrator eat for dinner?',
+        options: ['Pasta al ragù', 'A bean soup', 'Grilled meat', 'A cheese plate'],
+        correctIndex: 1
+      }
+    ],
+    audioUrl: null
+  },
+  {
+    title: 'Cerco lavoro',
+    level: 2,
+    tags: ['work', 'daily life', 'reflexive verbs', 'A2 vocab'],
+    body: `<p>Da tre mesi <mark data-word="sto cercando">sto cercando</mark> lavoro. Ogni giorno mando il mio <mark data-word="curriculum">curriculum</mark> a diverse aziende e aspetto una risposta. A volte è <mark data-word="scoraggiante">scoraggiante</mark>, ma cerco di rimanere positivo.</p>
+<p>La settimana scorsa ho avuto un <mark data-word="colloquio">colloquio</mark> in una piccola società di informatica. Mi sono <mark data-word="preparato">preparato</mark> bene: ho studiato l'azienda, ho pensato alle domande più comuni e mi sono vestito in modo professionale.</p>
+<p>Il colloquio è andato abbastanza bene. Il selezionatore mi ha chiesto della mia esperienza e delle mie competenze. Alla fine mi ha detto che mi <mark data-word="contatteranno">contatteranno</mark> entro una settimana. Adesso <mark data-word="ho le dita incrociate">ho le dita incrociate</mark>!</p>`,
+    vocabGlossary: [
+      { italian: 'sto cercando', english: 'I am looking for (present continuous)' },
+      { italian: 'curriculum', english: 'CV / résumé' },
+      { italian: 'scoraggiante', english: 'discouraging' },
+      { italian: 'colloquio', english: 'job interview' },
+      { italian: 'preparato', english: 'prepared (past participle)' },
+      { italian: 'contatteranno', english: 'they will contact (future tense)' },
+      { italian: 'ho le dita incrociate', english: 'I have my fingers crossed' }
+    ],
+    questions: [
+      {
+        text: 'How long has the narrator been looking for work?',
+        options: ['One week', 'One month', 'Three months', 'Six months'],
+        correctIndex: 2
+      },
+      {
+        text: 'What type of company did the narrator interview at?',
+        options: ['A restaurant', 'A law firm', 'A small IT company', 'A hospital'],
+        correctIndex: 2
+      },
+      {
+        text: 'How did the narrator prepare for the interview?',
+        options: ['He asked a friend for help', 'He researched the company and practised common questions', 'He read a book about interviews', 'He did nothing special'],
+        correctIndex: 1
+      },
+      {
+        text: 'When will the narrator hear back?',
+        options: ['The same day', 'The next morning', 'Within a week', 'Within a month'],
+        correctIndex: 2
+      }
+    ],
+    audioUrl: null
+  },
+
+  // ── Additional B1 Passages ───────────────────────────────────────
+  {
+    title: 'La tecnologia nella vita quotidiana',
+    level: 3,
+    tags: ['technology', 'modern life', 'opinions', 'future tense'],
+    body: `<p>È difficile immaginare la vita moderna senza la tecnologia. Lo smartphone che teniamo in mano è diventato uno strumento fondamentale: ci permette di comunicare, lavorare, fare acquisti e persino imparare nuove lingue, tutto in pochi secondi.</p>
+<p>Tuttavia, molti esperti <mark data-word="mettono in guardia">mettono in guardia</mark> contro l'uso eccessivo dei dispositivi digitali. Studi recenti mostrano che passare troppe ore davanti agli schermi può <mark data-word="influire negativamente">influire negativamente</mark> sulla concentrazione, il sonno e il benessere mentale, soprattutto nei giovani.</p>
+<p>Il dibattito sul futuro della tecnologia è aperto. Alcuni credono che l'intelligenza artificiale <mark data-word="rivoluzionerà">rivoluzionerà</mark> ogni settore, dalla medicina all'educazione. Altri invece temono che <mark data-word="sostituirà">sostituirà</mark> milioni di posti di lavoro. La verità, probabilmente, sta nel mezzo: starà a noi decidere come usare questi strumenti in modo <mark data-word="consapevole">consapevole</mark>.</p>`,
+    vocabGlossary: [
+      { italian: 'mettono in guardia', english: 'warn / put on guard' },
+      { italian: 'influire negativamente', english: 'to influence negatively / affect negatively' },
+      { italian: 'rivoluzionerà', english: 'will revolutionise (future tense)' },
+      { italian: 'sostituirà', english: 'will replace (future tense)' },
+      { italian: 'consapevole', english: 'aware / consciously informed' },
+      { italian: 'dispositivi digitali', english: 'digital devices' },
+      { italian: 'il benessere mentale', english: 'mental wellbeing' }
+    ],
+    questions: [
+      {
+        text: 'According to the text, what can excessive screen time negatively affect?',
+        options: ['Physical fitness only', 'Concentration, sleep and mental wellbeing', 'Grammar skills', 'Social media use'],
+        correctIndex: 1
+      },
+      {
+        text: 'What do some people fear artificial intelligence will do?',
+        options: ['Improve healthcare', 'Replace millions of jobs', 'Make smartphones obsolete', 'Reduce internet speeds'],
+        correctIndex: 1
+      },
+      {
+        text: 'What does the author suggest at the end of the passage?',
+        options: ['We should avoid technology entirely', 'Technology is always harmful', 'It is up to us to use technology consciously', 'AI will definitely solve all problems'],
+        correctIndex: 2
+      },
+      {
+        text: 'The word "consapevole" in this context means...', 
+        options: ['Expensive', 'Aware / informed', 'Dangerous', 'Revolutionary'],
+        correctIndex: 1
+      }
+    ],
+    audioUrl: null
+  },
+  {
+    title: 'Una decisione difficile',
+    level: 3,
+    tags: ['B1', 'narrative', 'past tense', 'emotions', 'conditional'],
+    body: `<p>Mia sorella Valentina aveva ricevuto due offerte di lavoro nello stesso giorno. La prima era in una grande banca di Milano — uno stipendio alto, un ufficio moderno, ma tante ore di lavoro e molto stress. La seconda era in una piccola ONG che si occupava di ambiente, con uno stipendio più basso, ma con orari flessibili e un lavoro che le <mark data-word="avrebbe dato">avrebbe dato</mark> grande soddisfazione.</p>
+<p>Per settimane Valentina <mark data-word="ha riflettuto">ha riflettuto</mark> sulla decisione. Ne ha parlato con i genitori, con gli amici, con il suo ragazzo. Tutti avevano opinioni diverse. Nostro padre diceva che la stabilità economica era fondamentale; la sua amica Carla invece la <mark data-word="incoraggiava">incoraggiava</mark> a seguire la passione.</p>
+<p>Alla fine, Valentina ha scelto l'ONG. "Se scegliessi solo i soldi," mi ha detto, "<mark data-word="non sarei felice">non sarei felice</mark>." Adesso lavora da sei mesi e, nonostante lo stipendio minore, sembra più <mark data-word="serena">serena</mark> che mai.</p>`,
+    vocabGlossary: [
+      { italian: 'avrebbe dato', english: 'would have given (conditional perfect)' },
+      { italian: 'ha riflettuto', english: 'she thought carefully / reflected (passato prossimo)' },
+      { italian: 'incoraggiava', english: 'was encouraging (imperfetto)' },
+      { italian: 'non sarei felice', english: 'I would not be happy (conditional)' },
+      { italian: 'serena', english: 'calm / at peace / content' },
+      { italian: "l'ONG", english: 'NGO (non-governmental organisation)' },
+      { italian: 'la soddisfazione', english: 'satisfaction' }
+    ],
+    questions: [
+      {
+        text: 'What was the advantage of the bank job?',
+        options: ['Flexible hours and low stress', 'A high salary and a modern office', 'Meaningful work for a good cause', 'The chance to travel abroad'],
+        correctIndex: 1
+      },
+      {
+        text: 'What did Valentina\'s father think was most important?',
+        options: ['Following her passion', 'Economic stability', 'Work-life balance', 'Living close to family'],
+        correctIndex: 1
+      },
+      {
+        text: 'Which job did Valentina choose?',
+        options: ['The bank in Milan', 'She chose neither', 'The small NGO', 'She is still deciding'],
+        correctIndex: 2
+      },
+      {
+        text: 'How does Valentina feel after six months in her new job?',
+        options: ['Regretful and stressed', 'Indifferent', 'Calmer and happier than before', 'Bored and underpaid'],
+        correctIndex: 2
+      }
+    ],
+    audioUrl: null
   }
 ]
-
-// ── A2/B1 Idiomatic Expressions ─────────────────────────────────────
 const IDIOMS = [
   // ── A2 Idioms (difficulty: 2) ────────────────────────────────────
   {

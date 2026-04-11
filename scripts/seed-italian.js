@@ -130,7 +130,7 @@ async function seedGrammarQuestions() {
         correctAnswer: q.a,
         options:       q.opts,
         topic:         q.topic,
-        difficulty:    1
+        difficulty:    q.difficulty || 1
     }))
     await GrammarQuestion.insertMany(docs)
     console.log(`  GrammarQuestions: ${docs.length} inserted`)
@@ -142,7 +142,7 @@ async function seedSentences() {
     const docs = SENTENCES.map(s => ({
         english:    s.en,
         words:      s.words,
-        difficulty: 1
+        difficulty: s.difficulty || 1
     }))
     await SentenceExercise.insertMany(docs)
     console.log(`  SentenceExercises: ${docs.length} inserted`)
