@@ -15,6 +15,11 @@
   --brand:        #e8a850;
   --brand-strong: #d4883a;
   --accent2:      #c85c2a;
+
+  /* Map legacy variable names used by verb cards / modal */
+  --card-bg:      #1d1a15;
+  --fg:           #f5f0e8;
+  --muted:        #b8a890;
 }
 
 /* ── Typography ──────────────────────────────────────────────────── */
@@ -170,6 +175,65 @@ h1, h2, h3, h4, h5 {
   color: #12100e;
 }
 
+/* ── Verb reference cards ────────────────────────────────────────── */
+.ita-verb-ref-card {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.ita-verb-ref-card:hover,
+.ita-verb-ref-card:focus {
+  border-color: var(--brand);
+  box-shadow: 0 4px 16px rgba(232, 168, 80, 0.2);
+}
+.ita-vrc-infinitive { color: var(--text); }
+.ita-vrc-translation { color: var(--text-soft); }
+
+/* ── Verb modal ──────────────────────────────────────────────────── */
+.ita-verb-modal {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.ita-verb-modal-header {
+  border-bottom-color: var(--border);
+}
+.ita-verb-modal-title {
+  color: var(--brand);
+  font-family: 'Fraunces', serif;
+}
+.ita-verb-modal-trans { color: var(--text-soft); }
+.ita-verb-modal-tabs  { border-bottom-color: var(--border); }
+.ita-verb-modal-tab   { color: var(--text-soft); }
+.ita-verb-modal-tab:hover { color: var(--text); }
+.ita-verb-modal-tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+.ita-tense-heading  { color: var(--brand); }
+.ita-examples-heading { color: var(--brand); }
+.ita-tense-table td { border-bottom-color: var(--border); }
+.ita-pron  { color: var(--text-soft); }
+.ita-form  { color: var(--text); }
+.ita-ex-it { color: var(--text); }
+.ita-ex-en { color: var(--text-soft); }
+.ita-aux-note {
+  background: rgba(232, 168, 80, 0.08);
+  color: var(--text-soft);
+}
+.ita-verb-modal-examples { border-top-color: var(--border); }
+
+/* verb search/filter inputs */
+.ita-verb-ref-search,
+.ita-verb-ref-filter {
+  background: var(--surface-soft) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+.ita-verb-ref-search:focus,
+.ita-verb-ref-filter:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px rgba(232, 168, 80, 0.15) !important;
+}
+
 /* ── Grammar: two-column spread layout ──────────────────────────── */
 .ita-grammar-list {
   display: grid;
@@ -185,18 +249,21 @@ h1, h2, h3, h4, h5 {
   color: var(--brand);
 }
 .ita-grammar-body {
-  display: grid !important;
-  grid-template-columns: 1fr;
+  /* No display override here — let .d-none control visibility */
   gap: 1rem;
   margin-top: 1rem;
   color: var(--text-soft);
   font-size: 0.97rem;
   line-height: 1.75;
 }
-/* When open the body gets the two-col treatment on wider screens */
+/* Only apply grid layout when the body is actually visible */
+.ita-grammar-body:not(.d-none) {
+  display: grid;
+  grid-template-columns: 1fr;
+}
 @media (min-width: 640px) {
   .ita-grammar-body:not(.d-none) {
-    display: grid !important;
+    display: grid;
   }
 }
 /* Rule: left half, example callout: right half */
