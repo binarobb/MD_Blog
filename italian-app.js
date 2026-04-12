@@ -1792,7 +1792,7 @@
           <div class="card-body" style="padding:0.75rem 1rem;">
             <h3 class="card-title ita-grammar-toggle ls-lotd-grammar-toggle" role="button" tabindex="0" style="font-size:0.95rem;margin:0;">
               &#x1F4D6; ${grammarTip.title}
-              <span class="lotd-expand-icon">+</span>
+              <span class="ita-chevron">&#9662;</span>
             </h3>
             <div class="ita-grammar-body d-none" id="lotd-grammar-body">
               ${grammarTip.body}
@@ -1807,9 +1807,8 @@
     if (grammarToggle) {
       grammarToggle.addEventListener('click', () => {
         const body = document.getElementById('lotd-grammar-body')
-        const icon = grammarToggle.querySelector('.lotd-expand-icon')
         body.classList.toggle('d-none')
-        icon.textContent = body.classList.contains('d-none') ? '+' : '\u2212'
+        grammarToggle.querySelector('.ita-chevron').classList.toggle('ita-chevron-open')
       })
       grammarToggle.addEventListener('keydown', e => { if (e.key === 'Enter') grammarToggle.click() })
     }
