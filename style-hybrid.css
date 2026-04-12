@@ -250,6 +250,13 @@
   color: var(--text-soft);
 }
 .ls-lotd-idiom strong { font-style: normal; color: var(--text); }
+/* Grammar accordion card nested inside LOTD */
+.ls-lotd .ls-lotd-grammar-card {
+  background: transparent;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  margin-top: 0.75rem;
+}
 .ls-lotd-footer {
   margin-top: 0.85rem;
   font-size: 0.8rem;

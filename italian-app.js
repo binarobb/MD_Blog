@@ -1787,14 +1787,30 @@
             <div class="ls-word-it">${w.it}</div>
             <div class="ls-word-en">${w.en}</div>
           </div>`).join('')}</div>` : ''}
-        ${grammarTip ? `<div class="ls-lotd-grammar">&#x1F4D6; <strong>${grammarTip.title}</strong> &mdash; <a href="#" class="ita-tab ls-lotd-ref-link" data-section="grammar" style="color:var(--brand);font-size:0.85rem;">view in Reference &rarr;</a></div>` : ''}
+        ${grammarTip ? `
+        <div class="content-card ita-grammar-card ls-lotd-grammar-card">
+          <div class="card-body" style="padding:0.75rem 1rem;">
+            <h3 class="card-title ita-grammar-toggle ls-lotd-grammar-toggle" role="button" tabindex="0" style="font-size:0.95rem;margin:0;">
+              &#x1F4D6; ${grammarTip.title}
+              <span class="ita-chevron">&#9662;</span>
+            </h3>
+            <div class="ita-grammar-body d-none" id="lotd-grammar-body">
+              ${grammarTip.body}
+            </div>
+          </div>
+        </div>` : ''}
         ${idiom ? `<div class="ls-lotd-idiom"><strong>${idiom.idiom || idiom.expression || idiom.italian || ''}</strong>${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}</div>` : ''}
         <div class="ls-lotd-footer"><span>&#x1F550;</span> Updated daily — come back tomorrow for a new lesson!</div>
       </div>`
-    // Wire the "view in Reference" link (rendered after main tab listeners attached)
-    const refLink = container.querySelector('.ls-lotd-ref-link')
-    if (refLink) {
-      refLink.addEventListener('click', e => { e.preventDefault(); renderGrammar() })
+    // Wire grammar accordion inside LOTD (rendered after main tab listeners)
+    const grammarToggle = container.querySelector('.ls-lotd-grammar-toggle')
+    if (grammarToggle) {
+      grammarToggle.addEventListener('click', () => {
+        const body = document.getElementById('lotd-grammar-body')
+        body.classList.toggle('d-none')
+        grammarToggle.querySelector('.ita-chevron').classList.toggle('ita-chevron-open')
+      })
+      grammarToggle.addEventListener('keydown', e => { if (e.key === 'Enter') grammarToggle.click() })
     }
   }
 
