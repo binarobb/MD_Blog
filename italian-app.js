@@ -1792,7 +1792,7 @@
           <div class="card-body" style="padding:0.75rem 1rem;">
             <h3 class="card-title ita-grammar-toggle ls-lotd-grammar-toggle" role="button" tabindex="0" style="font-size:0.95rem;margin:0;">
               &#x1F4D6; ${grammarTip.title}
-              <span class="ita-chevron">&#9662;</span>
+              <span class="lotd-expand-icon">+</span>
             </h3>
             <div class="ita-grammar-body d-none" id="lotd-grammar-body">
               ${grammarTip.body}
