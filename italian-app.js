@@ -1807,8 +1807,9 @@
     if (grammarToggle) {
       grammarToggle.addEventListener('click', () => {
         const body = document.getElementById('lotd-grammar-body')
+        const icon = grammarToggle.querySelector('.lotd-expand-icon')
         body.classList.toggle('d-none')
-        grammarToggle.querySelector('.ita-chevron').classList.toggle('ita-chevron-open')
+        icon.textContent = body.classList.contains('d-none') ? '+' : '\u2212'
       })
       grammarToggle.addEventListener('keydown', e => { if (e.key === 'Enter') grammarToggle.click() })
     }

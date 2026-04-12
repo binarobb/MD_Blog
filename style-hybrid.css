@@ -257,6 +257,40 @@
   border-radius: 8px !important;
   margin-top: 0.75rem;
 }
+.ls-lotd-grammar-toggle {
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 6px;
+  padding: 0.35rem 0.4rem !important;
+  transition: background 0.15s;
+  user-select: none;
+}
+.ls-lotd-grammar-toggle:hover {
+  background: rgba(232, 168, 80, 0.07);
+}
+.lotd-expand-icon {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--brand);
+  background: rgba(232, 168, 80, 0.12);
+  border: 1px solid rgba(232, 168, 80, 0.3);
+  border-radius: 999px;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.ls-lotd-grammar-toggle:hover .lotd-expand-icon {
+  background: rgba(232, 168, 80, 0.22);
+}
 .ls-lotd-footer {
   margin-top: 0.85rem;
   font-size: 0.8rem;
