@@ -1787,10 +1787,15 @@
             <div class="ls-word-it">${w.it}</div>
             <div class="ls-word-en">${w.en}</div>
           </div>`).join('')}</div>` : ''}
-        ${grammarTip ? `<div class="ls-lotd-grammar"><strong>${grammarTip.title}</strong>${grammarTip.body ? '<br><span>' + grammarTip.body.replace(/<[^>]+>/g, '').slice(0, 120).trim() + (grammarTip.body.replace(/<[^>]+>/g, '').length > 120 ? '…' : '') + '</span>' : ''}</div>` : ''}
+        ${grammarTip ? `<div class="ls-lotd-grammar">&#x1F4D6; <strong>${grammarTip.title}</strong> &mdash; <a href="#" class="ita-tab ls-lotd-ref-link" data-section="grammar" style="color:var(--brand);font-size:0.85rem;">view in Reference &rarr;</a></div>` : ''}
         ${idiom ? `<div class="ls-lotd-idiom"><strong>${idiom.idiom || idiom.expression || idiom.italian || ''}</strong>${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}</div>` : ''}
         <div class="ls-lotd-footer"><span>&#x1F550;</span> Updated daily — come back tomorrow for a new lesson!</div>
       </div>`
+    // Wire the "view in Reference" link (rendered after main tab listeners attached)
+    const refLink = container.querySelector('.ls-lotd-ref-link')
+    if (refLink) {
+      refLink.addEventListener('click', e => { e.preventDefault(); renderGrammar() })
+    }
   }
 
   // ── Reset ────────────────────────────────────────────────────────
