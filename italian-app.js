@@ -1758,6 +1758,41 @@
     }
   }
 
+  // ── Lesson of the Day ────────────────────────────────────────────
+  function renderLessonOfDay() {
+    const container = document.getElementById('lesson-of-day')
+    if (!container) return
+    const vocab   = (appData.vocab   || []).filter(v => v.italian && v.english)
+    const grammar = (appData.grammar || [])
+    const idioms  = (appData.idioms  || [])
+    if (!vocab.length && !grammar.length) return
+    const today = new Date().toISOString().slice(0, 10)
+    const seed  = today.replace(/-/g, '') | 0
+    const pick  = (arr, n) => {
+      const out = []
+      for (let i = 0; i < n && arr.length; i++) { out.push(arr[(seed + i * 7) % arr.length]) }
+      return out
+    }
+    const words      = pick(vocab, 5)
+    const grammarTip = grammar.length ? grammar[seed % grammar.length] : null
+    const idiom      = idioms.length  ? idioms[seed  % idioms.length]  : null
+    container.innerHTML = `
+      <div class="ls-lotd">
+        <div class="ls-lotd-header">
+          <span class="ls-lotd-badge">Today</span>
+          <h3>&#x1F4DA; Lesson of the Day</h3>
+        </div>
+        ${words.length ? `<div class="ls-lotd-grid">${words.map(w => `
+          <div class="ls-lotd-word">
+            <div class="ls-word-it">${w.italian}</div>
+            <div class="ls-word-en">${w.english}</div>
+          </div>`).join('')}</div>` : ''}
+        ${grammarTip ? `<div class="ls-lotd-grammar"><strong>Grammar tip:</strong> ${grammarTip.title}</div>` : ''}
+        ${idiom ? `<div class="ls-lotd-idiom"><strong>${idiom.expression || idiom.italian || ''}</strong>${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}</div>` : ''}
+        <div class="ls-lotd-footer"><span>&#x1F550;</span> Updated daily — come back tomorrow for a new lesson!</div>
+      </div>`
+  }
+
   // ── Reset ────────────────────────────────────────────────────────
   function resetStats() {
     if (confirm('Reset all Italian learning progress?')) {
@@ -1828,6 +1863,7 @@
       })
 
       initStreak()
+      renderLessonOfDay()
       showSection('dashboard')
     }
   }

@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/style-tuscan.css">
+    <link rel="stylesheet" href="/style-hybrid.css">
     <title>Italian — Intentional Owl</title>
 </head>
 <body>
@@ -42,42 +43,38 @@
         </div>
     </nav>
 
-    <!-- Level selector bar -->
-    <div class="ita-level-bar">
-        <div class="page-shell" style="padding-top:0;padding-bottom:0;">
-            <div class="ita-levels">
-                <span class="ita-level-label">Level:</span>
-                <button class="ita-level-btn active" data-level="all">All</button>
-                <button class="ita-level-btn" data-level="a1">A1</button>
-                <button class="ita-level-btn" data-level="a2">A2</button>
-                <button class="ita-level-btn" data-level="b1">B1</button>
+    <div class="hybrid-layout">
+        <aside class="hybrid-sidebar" id="hybrid-sidebar">
+            <div class="hybrid-level-group">
+                <span class="hybrid-section-label">Level</span>
+                <div class="ita-levels hybrid-levels">
+                    <button class="ita-level-btn active" data-level="all">All</button>
+                    <button class="ita-level-btn" data-level="a1">A1</button>
+                    <button class="ita-level-btn" data-level="a2">A2</button>
+                    <button class="ita-level-btn" data-level="b1">B1</button>
+                </div>
             </div>
-            <div class="ita-streak" id="ita-streak" title="Your practice streak">
-                <span class="ita-streak-flame">🔥</span>
-                <span class="ita-streak-count" id="ita-streak-count">0</span>
-                <span class="ita-streak-label">day streak</span>
+            <div class="hybrid-streak-wrap">
+                <div class="ita-streak" id="ita-streak" title="Your practice streak">
+                    <span class="ita-streak-flame">🔥</span>
+                    <span class="ita-streak-count" id="ita-streak-count">0</span>
+                    <span class="ita-streak-label">day streak</span>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- SPA sub-nav tabs -->
-    <div class="ita-tabs-bar">
-        <div class="page-shell" style="padding-top:0;padding-bottom:0;">
-            <div class="ita-tabs">
-                <a href="#" class="ita-tab active" data-section="dashboard">Dashboard</a>
-                <a href="#" class="ita-tab" data-section="vocab">Vocabulary</a>
-                <a href="#" class="ita-tab" data-section="verbs">Verbs</a>
-                <a href="#" class="ita-tab" data-section="grammarquiz">Grammar Quiz</a>
-                <a href="#" class="ita-tab" data-section="sentences">Sentences</a>
-                <a href="#" class="ita-tab" data-section="reading">Reading</a>
-                <a href="#" class="ita-tab" data-section="idioms">Idioms</a>
-                <a href="#" class="ita-tab" data-section="grammar">Reference</a>
-                <a href="#" class="ita-tab" data-section="speak">🎙 Speak</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="page-shell">
+            <nav class="hybrid-nav">
+                <span class="hybrid-section-label">Navigate</span>
+                <a href="#" class="ita-tab hybrid-nav-item active" data-section="dashboard"><span class="hybrid-nav-icon">🏠</span> Dashboard</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-vocab" data-section="vocab"><span class="hybrid-nav-icon">📚</span> Vocabulary</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-verbs" data-section="verbs"><span class="hybrid-nav-icon">⚡</span> Verbs</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-grammarquiz" data-section="grammarquiz"><span class="hybrid-nav-icon">✏️</span> Grammar Quiz</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-sentences" data-section="sentences"><span class="hybrid-nav-icon">🖊</span> Sentences</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-reading" data-section="reading"><span class="hybrid-nav-icon">📖</span> Reading</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-idioms" data-section="idioms"><span class="hybrid-nav-icon">🌿</span> Idioms</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-grammar" data-section="grammar"><span class="hybrid-nav-icon">📋</span> Reference</a>
+                <a href="#" class="ita-tab hybrid-nav-item h-speak" data-section="speak"><span class="hybrid-nav-icon">🎙</span> Speak</a>
+            </nav>
+        </aside>
+        <main class="hybrid-main">
 
         <!-- DASHBOARD -->
         <div id="section-dashboard" class="ita-section">
@@ -86,6 +83,7 @@
                 <p class="lead">Build vocabulary, master verb conjugations, read Italian texts, and explore idioms &mdash; A1 through B1.</p>
             </div>
             <div id="dash-content"></div>
+            <div id="lesson-of-day"></div>
         </div>
 
         <!-- VOCABULARY -->
@@ -138,7 +136,18 @@
             </div>
         </div>
 
-    </div><!-- /.page-shell -->
+        </main>
+    </div><!-- /.hybrid-layout -->
+
+    <!-- Mobile bottom nav -->
+    <nav class="hybrid-bottom-nav" id="hybrid-bottom-nav">
+        <a href="#" class="ita-tab hybrid-bnav-item active" data-section="dashboard"><span>🏠</span><small>Home</small></a>
+        <a href="#" class="ita-tab hybrid-bnav-item h-vocab" data-section="vocab"><span>📚</span><small>Vocab</small></a>
+        <a href="#" class="ita-tab hybrid-bnav-item h-verbs" data-section="verbs"><span>⚡</span><small>Verbs</small></a>
+        <a href="#" class="ita-tab hybrid-bnav-item h-grammarquiz" data-section="grammarquiz"><span>✏️</span><small>Quiz</small></a>
+        <a href="#" class="ita-tab hybrid-bnav-item h-reading" data-section="reading"><span>📖</span><small>Read</small></a>
+        <a href="#" class="ita-tab hybrid-bnav-item h-grammar" data-section="grammar"><span>📋</span><small>Ref</small></a>
+    </nav>
 
     <!-- Gufo: Italian Voice Tutor -->
     <div id="gufo-container">

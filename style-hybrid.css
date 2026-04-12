@@ -1,0 +1,320 @@
+/*
+ * style-hybrid.css — Hybrid (A + B + C)
+ * Sidebar navigation + section accents + Lesson of the Day
+ * Loads AFTER style-tuscan.css (which provides base tokens + component styles)
+ */
+
+/* ── Section accent palette ──────────────────────────────────────── */
+:root {
+  --sidebar-w: 220px;
+  --c-vocab:   #3ecfc0;   /* teal       */
+  --c-verbs:   #e07a5f;   /* terracotta */
+  --c-quiz:    #fbbf24;   /* bright amber */
+  --c-sent:    #7abf82;   /* sage green  */
+  --c-read:    #5bb8a8;   /* seafoam     */
+  --c-idioms:  #f5cc6a;   /* warm gold   */
+  --c-ref:     #a09070;   /* warm stone  */
+}
+
+/* ── Hide old top bars (replaced by sidebar) ─────────────────────── */
+.ita-level-bar,
+.ita-tabs-bar { display: none !important; }
+
+/* ── Layout shell ────────────────────────────────────────────────── */
+.hybrid-layout {
+  display: flex;
+  min-height: calc(100vh - 56px);
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+.hybrid-sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: #0e0c09;
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  padding: 1.25rem 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.hybrid-level-group {
+  padding: 0 1rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.5rem;
+}
+
+.hybrid-section-label {
+  display: block;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 0 0 0.4rem 0.15rem;
+  opacity: 0.55;
+}
+
+.hybrid-levels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+}
+.hybrid-levels .ita-level-btn {
+  font-size: 0.78rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 6px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ── Streak in sidebar ───────────────────────────────────────────── */
+.hybrid-streak-wrap {
+  padding: 0.6rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.35rem;
+}
+.hybrid-streak-wrap .ita-streak {
+  width: 100%;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+/* ── Sidebar nav list ────────────────────────────────────────────── */
+.hybrid-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0.5rem;
+  flex: 1;
+}
+.hybrid-nav .hybrid-section-label {
+  padding-left: 0.5rem;
+  margin-bottom: 0.15rem;
+}
+
+.hybrid-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.52rem 0.75rem;
+  border-radius: 8px;
+  margin: 1px 0;
+  color: var(--text-soft) !important;
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hybrid-nav-item:hover {
+  background: var(--surface-soft);
+  color: var(--text) !important;
+}
+.hybrid-nav-icon {
+  font-size: 0.95rem;
+  width: 1.3rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Active — default (dashboard) uses brand amber */
+.hybrid-nav-item.active {
+  background: rgba(232, 168, 80, 0.12);
+  color: var(--brand) !important;
+}
+
+/* Per-section active accents */
+.hybrid-nav-item.h-vocab.active       { background: rgba(62,207,192,0.1);  color: var(--c-vocab) !important; }
+.hybrid-nav-item.h-verbs.active       { background: rgba(224,122,95,0.1);  color: var(--c-verbs) !important; }
+.hybrid-nav-item.h-grammarquiz.active { background: rgba(251,191,36,0.1);  color: var(--c-quiz)  !important; }
+.hybrid-nav-item.h-sentences.active   { background: rgba(122,191,130,0.1); color: var(--c-sent)  !important; }
+.hybrid-nav-item.h-reading.active     { background: rgba(91,184,168,0.1);  color: var(--c-read)  !important; }
+.hybrid-nav-item.h-idioms.active      { background: rgba(245,204,106,0.1); color: var(--c-idioms)!important; }
+.hybrid-nav-item.h-grammar.active     { background: rgba(160,144,112,0.1); color: var(--c-ref)   !important; }
+.hybrid-nav-item.h-speak.active       { background: rgba(232, 168, 80, 0.12); color: var(--brand)!important; }
+
+/* ── Main content ────────────────────────────────────────────────── */
+.hybrid-main {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 2rem;
+  max-width: 960px;
+}
+
+/* ── Section accent headings ─────────────────────────────────────── */
+#section-vocab       h2 { color: var(--c-vocab);  }
+#section-verbs       h2 { color: var(--c-verbs);  }
+#section-grammarquiz h2 { color: var(--c-quiz);   }
+#section-sentences   h2 { color: var(--c-sent);   }
+#section-reading     h2 { color: var(--c-read);   }
+#section-idioms      h2 { color: var(--c-idioms); }
+#section-grammar     h2 { color: var(--c-ref);    }
+
+/* Section quiz prompt headings */
+#section-vocab       .ita-quiz-prompt h2 { color: var(--c-vocab);  }
+#section-verbs       .ita-quiz-prompt h2 { color: var(--c-verbs);  }
+#section-grammarquiz .ita-quiz-prompt h2 { color: var(--c-quiz);   }
+#section-sentences   .ita-quiz-prompt h2 { color: var(--c-sent);   }
+#section-reading     .ita-quiz-prompt h2 { color: var(--c-read);   }
+#section-idioms      .ita-quiz-prompt h2 { color: var(--c-idioms); }
+
+/* Top-border accent on content cards per section */
+#section-vocab       .content-card { border-top: 3px solid var(--c-vocab)  !important; }
+#section-verbs       .content-card { border-top: 3px solid var(--c-verbs)  !important; }
+#section-grammarquiz .content-card { border-top: 3px solid var(--c-quiz)   !important; }
+#section-sentences   .content-card { border-top: 3px solid var(--c-sent)   !important; }
+#section-reading     .content-card { border-top: 3px solid var(--c-read)   !important; }
+#section-idioms      .content-card { border-top: 3px solid var(--c-idioms) !important; }
+
+/* ── Lesson of the Day widget ────────────────────────────────────── */
+.ls-lotd {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--brand);
+  border-radius: 0 14px 14px 0;
+  padding: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.ls-lotd-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.ls-lotd-header h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--brand);
+  margin: 0;
+}
+.ls-lotd-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: var(--brand);
+  color: #12100e;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.ls-lotd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.ls-lotd-word {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+}
+.ls-lotd-word .ls-word-it {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+}
+.ls-lotd-word .ls-word-en {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+.ls-lotd-grammar {
+  background: rgba(232, 168, 80, 0.08);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.65rem;
+  color: var(--text-soft);
+}
+.ls-lotd-grammar strong { color: var(--brand); }
+.ls-lotd-idiom {
+  background: rgba(232, 168, 80, 0.05);
+  border: 1px solid rgba(232, 168, 80, 0.2);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--text-soft);
+}
+.ls-lotd-idiom strong { font-style: normal; color: var(--text); }
+.ls-lotd-footer {
+  margin-top: 0.85rem;
+  font-size: 0.8rem;
+  color: var(--text-soft);
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ── Mobile bottom nav ───────────────────────────────────────────── */
+.hybrid-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  background: #0e0c09;
+  border-top: 1px solid var(--border);
+}
+.hybrid-bnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.25rem 0.4rem;
+  color: var(--text-soft) !important;
+  font-size: 1.2rem;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  flex: 1;
+  transition: color 0.15s;
+}
+.hybrid-bnav-item small {
+  font-size: 0.58rem;
+  margin-top: 1px;
+  color: var(--text-soft);
+  letter-spacing: 0.02em;
+}
+.hybrid-bnav-item.active                          { color: var(--brand)    !important; }
+.hybrid-bnav-item.active small                    { color: var(--brand); }
+.hybrid-bnav-item.h-vocab.active,
+.hybrid-bnav-item.h-vocab.active small             { color: var(--c-vocab)  !important; }
+.hybrid-bnav-item.h-verbs.active,
+.hybrid-bnav-item.h-verbs.active small             { color: var(--c-verbs)  !important; }
+.hybrid-bnav-item.h-grammarquiz.active,
+.hybrid-bnav-item.h-grammarquiz.active small       { color: var(--c-quiz)   !important; }
+.hybrid-bnav-item.h-reading.active,
+.hybrid-bnav-item.h-reading.active small           { color: var(--c-read)   !important; }
+.hybrid-bnav-item.h-grammar.active,
+.hybrid-bnav-item.h-grammar.active small           { color: var(--c-ref)    !important; }
+
+/* ── Responsive breakpoints ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hybrid-sidebar    { display: none; }
+  .hybrid-bottom-nav { display: flex; }
+  .hybrid-main {
+    padding: 1rem;
+    padding-bottom: 80px;
+  }
+  .hybrid-layout { min-height: auto; }
+  .ls-lotd-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+@media (min-width: 769px) {
+  .hybrid-bottom-nav { display: none !important; }
+}
