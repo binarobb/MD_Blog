@@ -1762,7 +1762,7 @@
   function renderLessonOfDay() {
     const container = document.getElementById('lesson-of-day')
     if (!container) return
-    const vocab   = (appData.vocab   || []).filter(v => v.italian && v.english)
+    const vocab   = Object.values(appData.vocab || {}).flat().filter(v => v.it && v.en)
     const grammar = (appData.grammar || [])
     const idioms  = (appData.idioms  || [])
     if (!vocab.length && !grammar.length) return
@@ -1784,8 +1784,8 @@
         </div>
         ${words.length ? `<div class="ls-lotd-grid">${words.map(w => `
           <div class="ls-lotd-word">
-            <div class="ls-word-it">${w.italian}</div>
-            <div class="ls-word-en">${w.english}</div>
+            <div class="ls-word-it">${w.it}</div>
+            <div class="ls-word-en">${w.en}</div>
           </div>`).join('')}</div>` : ''}
         ${grammarTip ? `<div class="ls-lotd-grammar"><strong>Grammar tip:</strong> ${grammarTip.title}</div>` : ''}
         ${idiom ? `<div class="ls-lotd-idiom"><strong>${idiom.expression || idiom.italian || ''}</strong>${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}</div>` : ''}
