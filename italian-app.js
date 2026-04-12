@@ -1788,7 +1788,7 @@
             <div class="ls-word-en">${w.en}</div>
           </div>`).join('')}</div>` : ''}
         ${grammarTip ? `<div class="ls-lotd-grammar"><strong>Grammar tip:</strong> ${grammarTip.title}</div>` : ''}
-        ${idiom ? `<div class="ls-lotd-idiom"><strong>${idiom.expression || idiom.italian || ''}</strong>${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}</div>` : ''}
+        ${idiom ? `<div class="ls-lotd-idiom"><strong>${idiom.idiom || idiom.expression || idiom.italian || ''}</strong>${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}</div>` : ''}
         <div class="ls-lotd-footer"><span>&#x1F550;</span> Updated daily — come back tomorrow for a new lesson!</div>
       </div>`
   }
