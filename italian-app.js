@@ -1717,6 +1717,103 @@
     renderVerbRefPage()
   }
 
+  // ── Streak ───────────────────────────────────────────────────────
+  function initStreak() {
+    const STREAK_KEY = 'italian_streak'
+    const today = new Date().toISOString().slice(0, 10)
+    let data = {}
+    try { data = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}') } catch (_) {}
+    const last = data.lastDate || ''
+    const streak = data.streak || 0
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    let newStreak = streak
+    if (last === today) {
+      newStreak = streak
+    } else if (last === yesterday) {
+      newStreak = streak + 1
+    } else if (last !== today) {
+      newStreak = 1
+    }
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify({ streak: newStreak, lastDate: today })) } catch (_) {}
+    const countEl = document.getElementById('ita-streak-count')
+    const streakEl = document.getElementById('ita-streak')
+    if (countEl) countEl.textContent = newStreak
+    if (streakEl && newStreak > 1) streakEl.classList.add('streak-lit')
+  }
+
+  // Mark streak active on any answered question (call after any correct/wrong)
+  function bumpStreak() {
+    const STREAK_KEY = 'italian_streak'
+    const today = new Date().toISOString().slice(0, 10)
+    let data = {}
+    try { data = JSON.parse(localStorage.getItem(STREAK_KEY) || '{}') } catch (_) {}
+    if (data.lastDate !== today) {
+      data.streak = (data.streak || 0) + 1
+      data.lastDate = today
+      try { localStorage.setItem(STREAK_KEY, JSON.stringify(data)) } catch (_) {}
+      const countEl = document.getElementById('ita-streak-count')
+      const streakEl = document.getElementById('ita-streak')
+      if (countEl) countEl.textContent = data.streak
+      if (streakEl) streakEl.classList.add('streak-lit')
+    }
+  }
+
+  // ── Lesson of the Day ────────────────────────────────────────────
+  function renderLessonOfDay() {
+    const container = document.getElementById('lesson-of-day')
+    if (!container) return
+    const vocab   = Object.values(appData.vocab || {}).flat().filter(v => v.it && v.en)
+    const grammar = (appData.grammar || [])
+    const idioms  = (appData.idioms  || [])
+    if (!vocab.length && !grammar.length) return
+    const today = new Date().toISOString().slice(0, 10)
+    const seed  = today.replace(/-/g, '') | 0
+    const pick  = (arr, n) => {
+      const out = []
+      for (let i = 0; i < n && arr.length; i++) { out.push(arr[(seed + i * 7) % arr.length]) }
+      return out
+    }
+    const words      = pick(vocab, 5)
+    const grammarTip = grammar.length ? grammar[seed % grammar.length] : null
+    const idiom      = idioms.length  ? idioms[seed  % idioms.length]  : null
+    container.innerHTML = `
+      <div class="ls-lotd">
+        <div class="ls-lotd-header">
+          <span class="ls-lotd-badge">Today</span>
+          <h3>&#x1F4DA; Lesson of the Day</h3>
+        </div>
+        ${words.length ? `<div class="ls-lotd-grid">${words.map(w => `
+          <div class="ls-lotd-word">
+            <div class="ls-word-it">${w.it}</div>
+            <div class="ls-word-en">${w.en}</div>
+          </div>`).join('')}</div>` : ''}
+        ${grammarTip ? `
+        <div class="content-card ita-grammar-card ls-lotd-grammar-card">
+          <div class="card-body" style="padding:0.75rem 1rem;">
+            <h3 class="card-title ita-grammar-toggle ls-lotd-grammar-toggle" role="button" tabindex="0" style="font-size:0.95rem;margin:0;">
+              &#x1F4D6; ${grammarTip.title}
+              <span class="ita-chevron">&#9662;</span>
+            </h3>
+            <div class="ita-grammar-body d-none" id="lotd-grammar-body">
+              ${grammarTip.body}
+            </div>
+          </div>
+        </div>` : ''}
+        ${idiom ? `<div class="ls-lotd-idiom"><strong>${idiom.idiom || idiom.expression || idiom.italian || ''}</strong>${idiom.meaning ? ' — ' + idiom.meaning : idiom.english ? ' — ' + idiom.english : ''}</div>` : ''}
+        <div class="ls-lotd-footer"><span>&#x1F550;</span> Updated daily — come back tomorrow for a new lesson!</div>
+      </div>`
+    // Wire grammar accordion inside LOTD (rendered after main tab listeners)
+    const grammarToggle = container.querySelector('.ls-lotd-grammar-toggle')
+    if (grammarToggle) {
+      grammarToggle.addEventListener('click', () => {
+        const body = document.getElementById('lotd-grammar-body')
+        body.classList.toggle('d-none')
+        grammarToggle.querySelector('.ita-chevron').classList.toggle('ita-chevron-open')
+      })
+      grammarToggle.addEventListener('keydown', e => { if (e.key === 'Enter') grammarToggle.click() })
+    }
+  }
+
   // ── Reset ────────────────────────────────────────────────────────
   function resetStats() {
     if (confirm('Reset all Italian learning progress?')) {
@@ -1785,6 +1882,9 @@
           else showSection(section)
         })
       })
+
+      initStreak()
+      renderLessonOfDay()
       showSection('dashboard')
     }
   }

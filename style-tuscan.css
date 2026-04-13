@@ -1,0 +1,378 @@
+/*
+ * style-tuscan.css — Option A: Tuscan Dark
+ * Warm amber-gold palette, Fraunces display serif + DM Sans body
+ * Layered on top of the base style.css
+ */
+
+/* ── Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --bg:           #12100e;
+  --surface:      #1d1a15;
+  --surface-soft: #252018;
+  --border:       #3a3020;
+  --text:         #f5f0e8;
+  --text-soft:    #b8a890;
+  --brand:        #e8a850;
+  --brand-strong: #d4883a;
+  --accent2:      #c85c2a;
+
+  /* Map legacy variable names used by verb cards / modal */
+  --card-bg:      #1d1a15;
+  --fg:           #f5f0e8;
+  --muted:        #b8a890;
+}
+
+/* ── Typography ──────────────────────────────────────────────────── */
+body {
+  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  background: radial-gradient(ellipse at top left, #1e1810 0%, #12100e 65%);
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ── Nav warmth ──────────────────────────────────────────────────── */
+.navbar {
+  background-color: #0e0c09 !important;
+  border-bottom: 1px solid #2e2518;
+}
+.nav-link:hover,
+.nav-link.active {
+  color: var(--brand) !important;
+}
+
+/* ── Level bar ───────────────────────────────────────────────────── */
+.ita-level-bar {
+  background: #16130f;
+  border-bottom: 1px solid var(--border);
+}
+.ita-level-bar .page-shell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+.ita-levels {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.ita-level-btn {
+  border-color: #4a3e2a;
+  color: var(--text-soft);
+  background: transparent;
+}
+.ita-level-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: rgba(232, 168, 80, 0.08);
+}
+.ita-level-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #12100e;
+  font-weight: 600;
+}
+
+/* ── Streak counter ──────────────────────────────────────────────── */
+.ita-streak {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.8rem 0.3rem 0.6rem;
+  background: rgba(232, 168, 80, 0.1);
+  border: 1px solid rgba(232, 168, 80, 0.3);
+  border-radius: 999px;
+  cursor: default;
+}
+.ita-streak-flame { font-size: 1.1rem; line-height: 1; }
+.ita-streak-count {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1;
+}
+.ita-streak-label {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+}
+.ita-streak.streak-lit {
+  background: rgba(232, 168, 80, 0.18);
+  border-color: var(--brand);
+  animation: streak-pulse 0.6s ease;
+}
+@keyframes streak-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────── */
+.ita-tabs-bar {
+  background: #16130f;
+  border-bottom: 1px solid var(--border);
+}
+.ita-tab {
+  color: var(--text-soft);
+  border-bottom: 2px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.7rem 1rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+.ita-tab:hover {
+  color: var(--brand);
+  text-decoration: none;
+}
+.ita-tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+
+/* ── Cards: warm surface ─────────────────────────────────────────── */
+.content-card {
+  background: var(--surface);
+  border-color: var(--border);
+  border-radius: 14px;
+}
+
+/* ── Dashboard cards ─────────────────────────────────────────────── */
+.ita-progress-fill { background: var(--brand); }
+
+.btn-primary {
+  background-color: var(--brand) !important;
+  border-color: var(--brand) !important;
+  color: #12100e !important;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background-color: var(--brand-strong) !important;
+  border-color: var(--brand-strong) !important;
+}
+.btn-outline-light {
+  color: var(--text-soft);
+  border-color: var(--border);
+}
+.btn-outline-light:hover {
+  background: rgba(232, 168, 80, 0.12);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.btn-outline-light.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #12100e;
+}
+.btn-check:checked + .btn-outline-light {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #12100e;
+}
+
+/* ── Verb reference cards ────────────────────────────────────────── */
+.ita-verb-ref-card {
+  background: var(--surface);
+  border-color: var(--border);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  cursor: pointer;
+}
+.ita-verb-ref-card:hover,
+.ita-verb-ref-card:focus {
+  border-color: var(--brand);
+  box-shadow: 0 6px 24px rgba(232, 168, 80, 0.28), 0 2px 8px rgba(0,0,0,0.4);
+  transform: translateY(-3px);
+}
+.ita-verb-ref-card:active {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px rgba(232, 168, 80, 0.2);
+}
+.ita-vrc-infinitive { color: var(--text); }
+.ita-vrc-translation { color: var(--text-soft); }
+
+/* ── Verb modal ──────────────────────────────────────────────────── */
+.ita-verb-modal {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.ita-verb-modal-header {
+  border-bottom-color: var(--border);
+}
+.ita-verb-modal-title {
+  color: var(--brand);
+  font-family: 'Fraunces', serif;
+}
+.ita-verb-modal-trans { color: var(--text-soft); }
+.ita-verb-modal-tabs  { border-bottom-color: var(--border); }
+.ita-verb-modal-tab   { color: var(--text-soft); }
+.ita-verb-modal-tab:hover { color: var(--text); }
+.ita-verb-modal-tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+.ita-tense-heading  { color: var(--brand); }
+.ita-examples-heading { color: var(--brand); }
+.ita-tense-table td { border-bottom-color: var(--border); }
+.ita-pron  { color: var(--text-soft); }
+.ita-form  { color: var(--text); }
+.ita-ex-it { color: var(--text); }
+.ita-ex-en { color: var(--text-soft); }
+.ita-aux-note {
+  background: rgba(232, 168, 80, 0.08);
+  color: var(--text-soft);
+}
+.ita-verb-modal-examples { border-top-color: var(--border); }
+
+/* verb search/filter inputs */
+.ita-verb-ref-search,
+.ita-verb-ref-filter {
+  background: var(--surface-soft) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+.ita-verb-ref-search:focus,
+.ita-verb-ref-filter:focus {
+  border-color: var(--brand) !important;
+  box-shadow: 0 0 0 3px rgba(232, 168, 80, 0.15) !important;
+}
+
+/* ── Grammar: two-column spread layout ──────────────────────────── */
+.ita-grammar-list {
+  display: grid;
+  gap: 1.25rem;
+}
+.ita-grammar-card .card-body {
+  padding: 1.5rem 1.75rem;
+}
+.ita-grammar-card h3.ita-grammar-toggle {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--brand);
+}
+.ita-grammar-body {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.ita-grammar-body strong { color: var(--text); }
+.ita-grammar-body em { color: var(--brand); font-style: normal; }
+/* Rule: left half, example callout: right half */
+.ita-grammar-body .grammar-example-callout {
+  background: rgba(232, 168, 80, 0.08);
+  border-left: 3px solid var(--brand);
+  padding: 0.75rem 1rem;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: var(--text);
+}
+.grammar-table th { color: var(--brand); }
+
+/* ── Quiz prompt uses serif ──────────────────────────────────────── */
+.ita-quiz-prompt h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+/* ── Progress bar warm ───────────────────────────────────────────── */
+.ita-progress-bar {
+  background: rgba(232, 168, 80, 0.15);
+  border-radius: 999px;
+}
+.ita-progress-fill {
+  background: linear-gradient(90deg, var(--brand-strong), var(--brand));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* ── Score ring ──────────────────────────────────────────────────── */
+.ita-score-text { color: var(--brand); }
+
+/* ── Chips/badges ────────────────────────────────────────────────── */
+.chip {
+  border-color: #5a4a2a;
+  background: rgba(232, 168, 80, 0.08);
+  color: #e8d090;
+}
+
+/* ── Reading mark highlights ─────────────────────────────────────── */
+mark[data-word] {
+  background: rgba(232, 168, 80, 0.25);
+  color: var(--text);
+  border-radius: 3px;
+  padding: 0 2px;
+  cursor: help;
+}
+
+/* ── Gufo container ──────────────────────────────────────────────── */
+#gufo-container[data-state="idle"] #gufo-btn {
+  background: radial-gradient(circle at 40% 35%, #e8a850 0%, #c47a2e 100%);
+  box-shadow: 0 4px 20px rgba(232, 168, 80, 0.35);
+}
+#gufo-container[data-state="connected"] #gufo-btn {
+  box-shadow: 0 0 0 6px rgba(232, 168, 80, 0.3), 0 4px 20px rgba(232, 168, 80, 0.4);
+}
+#gufo-label { color: var(--brand); }
+
+/* ── Speak section ───────────────────────────────────────────────── */
+.tuscan-speak-intro {
+  max-width: 640px;
+  margin: 3rem auto;
+  text-align: center;
+}
+.tuscan-speak-owl {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 4px 8px rgba(232, 168, 80, 0.3));
+}
+.tuscan-speak-intro h2 {
+  font-size: 2.2rem;
+  color: var(--brand);
+}
+.tuscan-speak-intro .lead {
+  color: var(--text-soft);
+  margin-bottom: 1.5rem;
+}
+.tuscan-speak-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 1.5rem auto;
+  max-width: 420px;
+  text-align: left;
+}
+.tuscan-tip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  color: var(--text-soft);
+}
+.tuscan-speak-cta {
+  margin-top: 1.5rem;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+footer {
+  background-color: #0e0c09 !important;
+  border-top: 1px solid #2e2518;
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ita-streak-label { display: none; }
+  .ita-quiz-prompt h2 { font-size: 1.6rem; }
+}
