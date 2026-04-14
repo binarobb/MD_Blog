@@ -344,9 +344,27 @@
 .hybrid-bnav-item.h-grammar.active small           { color: var(--c-ref)    !important; }
 
 /* ── Responsive breakpoints ──────────────────────────────────────── */
+/* ── Mobile level strip (only visible on mobile) ────────────────── */
+.hybrid-mobile-levels {
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0 0.75rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+.hybrid-mobile-levels .hybrid-section-label {
+  white-space: nowrap;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+
 @media (max-width: 768px) {
-  .hybrid-sidebar    { display: none; }
-  .hybrid-bottom-nav { display: flex; }
+  .hybrid-sidebar       { display: none; }
+  .hybrid-bottom-nav    { display: flex; }
+  .hybrid-mobile-levels { display: flex; }
   .hybrid-main {
     padding: 1rem;
     padding-bottom: 80px;
