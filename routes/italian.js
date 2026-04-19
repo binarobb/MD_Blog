@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const { ensureAdmin } = require('../middleware/auth')
 
 const VocabCategory    = require('../models/italian/VocabCategory')
 const VocabItem        = require('../models/italian/VocabItem')
@@ -177,15 +178,10 @@ router.get('/api/idioms', async (req, res) => {
     }
 })
 
-// ── Admin CRUD (requires active admin session) ────────────────────────
-
-function requireAdmin(req, res, next) {
-    if (req.session && req.session.isAdmin) return next()
-    res.status(401).json({ error: 'Unauthorised' })
-}
+// ── Admin CRUD (requires admin role) ────────────────────────────────
 
 // Vocab
-router.post('/admin/vocab', requireAdmin, async (req, res) => {
+router.post('/admin/vocab', ensureAdmin, async (req, res) => {
     try {
         const item = await VocabItem.create(req.body)
         res.status(201).json(item)
@@ -194,7 +190,7 @@ router.post('/admin/vocab', requireAdmin, async (req, res) => {
     }
 })
 
-router.put('/admin/vocab/:id', requireAdmin, async (req, res) => {
+router.put('/admin/vocab/:id', ensureAdmin, async (req, res) => {
     try {
         const item = await VocabItem.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!item) return res.status(404).json({ error: 'Not found' })
@@ -204,7 +200,7 @@ router.put('/admin/vocab/:id', requireAdmin, async (req, res) => {
     }
 })
 
-router.delete('/admin/vocab/:id', requireAdmin, async (req, res) => {
+router.delete('/admin/vocab/:id', ensureAdmin, async (req, res) => {
     try {
         await VocabItem.findByIdAndDelete(req.params.id)
         res.json({ success: true })
@@ -214,7 +210,7 @@ router.delete('/admin/vocab/:id', requireAdmin, async (req, res) => {
 })
 
 // Verbs
-router.post('/admin/verbs', requireAdmin, async (req, res) => {
+router.post('/admin/verbs', ensureAdmin, async (req, res) => {
     try {
         const verb = await Verb.create(req.body)
         res.status(201).json(verb)
@@ -223,7 +219,7 @@ router.post('/admin/verbs', requireAdmin, async (req, res) => {
     }
 })
 
-router.put('/admin/verbs/:id', requireAdmin, async (req, res) => {
+router.put('/admin/verbs/:id', ensureAdmin, async (req, res) => {
     try {
         const verb = await Verb.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!verb) return res.status(404).json({ error: 'Not found' })
@@ -233,7 +229,7 @@ router.put('/admin/verbs/:id', requireAdmin, async (req, res) => {
     }
 })
 
-router.delete('/admin/verbs/:id', requireAdmin, async (req, res) => {
+router.delete('/admin/verbs/:id', ensureAdmin, async (req, res) => {
     try {
         await Verb.findByIdAndDelete(req.params.id)
         res.json({ success: true })
@@ -243,7 +239,7 @@ router.delete('/admin/verbs/:id', requireAdmin, async (req, res) => {
 })
 
 // Grammar questions
-router.post('/admin/grammar/questions', requireAdmin, async (req, res) => {
+router.post('/admin/grammar/questions', ensureAdmin, async (req, res) => {
     try {
         const q = await GrammarQuestion.create(req.body)
         res.status(201).json(q)
@@ -252,7 +248,7 @@ router.post('/admin/grammar/questions', requireAdmin, async (req, res) => {
     }
 })
 
-router.put('/admin/grammar/questions/:id', requireAdmin, async (req, res) => {
+router.put('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
     try {
         const q = await GrammarQuestion.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!q) return res.status(404).json({ error: 'Not found' })
@@ -262,7 +258,7 @@ router.put('/admin/grammar/questions/:id', requireAdmin, async (req, res) => {
     }
 })
 
-router.delete('/admin/grammar/questions/:id', requireAdmin, async (req, res) => {
+router.delete('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
     try {
         await GrammarQuestion.findByIdAndDelete(req.params.id)
         res.json({ success: true })
@@ -272,7 +268,7 @@ router.delete('/admin/grammar/questions/:id', requireAdmin, async (req, res) => 
 })
 
 // Sentences
-router.post('/admin/sentences', requireAdmin, async (req, res) => {
+router.post('/admin/sentences', ensureAdmin, async (req, res) => {
     try {
         const s = await SentenceExercise.create(req.body)
         res.status(201).json(s)
@@ -281,7 +277,7 @@ router.post('/admin/sentences', requireAdmin, async (req, res) => {
     }
 })
 
-router.put('/admin/sentences/:id', requireAdmin, async (req, res) => {
+router.put('/admin/sentences/:id', ensureAdmin, async (req, res) => {
     try {
         const s = await SentenceExercise.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!s) return res.status(404).json({ error: 'Not found' })
@@ -291,7 +287,7 @@ router.put('/admin/sentences/:id', requireAdmin, async (req, res) => {
     }
 })
 
-router.delete('/admin/sentences/:id', requireAdmin, async (req, res) => {
+router.delete('/admin/sentences/:id', ensureAdmin, async (req, res) => {
     try {
         await SentenceExercise.findByIdAndDelete(req.params.id)
         res.json({ success: true })
@@ -301,7 +297,7 @@ router.delete('/admin/sentences/:id', requireAdmin, async (req, res) => {
 })
 
 // Reading passages admin
-router.post('/admin/reading', requireAdmin, async (req, res) => {
+router.post('/admin/reading', ensureAdmin, async (req, res) => {
     try {
         const passage = await ReadingPassage.create(req.body)
         res.status(201).json(passage)
@@ -310,7 +306,7 @@ router.post('/admin/reading', requireAdmin, async (req, res) => {
     }
 })
 
-router.put('/admin/reading/:id', requireAdmin, async (req, res) => {
+router.put('/admin/reading/:id', ensureAdmin, async (req, res) => {
     try {
         const passage = await ReadingPassage.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!passage) return res.status(404).json({ error: 'Not found' })
@@ -320,7 +316,7 @@ router.put('/admin/reading/:id', requireAdmin, async (req, res) => {
     }
 })
 
-router.delete('/admin/reading/:id', requireAdmin, async (req, res) => {
+router.delete('/admin/reading/:id', ensureAdmin, async (req, res) => {
     try {
         await ReadingPassage.findByIdAndDelete(req.params.id)
         res.json({ success: true })
@@ -330,7 +326,7 @@ router.delete('/admin/reading/:id', requireAdmin, async (req, res) => {
 })
 
 // Idioms admin
-router.post('/admin/idioms', requireAdmin, async (req, res) => {
+router.post('/admin/idioms', ensureAdmin, async (req, res) => {
     try {
         const idiom = await IdiomExpression.create(req.body)
         res.status(201).json(idiom)
@@ -339,7 +335,7 @@ router.post('/admin/idioms', requireAdmin, async (req, res) => {
     }
 })
 
-router.put('/admin/idioms/:id', requireAdmin, async (req, res) => {
+router.put('/admin/idioms/:id', ensureAdmin, async (req, res) => {
     try {
         const idiom = await IdiomExpression.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
         if (!idiom) return res.status(404).json({ error: 'Not found' })
@@ -349,7 +345,7 @@ router.put('/admin/idioms/:id', requireAdmin, async (req, res) => {
     }
 })
 
-router.delete('/admin/idioms/:id', requireAdmin, async (req, res) => {
+router.delete('/admin/idioms/:id', ensureAdmin, async (req, res) => {
     try {
         await IdiomExpression.findByIdAndDelete(req.params.id)
         res.json({ success: true })
