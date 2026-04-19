@@ -1,14 +1,20 @@
+require('dotenv').config({ override: true })
 const express = require('express')
 const mongoose = require('mongoose')
 const Article = require('./models/article')
 const articleRouter = require('./routes/articles.js')
+const authRouter = require('./routes/auth')
 const methodOverride = require('method-override')
 const nodemailer = require('nodemailer')
 const session = require('express-session')
-require('dotenv').config({ override: true })
+const MongoStore = require('connect-mongo').MongoStore
+const passport = require('./config/passport')
+const rateLimit = require('express-rate-limit')
 const app = express()
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/blog', {
+const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost/blog'
+
+mongoose.connect(mongoUri, {
     useNewUrlParser: true, useUnifiedTopology: true 
 })
 
@@ -27,47 +33,45 @@ app.use(express.static(__dirname))
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: mongoUri,
+        collectionName: 'sessions',
+        ttl: 14 * 24 * 60 * 60  // 14 days
+    }),
+    cookie: {
+        maxAge: 14 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+    }
 }))
 
-// Middleware to set locals
+// Passport
+app.use(passport.initialize())
+app.use(passport.session())
+
+// Rate limit on auth endpoints
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10,
+    message: 'Too many attempts, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false
+})
+app.use('/login', authLimiter)
+app.use('/register', authLimiter)
+app.use('/auth', authLimiter)
+
+// Expose user and admin flag to all views
 app.use((req, res, next) => {
-    res.locals.isAdmin = req.session.isAdmin
+    res.locals.user = req.user || null
+    res.locals.isAdmin = !!(req.user && req.user.role === 'admin')
     next()
 })
 
-// Middleware to check if user is admin
-function requireAdmin(req, res, next) {
-    if (req.session.isAdmin) {
-        return next()
-    } else {
-        res.redirect('/login')
-    }
-}
-
-app.get('/login', (req, res) => {
-    res.render('login', { error: null })
-})
-
-app.post('/login', (req, res) => {
-    const { username, password } = req.body
-    if (username === 'admin' && password === 'admin') {
-        req.session.isAdmin = true
-        res.redirect('/blog/new')
-    } else {
-        res.render('login', { error: 'Invalid credentials' })
-    }
-})
-
-app.post('/logout', (req, res) => {
-    req.session.destroy()
-    res.redirect('/')
-})
-
-// Protected route for new article
-app.get('/blog/new', requireAdmin, (req, res) => {
-    res.render('articles/new', { article: new Article() })
-})
+// Auth routes (login, register, OAuth, logout, profile)
+app.use('/', authRouter)
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({

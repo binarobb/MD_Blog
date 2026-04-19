@@ -1,15 +1,15 @@
 const express = require('express')
 const Article = require('./../models/article')
-const req = require('express/lib/request')
+const { ensureAdmin } = require('../middleware/auth')
 const router = express.Router()
 
 module.exports = router
 
-router.get('/new', (req, res) => {
+router.get('/new', ensureAdmin, (req, res) => {
     res.render('articles/new', { article: new Article() })
 })
 
-router.get('/edit/:id', async (req, res) => {
+router.get('/edit/:id', ensureAdmin, async (req, res) => {
     const article = await Article.findById(req.params.id)
     res.render('articles/edit', { article: article })
 })
@@ -20,18 +20,18 @@ router.get('/:slug', async (req, res) => {
     res.render('articles/show', { article: article })
 })
 
-router.post('/', async (req, res, next) => {
+router.post('/', ensureAdmin, async (req, res, next) => {
    req.article = new Article()
    next()
   }, saveArticleAndRedirect('new'))
 
 
-router.put('/:id', async (req, res, next) => {
+router.put('/:id', ensureAdmin, async (req, res, next) => {
      req.article = await Article.findById(req.params.id)
      next()    
 }, saveArticleAndRedirect('edit'))
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', ensureAdmin, async (req, res) => {
     await Article.findByIdAndDelete(req.params.id)
     res.redirect('/blog')
 })
