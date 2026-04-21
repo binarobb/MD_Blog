@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const { ensureAdmin } = require('../middleware/auth')
+const { ensureAdmin, ensureAuthenticated } = require('../middleware/auth')
+const UserProgress = require('../models/UserProgress')
 
 const VocabCategory    = require('../models/italian/VocabCategory')
 const VocabItem        = require('../models/italian/VocabItem')
@@ -353,6 +354,195 @@ router.delete('/admin/idioms/:id', ensureAdmin, async (req, res) => {
         res.status(400).json({ error: err.message })
     }
 })
+
+// ── Progress API ─────────────────────────────────────────────────────
+// All routes require authentication. Unauthenticated clients use
+// the localStorage fallback in italian-app.js.
+
+// Achievement definitions ─────────────────────────────────────────
+const ACHIEVEMENTS = {
+    first_quiz:    { label: 'First Quiz',          check: (p) => totalAnswered(p) >= 1 },
+    streak_7:      { label: '7-Day Streak',        check: (p) => p.streak.current >= 7 },
+    streak_30:     { label: '30-Day Streak',       check: (p) => p.streak.current >= 30 },
+    streak_100:    { label: '100-Day Streak',      check: (p) => p.streak.current >= 100 },
+    perfect_score: { label: 'Perfect Score',       check: (p, opts) => opts && opts.perfectScore },
+    vocab_master:  { label: 'Vocab Master',        check: (p) => sectionCorrect(p, 'vocab') >= 500 },
+    verb_master:   { label: 'Verb Master',         check: (p) => sectionCorrect(p, 'verbs') >= 200 },
+    all_sections:  { label: 'All-Around Learner',  check: (p) => allSectionsPracticed(p) },
+    daily_goal:    { label: 'Daily Goal Met',      check: (p) => p.todayCompleted >= p.dailyGoal },
+    week_warrior:  { label: 'Week Warrior',        check: (p, opts) => opts && opts.weekWarrior }
+}
+
+function totalAnswered (p) {
+    let t = 0
+    for (const s of p.sections.values()) t += s.total
+    return t
+}
+
+function sectionCorrect (p, section) {
+    const s = p.sections.get(section)
+    return s ? s.correct : 0
+}
+
+function allSectionsPracticed (p) {
+    const required = ['vocab', 'verbs', 'grammar', 'sentences', 'reading', 'idioms']
+    return required.every(k => {
+        const s = p.sections.get(k)
+        return s && s.sessions > 0
+    })
+}
+
+function checkAchievements (progress, opts = {}) {
+    const unlocked = progress.achievements.map(a => a.key)
+    const newlyUnlocked = []
+
+    for (const [key, def] of Object.entries(ACHIEVEMENTS)) {
+        if (unlocked.includes(key)) continue
+        if (def.check(progress, opts)) {
+            progress.achievements.push({ key, unlockedAt: new Date() })
+            newlyUnlocked.push({ key, label: def.label })
+        }
+    }
+    return newlyUnlocked
+}
+
+// GET /italian/api/progress
+router.get('/api/progress', ensureAuthenticated, async (req, res) => {
+    try {
+        let progress = await UserProgress.findOne({ user: req.user._id })
+        if (!progress) {
+            progress = await UserProgress.create({ user: req.user._id })
+        }
+        progress.refreshDailyGoal()
+        await progress.save()
+        res.json(progressPayload(progress))
+    } catch (err) {
+        console.error('GET /api/progress error:', err)
+        res.status(500).json({ error: 'Failed to load progress' })
+    }
+})
+
+// GET /italian/api/progress/streak
+router.get('/api/progress/streak', ensureAuthenticated, async (req, res) => {
+    try {
+        let progress = await UserProgress.findOne({ user: req.user._id })
+        if (!progress) progress = await UserProgress.create({ user: req.user._id })
+        res.json({ streak: progress.streak })
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to load streak' })
+    }
+})
+
+// POST /italian/api/progress/streak/check
+// Called on app load to update streak if needed.
+router.post('/api/progress/streak/check', ensureAuthenticated, async (req, res) => {
+    try {
+        let progress = await UserProgress.findOne({ user: req.user._id })
+        if (!progress) progress = await UserProgress.create({ user: req.user._id })
+
+        const { changed, wasReset } = progress.updateStreak()
+        if (changed) await progress.save()
+
+        res.json({ streak: progress.streak, changed, wasReset })
+    } catch (err) {
+        console.error('POST /api/progress/streak/check error:', err)
+        res.status(500).json({ error: 'Failed to update streak' })
+    }
+})
+
+// POST /italian/api/progress/save
+// Body: { section: String, correct: Number, total: Number }
+router.post('/api/progress/save', ensureAuthenticated, async (req, res) => {
+    try {
+        const { section, correct, total } = req.body
+
+        if (!section || typeof correct !== 'number' || typeof total !== 'number') {
+            return res.status(400).json({ error: 'section, correct, total are required' })
+        }
+        if (correct < 0 || total < 0 || correct > total) {
+            return res.status(400).json({ error: 'Invalid correct/total values' })
+        }
+
+        let progress = await UserProgress.findOne({ user: req.user._id })
+        if (!progress) progress = await UserProgress.create({ user: req.user._id })
+
+        // Refresh daily goal counter
+        progress.refreshDailyGoal()
+
+        // Update section stats
+        const existing = progress.sections.get(section) || { correct: 0, total: 0, sessions: 0, lastPracticed: null }
+        existing.correct      += correct
+        existing.total        += total
+        existing.sessions     += 1
+        existing.lastPracticed = new Date()
+        progress.sections.set(section, existing)
+
+        // Update streak
+        progress.updateStreak()
+
+        // Award XP
+        const xpFromAnswers = correct * 10
+        const quizBonus     = 5
+        let   xpGained      = xpFromAnswers + quizBonus
+
+        // Update daily goal
+        progress.todayCompleted += total
+        const dailyGoalJustMet = progress.todayCompleted >= progress.dailyGoal &&
+                                 (progress.todayCompleted - total) < progress.dailyGoal
+        if (dailyGoalJustMet) xpGained += 25
+
+        // Streak milestone bonuses
+        const milestones = [7, 30, 100]
+        if (milestones.includes(progress.streak.current)) xpGained += 50
+
+        progress.xp    += xpGained
+        progress.level  = UserProgress.levelFromXP(progress.xp)
+
+        // Check achievements
+        const perfectScore = total >= 5 && correct === total
+        const weekWarrior  = progress.streak.current > 0 &&
+                             progress.streak.current % 7 === 0 &&
+                             dailyGoalJustMet
+        const newAchievements = checkAchievements(progress, { perfectScore, weekWarrior })
+
+        await progress.save()
+
+        res.json({
+            ...progressPayload(progress),
+            xpGained,
+            dailyGoalJustMet,
+            newAchievements
+        })
+    } catch (err) {
+        console.error('POST /api/progress/save error:', err)
+        res.status(500).json({ error: 'Failed to save progress' })
+    }
+})
+
+// Helper: shape the full progress response
+function progressPayload (p) {
+    const sections = {}
+    for (const [k, v] of p.sections.entries()) sections[k] = v
+
+    const nextLevelXP = UserProgress.xpForLevel(p.level + 1)
+    const currLevelXP = UserProgress.xpForLevel(p.level)
+    const xpIntoLevel = p.xp - currLevelXP
+    const xpNeeded    = nextLevelXP - currLevelXP
+
+    return {
+        sections,
+        streak:          p.streak,
+        xp:              p.xp,
+        level:           p.level,
+        xpIntoLevel,
+        xpNeeded,
+        xpPercent:       xpNeeded > 0 ? Math.min(100, Math.round((xpIntoLevel / xpNeeded) * 100)) : 100,
+        dailyGoal:       p.dailyGoal,
+        todayCompleted:  p.todayCompleted,
+        dailyGoalMet:    p.todayCompleted >= p.dailyGoal,
+        achievements:    p.achievements
+    }
+}
 
 module.exports = router
 

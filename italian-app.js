@@ -6,6 +6,9 @@
 
   // ── Module-level data (populated by loadData on init) ────────────
   const PRONOUNS = ['io', 'tu', 'lui/lei', 'noi', 'voi', 'loro']
+
+  // Server-side progress (null for guests; populated on init for authenticated users)
+  let serverProgress = null
   const appData = {
     verbs:       [],
     vocab:       {},   // { 'Greetings': [{it, en}, ...], ... }
@@ -184,12 +187,13 @@
     }).catch(err => console.error('Level reload failed:', err))
   }
 
-  // ── Persistence (localStorage) ──────────────────────────────────
+  // ── Persistence (localStorage + server sync) ───────────────────
   const STORAGE_KEY = 'italian_a1_stats'
   function loadStats() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {} } catch { return {} }
   }
   function saveStats(key, correct, total) {
+    // Always persist to localStorage (guest fallback / offline cache)
     const s = loadStats()
     if (!s[key]) s[key] = { correct: 0, total: 0, sessions: 0 }
     s[key].correct += correct
@@ -197,8 +201,66 @@
     s[key].sessions += 1
     s[key].lastPracticed = new Date().toISOString()
     localStorage.setItem(STORAGE_KEY, JSON.stringify(s))
+
+    // For authenticated users, also sync to server
+    if (window.CURRENT_USER) {
+      // grammarquiz key in localStorage → grammar on the server
+      const serverSection = key === 'grammarquiz' ? 'grammar' : key
+      syncProgressToServer(serverSection, correct, total)
+    }
   }
   function getStats() { return loadStats() }
+
+  // ── Server progress sync ─────────────────────────────────────────
+  async function syncProgressToServer(section, correct, total) {
+    try {
+      const res = await fetch('/italian/api/progress/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section, correct, total })
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      serverProgress = data
+      if (data.newAchievements && data.newAchievements.length) {
+        data.newAchievements.forEach(a => showAchievementToast(a.label))
+      }
+    } catch (err) {
+      console.warn('Progress sync failed (will retry on next session):', err)
+    }
+  }
+
+  async function initServerProgress() {
+    if (!window.CURRENT_USER) return
+    try {
+      const [progressRes] = await Promise.all([
+        fetch('/italian/api/progress'),
+        fetch('/italian/api/progress/streak/check', { method: 'POST' })
+      ])
+      if (progressRes.ok) {
+        serverProgress = await progressRes.json()
+      }
+    } catch (err) {
+      console.warn('Failed to load server progress:', err)
+    }
+  }
+
+  function showAchievementToast(label) {
+    const toastId = 'ach-toast-' + Date.now()
+    const html = `
+      <div id="${toastId}" class="toast align-items-center text-bg-success border-0 position-fixed"
+           style="bottom:1.5rem;right:1.5rem;z-index:9999" role="alert" aria-live="assertive">
+        <div class="d-flex">
+          <div class="toast-body">&#x1F3C6; Achievement unlocked: <strong>${label}</strong></div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>`
+    document.body.insertAdjacentHTML('beforeend', html)
+    const toastEl = document.getElementById(toastId)
+    const toast = new bootstrap.Toast(toastEl, { delay: 5000 })
+    toast.show()
+    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove())
+  }
 
   // ── Navigation ───────────────────────────────────────────────────
   function showSection(name) {
@@ -226,45 +288,90 @@
 
   // ── Dashboard ────────────────────────────────────────────────────
   function renderDashboard() {
-    const stats = getStats()
-    const vocabStats    = stats.vocab      || { correct: 0, total: 0, sessions: 0 }
-    const verbStats     = stats.verbs      || { correct: 0, total: 0, sessions: 0 }
-    const grammarStats  = stats.grammarquiz|| { correct: 0, total: 0, sessions: 0 }
-    const sentenceStats = stats.sentences  || { correct: 0, total: 0, sessions: 0 }
-    const readingStats  = stats.reading    || { correct: 0, total: 0, sessions: 0 }
-    const idiomStats    = stats.idioms     || { correct: 0, total: 0, sessions: 0 }
-    const vocabPct    = vocabStats.total    ? Math.round(vocabStats.correct    / vocabStats.total    * 100) : 0
-    const verbPct     = verbStats.total     ? Math.round(verbStats.correct     / verbStats.total     * 100) : 0
-    const grammarPct  = grammarStats.total  ? Math.round(grammarStats.correct  / grammarStats.total  * 100) : 0
-    const sentencePct = sentenceStats.total ? Math.round(sentenceStats.correct / sentenceStats.total * 100) : 0
-    const readingPct  = readingStats.total  ? Math.round(readingStats.correct  / readingStats.total  * 100) : 0
-    const idiomPct    = idiomStats.total    ? Math.round(idiomStats.correct    / idiomStats.total    * 100) : 0
+    // Prefer server data for authenticated users; fall back to localStorage
+    const useServer = !!(window.CURRENT_USER && serverProgress)
+    const sp = useServer ? serverProgress.sections : null
 
-    const card = (title, desc, stats, pct, btnLabel, onclick) => `
+    function srvStat(key) {
+      const serverKey = key === 'grammarquiz' ? 'grammar' : key
+      return (sp && sp[serverKey]) ? sp[serverKey] : null
+    }
+    const ls = getStats()
+
+    function stat(key) {
+      return srvStat(key) || ls[key] || { correct: 0, total: 0, sessions: 0 }
+    }
+
+    const vocabStats    = stat('vocab')
+    const verbStats     = stat('verbs')
+    const grammarStats  = stat('grammarquiz')
+    const sentenceStats = stat('sentences')
+    const readingStats  = stat('reading')
+    const idiomStats    = stat('idioms')
+    const pct = (s) => s.total ? Math.round(s.correct / s.total * 100) : 0
+
+    const card = (title, desc, s, btnLabel, onclick) => `
       <div class="col-md-6">
         <div class="content-card h-100">
           <div class="card-body d-flex flex-column">
             <h4 class="card-title">${title}</h4>
             <p class="text-muted">${desc}</p>
-            <p class="text-muted">${stats.sessions} session${stats.sessions !== 1 ? 's' : ''} completed</p>
-            <div class="ita-progress-bar mb-2"><div class="ita-progress-fill" style="width:${pct}%"></div></div>
-            <p class="mb-0"><strong>${stats.correct}</strong> / ${stats.total} correct (${pct}%)</p>
+            <p class="text-muted">${s.sessions} session${s.sessions !== 1 ? 's' : ''} completed</p>
+            <div class="ita-progress-bar mb-2"><div class="ita-progress-fill" style="width:${pct(s)}%"></div></div>
+            <p class="mb-0"><strong>${s.correct}</strong> / ${s.total} correct (${pct(s)}%)</p>
             <button class="btn btn-primary mt-auto" onclick="${onclick}">${btnLabel}</button>
           </div>
         </div>
       </div>`
 
+    // XP / streak / daily-goal banner (authenticated users only)
+    let statsBar = ''
+    if (useServer) {
+      const p = serverProgress
+      const streakVal  = p.streak ? p.streak.current : 0
+      const dailyLeft  = Math.max(0, p.dailyGoal - p.todayCompleted)
+      const dailyPct   = Math.min(100, Math.round((p.todayCompleted / p.dailyGoal) * 100))
+      const goalClass  = p.dailyGoalMet ? 'text-success' : ''
+      statsBar = `
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <div class="content-card text-center py-2 px-1">
+              <div style="font-size:1.6rem">&#x1F525;</div>
+              <div class="fw-bold">${streakVal} day${streakVal !== 1 ? 's' : ''}</div>
+              <small class="text-muted">Streak</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="content-card text-center py-2 px-1">
+              <div style="font-size:1.6rem">&#x2B50;</div>
+              <div class="fw-bold">Lv ${p.level}</div>
+              <small class="text-muted">${p.xp} XP</small>
+              <div class="ita-progress-bar mt-1" style="height:4px"><div class="ita-progress-fill" style="width:${p.xpPercent}%"></div></div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="content-card text-center py-2 px-1 ${goalClass}">
+              <div style="font-size:1.6rem">${p.dailyGoalMet ? '&#x2705;' : '&#x1F3AF;'}</div>
+              <div class="fw-bold">${p.todayCompleted}/${p.dailyGoal}</div>
+              <small class="text-muted">${p.dailyGoalMet ? 'Goal met!' : dailyLeft + ' to go'}</small>
+              <div class="ita-progress-bar mt-1" style="height:4px"><div class="ita-progress-fill" style="width:${dailyPct}%"></div></div>
+            </div>
+          </div>
+        </div>`
+    }
+
     el('dash-content').innerHTML = `
+      ${statsBar}
       <div class="row g-3">
-        ${card('Vocabulary', 'Topic-based word practice.', vocabStats, vocabPct, 'Practice Vocabulary', 'ItalianApp.startVocab()')}
-        ${card('Verb Conjugation', 'Presente, passato prossimo &amp; imperfetto.', verbStats, verbPct, 'Practice Verbs', 'ItalianApp.startVerbs()')}
-        ${card('Grammar Quiz', 'Articles, gender, prepositions &amp; more.', grammarStats, grammarPct, 'Practice Grammar', 'ItalianApp.startGrammarQuiz()')}
-        ${card('Sentence Builder', 'Arrange words into correct Italian sentences.', sentenceStats, sentencePct, 'Build Sentences', 'ItalianApp.startSentences()')}
-        ${card('Reading (A2/B1)', 'Passages with vocab glossary &amp; comprehension quiz.', readingStats, readingPct, 'Read &amp; Practise', 'ItalianApp.startReading()')}
-        ${card('Idioms (A2/B1)', 'Idiomatic expressions with flip cards &amp; quiz.', idiomStats, idiomPct, 'Explore Idioms', 'ItalianApp.startIdioms()')}
+        ${card('Vocabulary', 'Topic-based word practice.', vocabStats, 'Practice Vocabulary', 'ItalianApp.startVocab()')}
+        ${card('Verb Conjugation', 'Presente, passato prossimo &amp; imperfetto.', verbStats, 'Practice Verbs', 'ItalianApp.startVerbs()')}
+        ${card('Grammar Quiz', 'Articles, gender, prepositions &amp; more.', grammarStats, 'Practice Grammar', 'ItalianApp.startGrammarQuiz()')}
+        ${card('Sentence Builder', 'Arrange words into correct Italian sentences.', sentenceStats, 'Build Sentences', 'ItalianApp.startSentences()')}
+        ${card('Reading (A2/B1)', 'Passages with vocab glossary &amp; comprehension quiz.', readingStats, 'Read &amp; Practise', 'ItalianApp.startReading()')}
+        ${card('Idioms (A2/B1)', 'Idiomatic expressions with flip cards &amp; quiz.', idiomStats, 'Explore Idioms', 'ItalianApp.startIdioms()')}
       </div>
       <div class="mt-3 text-center">
-        <button class="btn btn-outline-secondary btn-sm" onclick="ItalianApp.resetStats()">Reset all progress</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="ItalianApp.resetStats()">Reset local progress</button>
       </div>`
   }
 
@@ -1719,6 +1826,9 @@
 
   // ── Streak ───────────────────────────────────────────────────────
   function initStreak() {
+    // Authenticated users: streak is managed server-side via initServerProgress()
+    if (window.CURRENT_USER) return
+
     const STREAK_KEY = 'italian_streak'
     const today = new Date().toISOString().slice(0, 10)
     let data = {}
@@ -1859,7 +1969,10 @@
       })
 
       try {
-        await loadData()
+        await Promise.all([
+          loadData(),
+          initServerProgress()
+        ])
       } catch (err) {
         console.error('Italian app failed to load data:', err)
         if (dashContent) {
