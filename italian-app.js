@@ -222,9 +222,12 @@
       if (!res.ok) return
       const data = await res.json()
       serverProgress = data
+      updateSidebarStreak(data.streak ? data.streak.current : 0)
       if (data.newAchievements && data.newAchievements.length) {
         data.newAchievements.forEach(a => showAchievementToast(a.label))
       }
+      // Refresh dashboard banner if user is currently viewing it
+      if (state.section === 'dashboard') renderDashboard()
     } catch (err) {
       console.warn('Progress sync failed (will retry on next session):', err)
     }
@@ -233,16 +236,24 @@
   async function initServerProgress() {
     if (!window.CURRENT_USER) return
     try {
-      const [progressRes] = await Promise.all([
-        fetch('/italian/api/progress'),
-        fetch('/italian/api/progress/streak/check', { method: 'POST' })
-      ])
+      // Streak check must complete first so the subsequent GET reflects the updated streak
+      await fetch('/italian/api/progress/streak/check', { method: 'POST' })
+      const progressRes = await fetch('/italian/api/progress')
       if (progressRes.ok) {
         serverProgress = await progressRes.json()
+        updateSidebarStreak(serverProgress.streak ? serverProgress.streak.current : 0)
+        if (state.section === 'dashboard') renderDashboard()
       }
     } catch (err) {
       console.warn('Failed to load server progress:', err)
     }
+  }
+
+  function updateSidebarStreak(count) {
+    const countEl = document.getElementById('ita-streak-count')
+    const streakEl = document.getElementById('ita-streak')
+    if (countEl) countEl.textContent = count
+    if (streakEl) streakEl.classList.toggle('streak-lit', count > 1)
   }
 
   function showAchievementToast(label) {

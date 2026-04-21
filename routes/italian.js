@@ -409,10 +409,11 @@ function checkAchievements (progress, opts = {}) {
 // GET /italian/api/progress
 router.get('/api/progress', ensureAuthenticated, async (req, res) => {
     try {
-        let progress = await UserProgress.findOne({ user: req.user._id })
-        if (!progress) {
-            progress = await UserProgress.create({ user: req.user._id })
-        }
+        let progress = await UserProgress.findOneAndUpdate(
+            { user: req.user._id },
+            { $setOnInsert: { user: req.user._id } },
+            { upsert: true, new: true }
+        )
         progress.refreshDailyGoal()
         await progress.save()
         res.json(progressPayload(progress))
@@ -425,8 +426,11 @@ router.get('/api/progress', ensureAuthenticated, async (req, res) => {
 // GET /italian/api/progress/streak
 router.get('/api/progress/streak', ensureAuthenticated, async (req, res) => {
     try {
-        let progress = await UserProgress.findOne({ user: req.user._id })
-        if (!progress) progress = await UserProgress.create({ user: req.user._id })
+        let progress = await UserProgress.findOneAndUpdate(
+            { user: req.user._id },
+            { $setOnInsert: { user: req.user._id } },
+            { upsert: true, new: true }
+        )
         res.json({ streak: progress.streak })
     } catch (err) {
         res.status(500).json({ error: 'Failed to load streak' })
@@ -437,8 +441,11 @@ router.get('/api/progress/streak', ensureAuthenticated, async (req, res) => {
 // Called on app load to update streak if needed.
 router.post('/api/progress/streak/check', ensureAuthenticated, async (req, res) => {
     try {
-        let progress = await UserProgress.findOne({ user: req.user._id })
-        if (!progress) progress = await UserProgress.create({ user: req.user._id })
+        let progress = await UserProgress.findOneAndUpdate(
+            { user: req.user._id },
+            { $setOnInsert: { user: req.user._id } },
+            { upsert: true, new: true }
+        )
 
         const { changed, wasReset } = progress.updateStreak()
         if (changed) await progress.save()
@@ -463,8 +470,11 @@ router.post('/api/progress/save', ensureAuthenticated, async (req, res) => {
             return res.status(400).json({ error: 'Invalid correct/total values' })
         }
 
-        let progress = await UserProgress.findOne({ user: req.user._id })
-        if (!progress) progress = await UserProgress.create({ user: req.user._id })
+        let progress = await UserProgress.findOneAndUpdate(
+            { user: req.user._id },
+            { $setOnInsert: { user: req.user._id } },
+            { upsert: true, new: true }
+        )
 
         // Refresh daily goal counter
         progress.refreshDailyGoal()
