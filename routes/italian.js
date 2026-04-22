@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { ensureAdmin, ensureAuthenticated } = require('../middleware/auth')
 const UserProgress = require('../models/UserProgress')
+const SRSCard      = require('../models/italian/SRSCard')
 
 const VocabCategory    = require('../models/italian/VocabCategory')
 const VocabItem        = require('../models/italian/VocabItem')
@@ -570,6 +571,100 @@ router.get('/api/leaderboard', ensureAuthenticated, async (req, res) => {
     } catch (err) {
         console.error('GET /api/leaderboard error:', err)
         res.status(500).json({ error: 'Failed to load leaderboard' })
+    }
+})
+
+// ── Phase 4: SRS (Spaced Repetition) ────────────────────────────────
+
+// SM-2 algorithm: returns updated card fields
+function applySmTwo (card, grade) {
+    let { interval, easeFactor, repetitions, lapses } = card
+    if (grade >= 3) {
+        repetitions += 1
+        if (repetitions === 1)      interval = 1
+        else if (repetitions === 2) interval = 6
+        else                        interval = Math.round(interval * easeFactor)
+        easeFactor = Math.max(1.3, easeFactor + 0.1 - (5 - grade) * (0.08 + (5 - grade) * 0.02))
+    } else {
+        lapses += 1
+        repetitions = 0
+        interval = 1
+        easeFactor = Math.max(1.3, easeFactor - 0.2)
+    }
+    const nextReview = new Date()
+    nextReview.setUTCDate(nextReview.getUTCDate() + interval)
+    nextReview.setUTCHours(0, 0, 0, 0)
+    return { interval, easeFactor, repetitions, lapses, nextReview, lastReviewed: new Date() }
+}
+
+// GET /italian/api/srs/stats
+router.get('/api/srs/stats', ensureAuthenticated, async (req, res) => {
+    try {
+        const now = new Date()
+        const [due, total] = await Promise.all([
+            SRSCard.countDocuments({ user: req.user._id, nextReview: { $lte: now } }),
+            SRSCard.countDocuments({ user: req.user._id })
+        ])
+        res.json({ due, total })
+    } catch (err) {
+        console.error('GET /api/srs/stats error:', err)
+        res.status(500).json({ error: 'Failed to fetch SRS stats' })
+    }
+})
+
+// GET /italian/api/srs/due — up to 20 cards due today
+router.get('/api/srs/due', ensureAuthenticated, async (req, res) => {
+    try {
+        const cards = await SRSCard.find({
+            user:       req.user._id,
+            nextReview: { $lte: new Date() }
+        }).limit(20).select('front back itemType lapses interval')
+        res.json(cards)
+    } catch (err) {
+        console.error('GET /api/srs/due error:', err)
+        res.status(500).json({ error: 'Failed to fetch due cards' })
+    }
+})
+
+// POST /italian/api/srs/answer — { cardId, grade: 4 (got it) | 1 (missed) }
+router.post('/api/srs/answer', ensureAuthenticated, async (req, res) => {
+    try {
+        const { cardId, grade } = req.body
+        if (!cardId || ![1, 4].includes(Number(grade))) {
+            return res.status(400).json({ error: 'Invalid input' })
+        }
+        const card = await SRSCard.findOne({ _id: cardId, user: req.user._id })
+        if (!card) return res.status(404).json({ error: 'Card not found' })
+        const update = applySmTwo(card, Number(grade))
+        Object.assign(card, update)
+        await card.save()
+        res.json({ interval: card.interval, nextReview: card.nextReview })
+    } catch (err) {
+        console.error('POST /api/srs/answer error:', err)
+        res.status(500).json({ error: 'Failed to save answer' })
+    }
+})
+
+// POST /italian/api/srs/enroll — { itemType, itemId, front, back }
+// Enrolls a new card; silently skips if card already exists (setOnInsert)
+router.post('/api/srs/enroll', ensureAuthenticated, async (req, res) => {
+    try {
+        const { itemType, itemId, front, back } = req.body
+        const validTypes = ['vocab', 'grammar', 'idiom']
+        if (!validTypes.includes(itemType) || !itemId || !front || !back) {
+            return res.status(400).json({ error: 'Invalid input' })
+        }
+        await SRSCard.findOneAndUpdate(
+            { user: req.user._id, itemType, itemId },
+            { $setOnInsert: { front: String(front).slice(0, 500), back: String(back).slice(0, 500),
+                              interval: 0, easeFactor: 2.5, repetitions: 0, lapses: 0, nextReview: new Date() } },
+            { upsert: true, new: true }
+        )
+        res.json({ ok: true })
+    } catch (err) {
+        if (err.code === 11000) return res.json({ ok: true }) // already enrolled
+        console.error('POST /api/srs/enroll error:', err)
+        res.status(500).json({ error: 'Failed to enroll card' })
     }
 })
 

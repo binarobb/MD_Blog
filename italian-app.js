@@ -9,6 +9,7 @@
 
   // Server-side progress (null for guests; populated on init for authenticated users)
   let serverProgress = null
+  let srsStats = null            // { due: N, total: N } — null until fetched
   const appData = {
     verbs:       [],
     vocab:       {},   // { 'Greetings': [{it, en}, ...], ... }
@@ -99,7 +100,11 @@
     verbRefPage:    0,
     verbRefSearch:  '',
     verbRefGroup:   'all',
-    verbRefTense:   'presenteIndicativo'
+    verbRefTense:   'presenteIndicativo',
+    // SRS review
+    srsQueue:   [],
+    srsIndex:   0,
+    srsFlipped: false
   }
 
   // ── Data loader ──────────────────────────────────────────────────
@@ -144,6 +149,7 @@
     const vocab = {}
     categories.forEach((cat, i) => {
       vocab[cat.name] = (vocabData[i].items || []).map(item => ({
+        id: item._id,
         it: item.italian,
         en: item.english
       }))
@@ -153,6 +159,7 @@
     appData.vocab       = vocab
     appData.grammar     = grammarTopics
     appData.grammarQuiz = grammarQuestions.map(q => ({
+      id:    q._id,
       q:     q.question,
       a:     q.correctAnswer,
       opts:  q.options,
@@ -362,6 +369,286 @@
     }
   }
 
+  // ── Phase 4: SRS Review ───────────────────────────────────────────
+
+  async function initSrsStats() {
+    if (!window.CURRENT_USER) return
+    try {
+      const res = await fetch('/italian/api/srs/stats')
+      if (!res.ok) return
+      srsStats = await res.json()
+      updateSrsBadge(srsStats.due)
+      if (state.section === 'dashboard') renderDashboard()
+    } catch (_) {}
+  }
+
+  function updateSrsBadge(count) {
+    const badge = el('srs-due-badge')
+    if (!badge) return
+    badge.textContent = count
+    badge.classList.toggle('d-none', count === 0)
+  }
+
+  async function renderReview() {
+    showSection('review')
+    const area = el('review-area')
+    if (!area) return
+    if (!window.CURRENT_USER) {
+      area.innerHTML = '<div class="alert alert-info mt-3">Please <a href="/login">log in</a> to use spaced repetition review.</div>'
+      return
+    }
+    area.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading…</span></div></div>'
+    try {
+      const res = await fetch('/italian/api/srs/due')
+      if (!res.ok) throw new Error('Failed to load')
+      const cards = await res.json()
+      state.srsQueue   = cards
+      state.srsIndex   = 0
+      state.srsFlipped = false
+      if (!cards.length) {
+        area.innerHTML = `
+          <div class="text-center py-5">
+            <div style="font-size:3.5rem">🎉</div>
+            <h3 class="mt-3">All caught up!</h3>
+            <p class="text-muted">No cards are due for review right now.<br>Come back tomorrow to keep your streak going.</p>
+            <button class="btn btn-outline-light mt-2" onclick="ItalianApp.showSection('dashboard')">← Dashboard</button>
+          </div>`
+        return
+      }
+      srsShowCard()
+    } catch (_) {
+      area.innerHTML = '<div class="alert alert-danger mt-3">Failed to load review queue. Please try again.</div>'
+    }
+  }
+
+  function srsShowCard() {
+    const area = el('review-area')
+    if (!area) return
+    const card = state.srsQueue[state.srsIndex]
+    if (!card) return srsFinished()
+    const idx   = state.srsIndex
+    const total = state.srsQueue.length
+    const pct   = Math.round(idx / total * 100)
+    const typeLabel = { vocab: '📚 Vocab', grammar: '✏️ Grammar', idiom: '🌿 Idiom' }[card.itemType] || card.itemType
+    const lapseNote = card.lapses > 0
+      ? `<span class="srs-lapse-note">⚠️ Missed ${card.lapses} time${card.lapses > 1 ? 's' : ''}</span>` : ''
+    area.innerHTML = `
+      <div class="srs-header">
+        <span class="text-muted">${idx + 1} / ${total}</span>
+        <div class="ita-progress-bar flex-grow-1 mx-3"><div class="ita-progress-fill" style="width:${pct}%"></div></div>
+        <span class="srs-type-badge">${typeLabel}</span>
+      </div>
+      <div class="srs-card" id="srs-card">
+        <div class="srs-card-front">
+          <div class="srs-front-text">${escapeHtml(card.front)}</div>
+          ${lapseNote}
+        </div>
+        <div class="srs-card-back d-none" id="srs-back">
+          <div class="srs-back-label">Answer</div>
+          <div class="srs-back-text">${escapeHtml(card.back)}</div>
+        </div>
+      </div>
+      <div class="srs-actions mt-3" id="srs-actions">
+        <button class="btn srs-btn-flip w-100" onclick="ItalianApp.srsFlip()">Show Answer ↓</button>
+      </div>`
+  }
+
+  function srsFlip() {
+    const back = el('srs-back')
+    const card = el('srs-card')
+    const actions = el('srs-actions')
+    if (!back || !card || !actions) return
+    back.classList.remove('d-none')
+    card.classList.add('srs-flipped')
+    actions.innerHTML = `
+      <div class="d-flex gap-3">
+        <button class="btn srs-btn-again flex-fill" onclick="ItalianApp.srsAnswer(false)">👎 Missed it</button>
+        <button class="btn srs-btn-good flex-fill" onclick="ItalianApp.srsAnswer(true)">👍 Got it!</button>
+      </div>`
+  }
+
+  async function srsAnswer(correct) {
+    const card = state.srsQueue[state.srsIndex]
+    if (!card) return
+    try {
+      await fetch('/italian/api/srs/answer', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ cardId: card._id, grade: correct ? 4 : 1 })
+      })
+    } catch (_) {}
+    state.srsIndex++
+    state.srsFlipped = false
+    srsShowCard()
+  }
+
+  function srsFinished() {
+    const area = el('review-area')
+    if (!area) return
+    const total = state.srsQueue.length
+    area.innerHTML = `
+      <div class="text-center py-5">
+        <div style="font-size:3.5rem">✅</div>
+        <h3 class="mt-3">Session complete!</h3>
+        <p class="text-muted">You reviewed <strong>${total}</strong> card${total !== 1 ? 's' : ''}. Great work!</p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+          <button class="btn btn-primary" onclick="ItalianApp.renderReview()">Review Again</button>
+          <button class="btn btn-outline-light" onclick="ItalianApp.showSection('dashboard')">← Dashboard</button>
+        </div>
+      </div>`
+    initSrsStats()
+  }
+
+  // Fire-and-forget: enroll an item in SRS after first correct answer
+  function srsEnroll(itemType, itemId, front, back) {
+    if (!window.CURRENT_USER || !itemId) return
+    fetch('/italian/api/srs/enroll', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ itemType, itemId: String(itemId), front, back })
+    }).catch(() => {})
+  }
+
+  // ── Phase 4: SRS Review ───────────────────────────────────────────
+
+  async function initSrsStats() {
+    if (!window.CURRENT_USER) return
+    try {
+      const res = await fetch('/italian/api/srs/stats')
+      if (!res.ok) return
+      srsStats = await res.json()
+      updateSrsBadge(srsStats.due)
+      if (state.section === 'dashboard') renderDashboard()
+    } catch (_) {}
+  }
+
+  function updateSrsBadge(count) {
+    const badge = el('srs-due-badge')
+    if (!badge) return
+    badge.textContent = count
+    badge.classList.toggle('d-none', count === 0)
+  }
+
+  async function renderReview() {
+    showSection('review')
+    const area = el('review-area')
+    if (!area) return
+    if (!window.CURRENT_USER) {
+      area.innerHTML = '<div class="alert alert-info mt-3">Please <a href="/login">log in</a> to use spaced repetition review.</div>'
+      return
+    }
+    area.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading…</span></div></div>'
+    try {
+      const res = await fetch('/italian/api/srs/due')
+      if (!res.ok) throw new Error('Failed to load')
+      const cards = await res.json()
+      state.srsQueue   = cards
+      state.srsIndex   = 0
+      state.srsFlipped = false
+      if (!cards.length) {
+        area.innerHTML = `
+          <div class="text-center py-5">
+            <div style="font-size:3.5rem">🎉</div>
+            <h3 class="mt-3">All caught up!</h3>
+            <p class="text-muted">No cards are due for review right now.<br>Come back tomorrow to keep your streak going.</p>
+            <button class="btn btn-outline-light mt-2" onclick="ItalianApp.showSection('dashboard')">← Dashboard</button>
+          </div>`
+        return
+      }
+      srsShowCard()
+    } catch (_) {
+      area.innerHTML = '<div class="alert alert-danger mt-3">Failed to load review queue. Please try again.</div>'
+    }
+  }
+
+  function srsShowCard() {
+    const area = el('review-area')
+    if (!area) return
+    const card = state.srsQueue[state.srsIndex]
+    if (!card) return srsFinished()
+    const idx   = state.srsIndex
+    const total = state.srsQueue.length
+    const pct   = Math.round(idx / total * 100)
+    const typeLabel = { vocab: '📚 Vocab', grammar: '✏️ Grammar', idiom: '🌿 Idiom' }[card.itemType] || card.itemType
+    const lapseNote = card.lapses > 0
+      ? `<span class="srs-lapse-note">⚠️ Missed ${card.lapses} time${card.lapses > 1 ? 's' : ''}</span>` : ''
+    area.innerHTML = `
+      <div class="srs-header">
+        <span class="text-muted">${idx + 1} / ${total}</span>
+        <div class="ita-progress-bar flex-grow-1 mx-3"><div class="ita-progress-fill" style="width:${pct}%"></div></div>
+        <span class="srs-type-badge">${typeLabel}</span>
+      </div>
+      <div class="srs-card" id="srs-card">
+        <div class="srs-card-front">
+          <div class="srs-front-text">${escapeHtml(card.front)}</div>
+          ${lapseNote}
+        </div>
+        <div class="srs-card-back d-none" id="srs-back">
+          <div class="srs-back-label">Answer</div>
+          <div class="srs-back-text">${escapeHtml(card.back)}</div>
+        </div>
+      </div>
+      <div class="srs-actions mt-3" id="srs-actions">
+        <button class="btn srs-btn-flip w-100" onclick="ItalianApp.srsFlip()">Show Answer ↓</button>
+      </div>`
+  }
+
+  function srsFlip() {
+    const back = el('srs-back')
+    const card = el('srs-card')
+    const actions = el('srs-actions')
+    if (!back || !card || !actions) return
+    back.classList.remove('d-none')
+    card.classList.add('srs-flipped')
+    actions.innerHTML = `
+      <div class="d-flex gap-3">
+        <button class="btn srs-btn-again flex-fill" onclick="ItalianApp.srsAnswer(false)">👎 Missed it</button>
+        <button class="btn srs-btn-good flex-fill" onclick="ItalianApp.srsAnswer(true)">👍 Got it!</button>
+      </div>`
+  }
+
+  async function srsAnswer(correct) {
+    const card = state.srsQueue[state.srsIndex]
+    if (!card) return
+    try {
+      await fetch('/italian/api/srs/answer', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ cardId: card._id, grade: correct ? 4 : 1 })
+      })
+    } catch (_) {}
+    state.srsIndex++
+    state.srsFlipped = false
+    srsShowCard()
+  }
+
+  function srsFinished() {
+    const area = el('review-area')
+    if (!area) return
+    const total = state.srsQueue.length
+    area.innerHTML = `
+      <div class="text-center py-5">
+        <div style="font-size:3.5rem">✅</div>
+        <h3 class="mt-3">Session complete!</h3>
+        <p class="text-muted">You reviewed <strong>${total}</strong> card${total !== 1 ? 's' : ''}. Great work!</p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap mt-3">
+          <button class="btn btn-primary" onclick="ItalianApp.renderReview()">Review Again</button>
+          <button class="btn btn-outline-light" onclick="ItalianApp.showSection('dashboard')">← Dashboard</button>
+        </div>
+      </div>`
+    initSrsStats()
+  }
+
+  // Fire-and-forget: enroll an item in SRS after first correct answer
+  function srsEnroll(itemType, itemId, front, back) {
+    if (!window.CURRENT_USER || !itemId) return
+    fetch('/italian/api/srs/enroll', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ itemType, itemId: String(itemId), front, back })
+    }).catch(() => {})
+  }
+
   // ── Navigation ───────────────────────────────────────────────────
   function showSection(name) {
     state.section = name
@@ -505,7 +792,19 @@
           <span class="p3-goal-selector-label">Daily goal:</span>
           <div class="p3-goal-btn-group">${goalBtns}</div>
           <span class="p3-goal-selector-label">questions/day</span>
-        </div>`
+        </div>
+        ${srsStats && srsStats.total > 0 ? `
+        <div class="srs-dash-card mb-3" onclick="ItalianApp.renderReview()">
+          <div class="srs-dash-icon">🔁</div>
+          <div class="srs-dash-info">
+            <div class="srs-dash-title">Spaced Repetition Review</div>
+            <div class="srs-dash-sub">${srsStats.due > 0
+              ? `<strong class="text-warning">${srsStats.due}</strong> card${srsStats.due !== 1 ? 's' : ''} due now`
+              : `All caught up! ${srsStats.total} card${srsStats.total !== 1 ? 's' : ''} in deck`
+            }</div>
+          </div>
+          <div class="srs-dash-arrow">→</div>
+        </div>` : ''}`
     }
 
     el('dash-content').innerHTML = `
@@ -672,7 +971,11 @@
     state.vocabTotal++
     const chosen = btn.dataset.answer
     const correct = normalize(chosen) === normalize(answer)
-    if (correct) state.vocabCorrect++
+    if (correct) {
+      state.vocabCorrect++
+      const item = state.vocabQueue[state.vocabIndex]
+      if (item && item.id) srsEnroll('vocab', item.id, item.it, item.en)
+    }
 
     // highlight
     btn.closest('#mc-options').querySelectorAll('.ita-option-btn').forEach(b => {
@@ -697,7 +1000,11 @@
     // accept any of the slash-separated answers
     const acceptables = answer.split('/').map(s => normalize(s))
     const correct = acceptables.some(a => typed === a)
-    if (correct) state.vocabCorrect++
+    if (correct) {
+      state.vocabCorrect++
+      const item = state.vocabQueue[state.vocabIndex]
+      if (item && item.id) srsEnroll('vocab', item.id, item.it, item.en)
+    }
 
     input.disabled = true
     input.classList.add(correct ? 'ita-input-correct' : 'ita-input-wrong')
@@ -1298,7 +1605,10 @@
         answered = true
         const chosen = btn.dataset.val
         const correct = chosen === q.a
-        if (correct) state.grammarCorrect++
+        if (correct) {
+          state.grammarCorrect++
+          if (q.id) srsEnroll('grammar', q.id, q.q, q.a)
+        }
 
         el('grammarquiz-area').querySelectorAll('.ita-option-btn').forEach(b => {
           b.disabled = true
@@ -2097,6 +2407,9 @@
     renderGrammar,
     resetStats,
     setGoal: saveGoal,
+    renderReview,
+    srsFlip,
+    srsAnswer,
     async init() {
       const dashContent = el('dash-content')
       if (dashContent) {
@@ -2142,12 +2455,14 @@
           else if (section === 'idioms')      startIdioms()
           else if (section === 'grammar')     renderGrammar()
           else if (section === 'leaderboard') renderLeaderboard()
+          else if (section === 'review')      renderReview()
           else showSection(section)
         })
       })
 
       initStreak()
       renderLessonOfDay()
+      initSrsStats()
       showSection('dashboard')
     }
   }
