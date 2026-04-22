@@ -529,6 +529,50 @@ router.post('/api/progress/save', ensureAuthenticated, async (req, res) => {
     }
 })
 
+// POST /italian/api/progress/goal
+// Body: { goal: Number }  (must be one of 10, 20, 30, 50)
+router.post('/api/progress/goal', ensureAuthenticated, async (req, res) => {
+    try {
+        const { goal } = req.body
+        const allowed = [10, 20, 30, 50]
+        if (!allowed.includes(Number(goal))) {
+            return res.status(400).json({ error: 'Invalid goal. Must be one of: 10, 20, 30, 50' })
+        }
+        const progress = await UserProgress.findOneAndUpdate(
+            { user: req.user._id },
+            { $set: { dailyGoal: Number(goal) } },
+            { upsert: true, new: true }
+        )
+        res.json({ dailyGoal: progress.dailyGoal })
+    } catch (err) {
+        console.error('POST /api/progress/goal error:', err)
+        res.status(500).json({ error: 'Failed to update goal' })
+    }
+})
+
+// GET /italian/api/leaderboard — top 20 users by XP
+// Returns displayName, level, xp, streak only (no email)
+router.get('/api/leaderboard', ensureAuthenticated, async (req, res) => {
+    try {
+        const top = await UserProgress.find()
+            .sort({ xp: -1 })
+            .limit(20)
+            .populate('user', 'displayName')
+        const rows = top
+            .filter(p => p.user)
+            .map(p => ({
+                displayName: p.user.displayName,
+                level:       p.level,
+                xp:          p.xp,
+                streak:      p.streak ? p.streak.current : 0
+            }))
+        res.json(rows)
+    } catch (err) {
+        console.error('GET /api/leaderboard error:', err)
+        res.status(500).json({ error: 'Failed to load leaderboard' })
+    }
+})
+
 // Helper: shape the full progress response
 function progressPayload (p) {
     const sections = {}
