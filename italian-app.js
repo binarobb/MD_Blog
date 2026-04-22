@@ -239,11 +239,13 @@
       // Streak check must complete first so the subsequent GET reflects the updated streak
       await fetch('/italian/api/progress/streak/check', { method: 'POST' })
       const progressRes = await fetch('/italian/api/progress')
-      if (progressRes.ok) {
-        serverProgress = await progressRes.json()
-        updateSidebarStreak(serverProgress.streak ? serverProgress.streak.current : 0)
-        if (state.section === 'dashboard') renderDashboard()
+      if (!progressRes.ok) {
+        console.warn('initServerProgress: /api/progress returned', progressRes.status)
+        return
       }
+      serverProgress = await progressRes.json()
+      updateSidebarStreak(serverProgress.streak ? serverProgress.streak.current : 0)
+      if (state.section === 'dashboard') renderDashboard()
     } catch (err) {
       console.warn('Failed to load server progress:', err)
     }
