@@ -223,6 +223,7 @@
       const data = await res.json()
       serverProgress = data
       updateSidebarStreak(data.streak ? data.streak.current : 0)
+      if (data.dailyGoalJustMet) celebrateGoal()
       if (data.newAchievements && data.newAchievements.length) {
         data.newAchievements.forEach(a => showAchievementToast(a.label))
       }
@@ -273,6 +274,92 @@
     const toast = new bootstrap.Toast(toastEl, { delay: 5000 })
     toast.show()
     toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove())
+  }
+
+  function celebrateGoal() {
+    const toastId = 'goal-toast-' + Date.now()
+    const html = `
+      <div id="${toastId}" class="toast align-items-center border-0 position-fixed p3-celebrate-toast"
+           style="bottom:5rem;right:1.5rem;z-index:9999" role="alert" aria-live="assertive">
+        <div class="d-flex">
+          <div class="toast-body">&#x1F389; Daily goal reached! +25 XP bonus!</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>`
+    document.body.insertAdjacentHTML('beforeend', html)
+    const toastEl = document.getElementById(toastId)
+    const toast = new bootstrap.Toast(toastEl, { delay: 4000 })
+    toast.show()
+    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove())
+    // Briefly animate the goal card
+    const goalCard = document.querySelector('.p3-goal-met')
+    if (goalCard) {
+      goalCard.classList.add('p3-goal-celebrate')
+      setTimeout(() => goalCard.classList.remove('p3-goal-celebrate'), 1500)
+    }
+  }
+
+  // ── Save daily goal preference ───────────────────────────────────
+  async function saveGoal(goal) {
+    if (!window.CURRENT_USER) return
+    try {
+      const res = await fetch('/italian/api/progress/goal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goal })
+      })
+      if (!res.ok) return
+      if (serverProgress) serverProgress.dailyGoal = goal
+      if (state.section === 'dashboard') renderDashboard()
+    } catch (err) {
+      console.warn('Failed to save goal:', err)
+    }
+  }
+
+  // ── Leaderboard ──────────────────────────────────────────────────
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+  }
+
+  async function renderLeaderboard() {
+    showSection('leaderboard')
+    const area = el('leaderboard-area')
+    if (!area) return
+    if (!window.CURRENT_USER) {
+      area.innerHTML = '<div class="alert alert-info mt-3">Please <a href="/login">log in</a> to view the leaderboard.</div>'
+      return
+    }
+    area.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-light" role="status"><span class="visually-hidden">Loading…</span></div></div>'
+    try {
+      const res = await fetch('/italian/api/leaderboard')
+      if (!res.ok) throw new Error('Failed to load')
+      const rows = await res.json()
+      if (!rows.length) {
+        area.innerHTML = '<p class="text-muted mt-3">No data yet — be the first to practice!</p>'
+        return
+      }
+      const myName = window.CURRENT_USER ? window.CURRENT_USER.displayName : null
+      const tbody = rows.map((r, i) => `
+        <tr${r.displayName === myName ? ' class="p3-lb-me"' : ''}>
+          <td class="text-muted">${i + 1}</td>
+          <td>${escapeHtml(r.displayName)}${r.displayName === myName ? ' <span class="p3-lb-you">you</span>' : ''}</td>
+          <td>Lv ${r.level}</td>
+          <td>${r.xp.toLocaleString()} XP</td>
+          <td>🔥 ${r.streak}</td>
+        </tr>`).join('')
+      area.innerHTML = `
+        <h2 class="mb-3">&#x1F3C5; Leaderboard</h2>
+        <div class="table-responsive">
+          <table class="table table-dark table-hover p3-lb-table">
+            <thead><tr><th>#</th><th>Player</th><th>Level</th><th>XP</th><th>Streak</th></tr></thead>
+            <tbody>${tbody}</tbody>
+          </table>
+        </div>`
+    } catch (err) {
+      area.innerHTML = '<div class="alert alert-danger mt-3">Failed to load leaderboard. Please try again.</div>'
+    }
   }
 
   // ── Navigation ───────────────────────────────────────────────────
@@ -338,38 +425,86 @@
       </div>`
 
     // XP / streak / daily-goal banner (authenticated users only)
+    const ACHIEVEMENT_META = {
+      first_quiz:    { icon: '🎯', label: 'First Quiz' },
+      streak_7:      { icon: '🔥', label: '7-Day Streak' },
+      streak_30:     { icon: '🌟', label: '30-Day Streak' },
+      streak_100:    { icon: '💎', label: '100-Day Streak' },
+      perfect_score: { icon: '✨', label: 'Perfect Score' },
+      vocab_master:  { icon: '📚', label: 'Vocab Master' },
+      verb_master:   { icon: '⚡', label: 'Verb Master' },
+      all_sections:  { icon: '🏆', label: 'All-Around Learner' },
+      daily_goal:    { icon: '✅', label: 'Daily Goal Met' },
+      week_warrior:  { icon: '⚔️', label: 'Week Warrior' }
+    }
+
     let statsBar = ''
     if (useServer) {
       const p = serverProgress
       const streakVal  = p.streak ? p.streak.current : 0
+      const longestVal = p.streak ? p.streak.longest : 0
       const dailyLeft  = Math.max(0, p.dailyGoal - p.todayCompleted)
       const dailyPct   = Math.min(100, Math.round((p.todayCompleted / p.dailyGoal) * 100))
-      const goalClass  = p.dailyGoalMet ? 'text-success' : ''
+
+      // Achievement shelf
+      const unlockedKeys = new Set((p.achievements || []).map(a => a.key))
+      const badges = Object.entries(ACHIEVEMENT_META).map(([key, meta]) => {
+        const lit = unlockedKeys.has(key)
+        return `<div class="p3-badge${lit ? ' p3-badge-unlocked' : ' p3-badge-locked'}" title="${meta.label}">${lit ? meta.icon : '🔒'}</div>`
+      }).join('')
+
+      // Goal selector buttons
+      const goalBtns = [10, 20, 30, 50].map(n =>
+        `<button class="p3-goal-btn${p.dailyGoal === n ? ' active' : ''}" onclick="ItalianApp.setGoal(${n})">${n}</button>`
+      ).join('')
+
+      // Goal-not-met nudge banner
+      const goalBanner = !p.dailyGoalMet
+        ? `<div class="p3-goal-banner" id="p3-goal-banner">
+            <span>🎯 <strong>${dailyLeft}</strong> question${dailyLeft !== 1 ? 's' : ''} to go — keep it up!</span>
+            <button class="p3-goal-banner-close" onclick="document.getElementById('p3-goal-banner').remove()" aria-label="Dismiss">✕</button>
+          </div>`
+        : ''
+
       statsBar = `
-        <div class="row g-2 mb-3">
+        ${goalBanner}
+        <div class="row g-2 mb-2">
           <div class="col-4">
             <div class="content-card text-center py-2 px-1">
-              <div style="font-size:1.6rem">&#x1F525;</div>
-              <div class="fw-bold">${streakVal} day${streakVal !== 1 ? 's' : ''}</div>
-              <small class="text-muted">Streak</small>
+              <div class="p3-flame${streakVal > 1 ? ' p3-flame-lit' : ''}">🔥</div>
+              <div class="fw-bold">${streakVal}</div>
+              <small class="text-muted">day streak</small>
+              ${longestVal > 0 ? `<div class="p3-stat-sub">best: ${longestVal}</div>` : ''}
             </div>
           </div>
           <div class="col-4">
             <div class="content-card text-center py-2 px-1">
-              <div style="font-size:1.6rem">&#x2B50;</div>
-              <div class="fw-bold">Lv ${p.level}</div>
-              <small class="text-muted">${p.xp} XP</small>
+              <div class="fw-bold" style="font-size:1.15rem">Lv ${p.level}</div>
+              <small class="text-muted">${p.xp.toLocaleString()} XP</small>
               <div class="ita-progress-bar mt-1" style="height:4px"><div class="ita-progress-fill" style="width:${p.xpPercent}%"></div></div>
+              <div class="p3-stat-sub">${p.xpIntoLevel}/${p.xpNeeded} to Lv ${p.level + 1}</div>
             </div>
           </div>
           <div class="col-4">
-            <div class="content-card text-center py-2 px-1 ${goalClass}">
-              <div style="font-size:1.6rem">${p.dailyGoalMet ? '&#x2705;' : '&#x1F3AF;'}</div>
+            <div class="content-card text-center py-2 px-1${p.dailyGoalMet ? ' p3-goal-met' : ''}">
+              <div>${p.dailyGoalMet ? '✅' : '🎯'}</div>
               <div class="fw-bold">${p.todayCompleted}/${p.dailyGoal}</div>
               <small class="text-muted">${p.dailyGoalMet ? 'Goal met!' : dailyLeft + ' to go'}</small>
               <div class="ita-progress-bar mt-1" style="height:4px"><div class="ita-progress-fill" style="width:${dailyPct}%"></div></div>
             </div>
           </div>
+        </div>
+        <div class="p3-achievement-shelf mb-2">
+          <div class="p3-shelf-header">
+            <span class="p3-shelf-label">Achievements</span>
+            <span class="p3-shelf-count">${unlockedKeys.size}/${Object.keys(ACHIEVEMENT_META).length}</span>
+          </div>
+          <div class="p3-shelf-scroll">${badges}</div>
+        </div>
+        <div class="p3-goal-selector mb-3">
+          <span class="p3-goal-selector-label">Daily goal:</span>
+          <div class="p3-goal-btn-group">${goalBtns}</div>
+          <span class="p3-goal-selector-label">questions/day</span>
         </div>`
     }
 
@@ -1961,6 +2096,7 @@
     openVerbRefModal,
     renderGrammar,
     resetStats,
+    setGoal: saveGoal,
     async init() {
       const dashContent = el('dash-content')
       if (dashContent) {
@@ -1994,7 +2130,7 @@
         return
       }
 
-      document.querySelectorAll('.ita-tab').forEach(tab => {
+    document.querySelectorAll('.ita-tab').forEach(tab => {
         tab.addEventListener('click', e => {
           e.preventDefault()
           const section = tab.dataset.section
@@ -2005,6 +2141,7 @@
           else if (section === 'reading')     startReading()
           else if (section === 'idioms')      startIdioms()
           else if (section === 'grammar')     renderGrammar()
+          else if (section === 'leaderboard') renderLeaderboard()
           else showSection(section)
         })
       })

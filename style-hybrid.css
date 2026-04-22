@@ -378,3 +378,211 @@
 @media (min-width: 769px) {
   .hybrid-bottom-nav { display: none !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   Phase 3 — Engagement & Gamification
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar: leaderboard nav accent ────────────────────────────── */
+.hybrid-nav-item.h-leaderboard.active {
+  background: rgba(251,191,36,0.12);
+  color: #fbbf24 !important;
+}
+
+/* ── Stat sub-label (XP into level, streak best) ────────────────── */
+.p3-stat-sub {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  margin-top: 2px;
+  opacity: 0.7;
+}
+
+/* ── Flame icon — animated when streak > 1 ──────────────────────── */
+.p3-flame {
+  font-size: 1.5rem;
+  line-height: 1;
+  display: block;
+}
+@keyframes p3-flicker {
+  0%,100% { transform: scale(1)   rotate(-3deg); }
+  25%      { transform: scale(1.1) rotate(3deg);  }
+  50%      { transform: scale(1.05) rotate(-2deg); }
+  75%      { transform: scale(1.12) rotate(2deg);  }
+}
+.p3-flame-lit {
+  animation: p3-flicker 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(251,191,36,0.6));
+}
+
+/* ── Daily goal card — met state ────────────────────────────────── */
+.p3-goal-met {
+  border-color: rgba(74,222,128,0.35) !important;
+  background: rgba(74,222,128,0.06) !important;
+}
+
+/* ── Celebration pulse on goal card ─────────────────────────────── */
+@keyframes p3-celebrate-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); transform: scale(1); }
+  50%  { box-shadow: 0 0 0 12px rgba(74,222,128,0); transform: scale(1.04); }
+  100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); transform: scale(1); }
+}
+.p3-goal-celebrate {
+  animation: p3-celebrate-pulse 0.6s ease-out 2;
+}
+
+/* ── Goal-not-met nudge banner ──────────────────────────────────── */
+.p3-goal-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: rgba(232,168,80,0.1);
+  border: 1px solid rgba(232,168,80,0.25);
+  border-left: 3px solid var(--brand);
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+.p3-goal-banner-close {
+  background: none;
+  border: none;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0 0.2rem;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.p3-goal-banner-close:hover { opacity: 1; }
+
+/* ── Achievement shelf ──────────────────────────────────────────── */
+.p3-achievement-shelf {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+}
+.p3-shelf-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.p3-shelf-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-soft);
+  opacity: 0.6;
+}
+.p3-shelf-count {
+  font-size: 0.72rem;
+  color: var(--brand);
+  font-weight: 600;
+}
+.p3-shelf-scroll {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.p3-shelf-scroll::-webkit-scrollbar { display: none; }
+.p3-badge {
+  flex-shrink: 0;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 1px solid var(--border);
+  cursor: default;
+  transition: transform 0.15s;
+}
+.p3-badge:hover { transform: scale(1.15); }
+.p3-badge-unlocked {
+  background: rgba(232,168,80,0.1);
+  border-color: rgba(232,168,80,0.3);
+}
+.p3-badge-locked {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+/* ── Daily goal selector ────────────────────────────────────────── */
+.p3-goal-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.p3-goal-selector-label {
+  font-size: 0.8rem;
+  color: var(--text-soft);
+}
+.p3-goal-btn-group {
+  display: flex;
+  gap: 0.3rem;
+}
+.p3-goal-btn {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  padding: 0.2rem 0.55rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.p3-goal-btn:hover {
+  background: rgba(232,168,80,0.1);
+  color: var(--brand);
+  border-color: rgba(232,168,80,0.3);
+}
+.p3-goal-btn.active {
+  background: rgba(232,168,80,0.15);
+  color: var(--brand);
+  border-color: var(--brand);
+  font-weight: 600;
+}
+
+/* ── Celebration toast ──────────────────────────────────────────── */
+.p3-celebrate-toast {
+  background: linear-gradient(135deg, #166534, #15803d);
+  color: #fff;
+}
+
+/* ── Leaderboard table ──────────────────────────────────────────── */
+.p3-lb-table th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-soft);
+  border-color: var(--border) !important;
+}
+.p3-lb-table td {
+  border-color: var(--border) !important;
+  vertical-align: middle;
+}
+.p3-lb-me td { background: rgba(232,168,80,0.06) !important; }
+.p3-lb-you {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--brand);
+  color: #12100e;
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  vertical-align: middle;
+  margin-left: 0.35rem;
+}
+
+@media (max-width: 768px) {
+  .p3-goal-selector { justify-content: center; }
+  .p3-badge { width: 2rem; height: 2rem; font-size: 1rem; }
+}
