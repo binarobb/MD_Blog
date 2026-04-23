@@ -5,6 +5,7 @@ This guide covers deploying the MD Blog to a DigitalOcean droplet running Rocky 
 ## Architecture Overview
 
 The blog uses this architecture:
+
 - **Node.js App**: Runs on port 5000 (internal only, not publicly accessible)
 - **Nginx**: Listens on ports 80/443 (public-facing)
 - **SSL/TLS**: Handled by Nginx with Let's Encrypt
@@ -15,6 +16,7 @@ Nginx acts as a reverse proxy, forwarding all web traffic to the Node app runnin
 ## Why This Architecture?
 
 **Security & Best Practices:**
+
 - Node.js app runs as non-root user (cannot bind to ports < 1024)
 - Nginx runs as root, can bind to ports 80/443
 - Nginx handles SSL/TLS certificates
@@ -22,6 +24,7 @@ Nginx acts as a reverse proxy, forwarding all web traffic to the Node app runnin
 - Easy to scale (add multiple Node instances behind Nginx)
 
 **Port Explanation:**
+
 - **Port 5000** (internal): Where your Node.js app actually runs
 - **Port 80** (public): HTTP traffic (redirects to HTTPS)
 - **Port 443** (public): HTTPS traffic (secure, standard web port)
@@ -46,6 +49,7 @@ Add these secrets:
 - `DO_SSH_KEY`: Your private SSH key for the droplet
 
 To generate SSH key (if needed):
+
 ```bash
 ssh-keygen -t ed25519 -C "github-actions" -f deploy-key -N ""
 cat deploy-key  # Copy this as DO_SSH_KEY
@@ -55,11 +59,13 @@ cat deploy-key.pub  # Add this to your droplet's ~/.ssh/authorized_keys
 ## Step 2: Set Up Your DigitalOcean Droplet (Rocky Linux 9)
 
 SSH into your droplet:
+
 ```bash
 ssh root@YOUR_DROPLET_IP
 ```
 
 Run the setup commands:
+
 ```bash
 # Update system
 dnf update -y
@@ -93,6 +99,7 @@ nano .env
 ## Step 3: Configure Environment Variables
 
 Create `.env` file on your droplet:
+
 ```
 MONGODB_URI=mongodb+srv://<DB_USERNAME>:<DB_PASSWORD>@cluster.mongodb.net/blog?retryWrites=true&w=majority
 NODE_ENV=production
@@ -103,7 +110,8 @@ SESSION_SECRET=your-secret-key-here-change-this
 ### Get Your MongoDB Atlas Connection String
 
 **Option A: Username/Password (Recommended for simplicity)**
-1. Go to MongoDB Atlas (https://cloud.mongodb.com)
+
+1. Go to MongoDB Atlas (<https://cloud.mongodb.com>)
 2. Click "Connect" on your cluster
 3. Choose "Drivers" (not Applications/X.509)
 4. Select "Node.js" and copy the connection string
@@ -112,11 +120,13 @@ SESSION_SECRET=your-secret-key-here-change-this
 
 **Option B: X.509 Certificates (More Secure)**
 If you have an X.509 connection string like:
+
 ```
 mongodb+srv://parliment.myhux.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509&appName=parliment
 ```
 
 This requires:
+
 1. Downloading X.509 certificate from MongoDB Atlas
 2. Adding certificate path environment variables
 3. More complex server setup
@@ -124,6 +134,7 @@ This requires:
 **For easier first deployment, use Option A (username/password)**
 
 ### MongoDB Database Setup
+
 1. In MongoDB Atlas, create a database user:
    - Go to Database Access
    - Click "+ Add New Database User"
@@ -136,6 +147,7 @@ This requires:
 ## Step 4: Install and Start the App
 
 On your droplet:
+
 ```bash
 cd /var/www/md-blog
 npm install
@@ -166,7 +178,7 @@ upstream md_blog {
 
 server {
     listen 80;
-    server_name intentionalowl.io www.intentionalowl.io;
+    server_name wiseops.io www.wiseops.io;
     client_max_body_size 10M;
 
     location / {
@@ -216,7 +228,7 @@ firewall-cmd --list-all
 dnf install -y certbot python3-certbot-nginx
 
 # Get certificate
-certbot --nginx -d intentionalowl.io -d www.intentionalowl.io
+certbot --nginx -d wiseops.io -d www.wiseops.io
 
 # Auto-renewal is configured automatically via systemd timer
 # Check the timer
@@ -248,6 +260,7 @@ curl http://127.0.0.1:5000/  # Should work directly to Node.js
 ```
 
 The security model:
+
 - Node app on port 5000: **Not exposed to internet** (only localhost)
 - Nginx on ports 80/443: **Public facing**
 - Users access the public ports, Nginx forwards to the internal port
@@ -271,6 +284,7 @@ git push origin main
 ```
 
 GitHub Actions will automatically:
+
 1. Pull latest code
 2. Install dependencies
 3. Restart the app with PM2
@@ -279,6 +293,7 @@ GitHub Actions will automatically:
 ## Monitoring and Logs
 
 Monitor your app:
+
 ```bash
 # SSH into droplet
 ssh root@YOUR_DROPLET_IP
@@ -296,11 +311,13 @@ pm2 restart md-blog
 ## Environment Variables on Droplet
 
 Update `.env` with your MongoDB Atlas credentials:
+
 ```bash
 nano /var/www/md-blog/.env
 ```
 
 After saving, restart the app:
+
 ```bash
 pm2 restart md-blog
 ```
@@ -308,6 +325,7 @@ pm2 restart md-blog
 ## Port Configuration Summary
 
 **Your Site Access Pattern:**
+
 ```
 User Browser
     ↓ https://intentionalowl.io (port 443)
@@ -318,6 +336,7 @@ Node.js App
 ```
 
 **Port Breakdown:**
+
 | Port | Service | Access | Purpose |
 |------|---------|--------|---------|
 | 80 | Nginx | Public (everyone) | HTTP → redirects to HTTPS |
@@ -329,12 +348,14 @@ Users never see or interact with port 5000. All traffic goes through Nginx on th
 ## Troubleshooting
 
 **Node.js module not found**:
+
 ```bash
 dnf module list nodejs
 dnf module enable nodejs:18
 ```
 
 **Firewall blocking connections**:
+
 ```bash
 # Check firewall rules (should only expose 80 and 443)
 firewall-cmd --list-all
@@ -357,18 +378,21 @@ firewall-cmd --query-port=5000/tcp  # Should output 'no'
 ```
 
 **Port already in use**:
+
 ```bash
 lsof -i :5000
 kill -9 PID
 ```
 
 **Permission denied for SSH**:
+
 ```bash
 chmod 700 ~/.ssh
 chmod 600 ~/.ssh/authorized_keys
 ```
 
 **Nginx not routing correctly**:
+
 ```bash
 nginx -t
 systemctl reload nginx
@@ -377,6 +401,7 @@ curl http://localhost  # Test through Nginx
 ```
 
 **Check app is running**:
+
 ```bash
 pm2 status
 pm2 logs md-blog  # View real-time logs
@@ -404,6 +429,7 @@ curl http://127.0.0.1:5000
 
 **Alternative (more restrictive):**
 If you only want to allow port 5000, not all network connections:
+
 ```bash
 # Add port to http_port_t
 semanage port -a -t http_port_t -p tcp 5000
@@ -417,6 +443,7 @@ systemctl restart nginx
 ```
 
 **Nuclear option (not recommended for production):**
+
 ```bash
 # Disable SELinux entirely (temporary)
 setenforce 0
@@ -430,6 +457,7 @@ nano /etc/selinux/config
 **Pro tip:** The `setsebool -P httpd_can_network_connect 1` command is the easiest and safest option for development/small deployments.
 
 **Certbot renewal issues**:
+
 ```bash
 # Check systemd timer
 systemctl list-timers certbot*
