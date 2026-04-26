@@ -1138,7 +1138,7 @@ Article tables (explicit styling)
 /* Mobile: smaller button */
 @media (max-width: 768px) {
     #gufo-container {
-        bottom: 4rem;
+        bottom: 5.5rem;
         right: 1rem;
     }
     #gufo-btn {

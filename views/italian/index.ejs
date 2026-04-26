@@ -169,12 +169,16 @@
                 <div class="tuscan-speak-owl">🦉</div>
                 <h2>Speak with Gufo</h2>
                 <p class="lead">Gufo is your AI Italian tutor. Have a real conversation — ask for help with vocabulary, grammar, or just practice speaking freely.</p>
-                <div class="tuscan-speak-tips">
-                    <div class="tuscan-tip"><strong>Ciao Gufo!</strong> — Try a simple greeting</div>
-                    <div class="tuscan-tip"><strong>Come si dice...?</strong> — Ask how to say something</div>
-                    <div class="tuscan-tip"><strong>Correggimi, per favore</strong> — Ask to be corrected</div>
+                <p class="tuscan-speak-cta">Tap a prompt below to warm up, or press the <strong>Gufo</strong> button to start from scratch.</p>
+
+                <div class="gufo-prompt-grid" id="gufo-prompt-grid">
+                    <button class="gufo-prompt-chip" data-prompt="Ciao Gufo! Presentati e chiedi come posso esercitarmi oggi.">👋 Ciao Gufo!</button>
+                    <button class="gufo-prompt-chip" data-prompt="Aiutami a imparare il vocabolario di base per cibo e bevande.">🍕 Food vocab</button>
+                    <button class="gufo-prompt-chip" data-prompt="Fammi fare pratica con i verbi irregolari italiani.">⚡ Irregular verbs</button>
+                    <button class="gufo-prompt-chip" data-prompt="Correggi il mio italiano mentre parliamo, per favore.">✏️ Correct me</button>
+                    <button class="gufo-prompt-chip" data-prompt="Facciamo una breve conversazione su una giornata tipica in Italia.">☕ Daily life convo</button>
+                    <button class="gufo-prompt-chip" data-prompt="Insegnami alcune frasi utili per viaggiare in Italia.">✈️ Travel phrases</button>
                 </div>
-                <p class="tuscan-speak-cta">Click the <strong>Gufo</strong> button in the bottom-right to start.</p>
             </div>
         </div>
 
@@ -387,6 +391,20 @@
           conversation = null;
           setState('error', err.message || 'Failed to connect');
         }
+      });
+
+      // Quick-prompt chips — tap to open Gufo with a pre-seeded first message
+      document.querySelectorAll('.gufo-prompt-chip').forEach(chip => {
+        chip.addEventListener('click', async () => {
+          const prompt = chip.dataset.prompt;
+          // Store prompt so Gufo can use it once connected
+          window._gufoInitialPrompt = prompt;
+          // Highlight the selected chip briefly
+          document.querySelectorAll('.gufo-prompt-chip').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          // Trigger the main Gufo button
+          btn.click();
+        });
       });
     </script>
 </body>

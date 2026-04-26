@@ -182,6 +182,21 @@ router.get('/api/idioms', async (req, res) => {
 
 // ── Admin CRUD (requires admin role) ────────────────────────────────
 
+// Admin panel page
+router.get('/admin', ensureAdmin, async (req, res) => {
+    try {
+        const [categories, recentVocab, recentVerbs, recentReading] = await Promise.all([
+            VocabCategory.find().sort({ order: 1 }),
+            VocabItem.find().sort({ _id: -1 }).limit(10).populate('category', 'name'),
+            Verb.find().sort({ _id: -1 }).limit(10),
+            ReadingPassage.find().sort({ _id: -1 }).limit(10)
+        ])
+        res.render('italian/admin', { categories, recentVocab, recentVerbs, recentReading })
+    } catch (err) {
+        res.status(500).send('Admin panel error: ' + err.message)
+    }
+})
+
 // Vocab
 router.post('/admin/vocab', ensureAdmin, async (req, res) => {
     try {
