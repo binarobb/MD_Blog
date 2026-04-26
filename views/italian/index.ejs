@@ -335,6 +335,23 @@
 
           conversation = await Conversation.startSession({
             signedUrl,
+            // Tune VAD so ambient noise doesn't keep the mic permanently open:
+            // Higher threshold = less sensitive (ignores quiet background noise)
+            // Shorter silence window = ends utterance faster after real speech stops
+            clientTools: {},
+            connectionDelay: { default: 0, webrtc: 0 },
+            overrides: {
+              agent: {
+                turn: {
+                  turn_detection: {
+                    mode: 'server_vad',
+                    silence_duration_ms: 700,
+                    threshold: 0.55,
+                    prefix_padding_ms: 300,
+                  }
+                }
+              }
+            },
             onConnect: ({ conversationId }) => {
               console.log('Gufo connected, id:', conversationId);
               setState('connected', 'Listening…');
