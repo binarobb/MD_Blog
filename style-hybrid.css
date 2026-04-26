@@ -339,9 +339,11 @@
 .hybrid-bnav-item.h-grammarquiz.active,
 .hybrid-bnav-item.h-grammarquiz.active small       { color: var(--c-quiz)   !important; }
 .hybrid-bnav-item.h-reading.active,
-.hybrid-bnav-item.h-reading.active small           { color: var(--c-read)   !important; }
-.hybrid-bnav-item.h-grammar.active,
-.hybrid-bnav-item.h-grammar.active small           { color: var(--c-ref)    !important; }
+.hybrid-bnav-item.h-reading.active small             { color: var(--c-read)   !important; }
+.hybrid-bnav-item.h-review.active,
+.hybrid-bnav-item.h-review.active small              { color: #a78bfa        !important; }
+.hybrid-bnav-item.h-leaderboard.active,
+.hybrid-bnav-item.h-leaderboard.active small         { color: #fbbf24        !important; }
 
 /* ── Responsive breakpoints ──────────────────────────────────────── */
 /* ── Mobile level strip (only visible on mobile) ────────────────── */
