@@ -1,7 +1,8 @@
 const express = require('express')
 const router = express.Router()
+const { ensureAuthenticated } = require('../middleware/auth')
 
-router.get('/signed-url', async (req, res) => {
+router.get('/signed-url', ensureAuthenticated, async (req, res) => {
   const apiKey = process.env.ELEVENLABS_API_KEY
   const agentId = process.env.ELEVENLABS_AGENT_ID
 

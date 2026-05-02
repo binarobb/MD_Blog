@@ -1,5 +1,11 @@
 require('dotenv').config()
 const express = require('express')
+const helmet = require('helmet')
+
+// Fail fast if required env vars are missing
+if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET env var is not set — refusing to start')
+}
 
 process.on('uncaughtException', (err) => {
     console.error(`[${new Date().toISOString()}] UNCAUGHT EXCEPTION:`, err)
@@ -44,13 +50,30 @@ db.once('open', function() {
 app.set('view engine', 'ejs')
 app.set('trust proxy', 1)
 
+// Security headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', '*.elevenlabs.io'],
+            styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
+            fontSrc: ["'self'", 'fonts.gstatic.com'],
+            imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com'],
+            connectSrc: ["'self'", '*.elevenlabs.io'],
+            frameSrc: ["'none'"],
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: []
+        }
+    }
+}))
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: false}))
 app.use(methodOverride('_method'))
 app.use(express.static(__dirname))
 
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
