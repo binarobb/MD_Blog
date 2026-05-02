@@ -7,18 +7,16 @@ module.exports = {
             autorestart: true,
             watch: false,
             max_memory_restart: '300M',
-            env_production: {
-                NODE_ENV: 'production'
+            env: {
+                NODE_ENV: 'production',
+                PORT: 5000
             },
-            // Logging
-            log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-            error_file: '/root/.pm2/logs/md-blog-error.log',
-            out_file: '/root/.pm2/logs/md-blog-out.log',
-            merge_logs: true,
+            merge_logs: false,
             // Restart behaviour — don't restart-loop if crashing on startup
             min_uptime: '10s',
             max_restarts: 5,
-            restart_delay: 3000
+            restart_delay: 3000,
+            kill_timeout: 5000
         }
     ]
 }
