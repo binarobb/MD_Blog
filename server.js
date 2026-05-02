@@ -1,5 +1,15 @@
-require('dotenv').config({ override: true })
+require('dotenv').config()
 const express = require('express')
+
+process.on('uncaughtException', (err) => {
+    console.error(`[${new Date().toISOString()}] UNCAUGHT EXCEPTION:`, err)
+    process.exit(1)
+})
+
+process.on('unhandledRejection', (reason) => {
+    console.error(`[${new Date().toISOString()}] UNHANDLED REJECTION:`, reason)
+    process.exit(1)
+})
 const mongoose = require('mongoose')
 const Article = require('./models/article')
 const articleRouter = require('./routes/articles.js')

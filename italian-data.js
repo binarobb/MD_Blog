@@ -2644,6 +2644,243 @@ const READING_PASSAGES = [
       }
     ],
     audioUrl: null
+  },
+  // ── A2 Passage ─────────────────────────────────────────────────
+  {
+    title: 'Il Natale di Roma',
+    level: 2,
+    tags: ['rome', 'history', 'mythology', 'culture', 'celebrations'],
+    body: `<p>Secondo la <mark data-word="tradizione">tradizione</mark>, la città di Roma nasce il 21 aprile, molti <mark data-word="secoli">secoli</mark> fa.</p>
+<p>La storia inizia con due <mark data-word="fratelli">fratelli</mark>, Romolo e Remo. Quando sono molto piccoli, vengono lasciati vicino a un <mark data-word="fiume">fiume</mark>. Una <mark data-word="lupa">lupa</mark> li trova e si <mark data-word="prende cura di loro">prende cura di loro</mark>: li <mark data-word="protegge">protegge</mark> e dà loro da mangiare.</p>
+<p>Quando diventano grandi, i due fratelli decidono di <mark data-word="fondare">fondare</mark> una nuova città. Però non sono d'accordo su dove costruirla e iniziano a <mark data-word="litigare">litigare</mark>.</p>
+<p>Dopo una discussione molto forte, Romolo prende una decisione importante e fonda la città da solo. La chiama Roma, dal suo nome.</p>
+<p>Per questo motivo, Romolo è considerato il primo <mark data-word="re">re</mark> di Roma. Questa storia è una <mark data-word="leggenda">leggenda</mark>, ma è molto importante per la cultura italiana.</p>
+<p>Oggi, ogni anno, le persone <mark data-word="celebrano">celebrano</mark> il compleanno della città con il Natale di Roma. Durante questa <mark data-word="festa">festa</mark> ci sono <mark data-word="sfilate">sfilate</mark> in costume antico, spettacoli e attività culturali. Molte persone si vestono come gli antichi romani e partecipano alle celebrazioni.</p>
+<p>Il 21 aprile, Roma non è solo una città: è un <mark data-word="simbolo">simbolo</mark> di storia, tradizione e <mark data-word="identità">identità</mark>.</p>`,
+    vocabGlossary: [
+      { italian: 'tradizione', english: 'tradition' },
+      { italian: 'secoli', english: 'centuries' },
+      { italian: 'fratelli', english: 'brothers' },
+      { italian: 'fiume', english: 'river' },
+      { italian: 'lupa', english: 'she-wolf' },
+      { italian: 'prende cura di loro', english: 'takes care of them' },
+      { italian: 'protegge', english: 'protects' },
+      { italian: 'fondare', english: 'to found / to establish (a city)' },
+      { italian: 'litigare', english: 'to argue / to quarrel' },
+      { italian: 're', english: 'king' },
+      { italian: 'leggenda', english: 'legend / traditional story' },
+      { italian: 'celebrano', english: 'celebrate' },
+      { italian: 'festa', english: 'celebration / festival' },
+      { italian: 'sfilate', english: 'parades' },
+      { italian: 'simbolo', english: 'symbol' },
+      { italian: 'identità', english: 'identity' }
+    ],
+    questions: [
+      {
+        text: 'According to tradition, when was Rome founded?',
+        options: ['15 March', '21 April', '4 July', '25 December'],
+        correctIndex: 1
+      },
+      {
+        text: 'Why do Romulus and Remus argue?',
+        options: ['Over money', 'Over the name of the city', 'Over where to build the city', 'Over who found the she-wolf'],
+        correctIndex: 2
+      },
+      {
+        text: 'What role does the she-wolf play in the story?',
+        options: ['She attacks the brothers', 'She finds and cares for the brothers', 'She helps build the city', 'She chooses the city\'s name'],
+        correctIndex: 1
+      },
+      {
+        text: 'Why is Romulus considered the first king of Rome?',
+        options: ['He was the eldest brother', 'He won a battle', 'He founded the city alone', 'He was chosen by the people'],
+        correctIndex: 2
+      },
+      {
+        text: 'What happens today during the Natale di Roma?',
+        options: ['People exchange gifts', 'There are parades and cultural events', 'The city closes for a day', 'Fireworks are held at the Colosseum'],
+        correctIndex: 1
+      }
+    ],
+    audioUrl: null
+  },
+  {
+    title: 'La mia famiglia',
+    level: 2,
+    tags: ['family', 'descriptions', 'present tense', 'jobs'],
+    body: `<p>Mi chiamo Paolo. Ho quaranta anni e vivo a Torino con la mia <mark data-word="famiglia">famiglia</mark>.</p>
+<p>Mia <mark data-word="moglie">moglie</mark> si chiama Cristina. Ha trentasei anni e lavora come <mark data-word="infermiera">infermiera</mark> in un ospedale vicino a casa nostra. È una persona molto <mark data-word="generosa">generosa</mark> e lavora tanto.</p>
+<p>Abbiamo due <mark data-word="figli">figli</mark>: una figlia che si chiama Elena, ha quattordici anni e va al liceo, e un figlio che si chiama Matteo, ha undici anni e va alle scuole medie. Elena ama la musica e suona il pianoforte. Matteo invece preferisce lo sport — gioca a calcio ogni giovedì sera.</p>
+<p>Abbiamo anche un cane, <mark data-word="Biscotto">Biscotto</mark>. È un golden retriever di tre anni, molto <mark data-word="vivace">vivace</mark>. Ogni mattina lo porto a fare una passeggiata nel parco vicino a casa.</p>
+<p>La nostra famiglia è piccola ma siamo molto <mark data-word="uniti">uniti</mark>. Il <mark data-word="fine settimana">fine settimana</mark> mangiamo sempre insieme e parliamo di tutto.</p>`,
+    vocabGlossary: [
+      { italian: 'famiglia', english: 'family' },
+      { italian: 'moglie', english: 'wife' },
+      { italian: 'infermiera', english: 'nurse (female)' },
+      { italian: 'generosa', english: 'generous' },
+      { italian: 'figli', english: 'children / sons and daughters' },
+      { italian: 'Biscotto', english: '"Biscuit" (the dog\'s name)' },
+      { italian: 'vivace', english: 'lively / energetic' },
+      { italian: 'uniti', english: 'close / united' },
+      { italian: 'fine settimana', english: 'weekend' }
+    ],
+    questions: [
+      {
+        text: 'What does Cristina do for work?',
+        options: ['She is a teacher', 'She is a nurse', 'She is a doctor', 'She works in a shop'],
+        correctIndex: 1
+      },
+      {
+        text: 'How old is Matteo?',
+        options: ['Fourteen', 'Eleven', 'Three', 'Thirty-six'],
+        correctIndex: 1
+      },
+      {
+        text: 'What hobby does Elena have?',
+        options: ['She plays football', 'She paints', 'She plays the piano', 'She swims'],
+        correctIndex: 2
+      },
+      {
+        text: 'What do the family always do at the weekend?',
+        options: ['Go to the park', 'Eat together and talk', 'Watch TV', 'Visit grandparents'],
+        correctIndex: 1
+      }
+    ],
+    audioUrl: null
+  },
+  {
+    title: 'Come stai? Un dialogo',
+    level: 2,
+    tags: ['health', 'dialogue', 'vocabulary', 'daily life'],
+    body: `<p>Marco e Silvia sono colleghi. Si incontrano in ufficio il lunedì mattina.</p>
+<p><strong>Marco:</strong> "Ciao Silvia! Come <mark data-word="stai">stai</mark>?"</p>
+<p><strong>Silvia:</strong> "Ciao Marco. Non molto bene, ho un po' di <mark data-word="mal di gola">mal di gola</mark> e mi sento stanca."</p>
+<p><strong>Marco:</strong> "Mi dispiace! Hai preso qualche <mark data-word="medicina">medicina</mark>?"</p>
+<p><strong>Silvia:</strong> "Sì, ho preso una pastiglia questa mattina, ma non mi piace prendere medicine. Preferisco bere tanto tè caldo con il miele."</p>
+<p><strong>Marco:</strong> "Capisco. Anch'io quando sono <mark data-word="raffreddato">raffreddato</mark> preferisco i <mark data-word="rimedi naturali">rimedi naturali</mark>. Dovresti anche stare a <mark data-word="riposo">riposo</mark>."</p>
+<p><strong>Silvia:</strong> "Hai ragione. Forse vado a casa prima oggi. Ho anche un po' di <mark data-word="febbre">febbre</mark>."</p>
+<p><strong>Marco:</strong> "Sì, torna a casa e <mark data-word="riposati">riposati</mark>! Il lavoro può aspettare."</p>`,
+    vocabGlossary: [
+      { italian: 'stai', english: 'you are / how are you (stare)' },
+      { italian: 'mal di gola', english: 'sore throat' },
+      { italian: 'medicina', english: 'medicine' },
+      { italian: 'raffreddato', english: 'having a cold' },
+      { italian: 'rimedi naturali', english: 'natural remedies' },
+      { italian: 'riposo', english: 'rest' },
+      { italian: 'febbre', english: 'fever / temperature' },
+      { italian: 'riposati', english: 'rest! (imperative, reflexive)' }
+    ],
+    questions: [
+      {
+        text: 'How does Silvia feel?',
+        options: ['Great, she is full of energy', 'She has a sore throat and feels tired', 'She has a broken arm', 'She is stressed about work'],
+        correctIndex: 1
+      },
+      {
+        text: 'What does Silvia prefer to medicine?',
+        options: ['Soup and bread', 'More sleep', 'Hot tea with honey', 'Fresh air and exercise'],
+        correctIndex: 2
+      },
+      {
+        text: 'What does Marco suggest Silvia should do?',
+        options: ['Take two tablets', 'See a specialist', 'Rest', 'Drink coffee'],
+        correctIndex: 2
+      },
+      {
+        text: 'What else does Silvia mention she has?',
+        options: ['A headache', 'A fever', 'A cough', 'Back pain'],
+        correctIndex: 1
+      }
+    ],
+    audioUrl: null
+  },
+  {
+    title: 'Il mio migliore amico',
+    level: 2,
+    tags: ['friendship', 'descriptions', 'hobbies', 'university'],
+    body: `<p>Il mio migliore amico si chiama Davide. Abbiamo <mark data-word="trentadue anni">trentadue anni</mark> tutti e due — ci conosciamo dall'<mark data-word="asilo">asilo</mark>.</p>
+<p>Davide <mark data-word="studia">studia</mark> ingegneria all'Università di Bologna, dove vive durante la settimana. Quando torna a casa il weekend, usciamo sempre insieme.</p>
+<p>Nel <mark data-word="tempo libero">tempo libero</mark> Davide ama leggere, soprattutto romanzi storici, e ama guardare le partite di calcio. Ogni domenica mattina andiamo al <mark data-word="campetto">campetto</mark> a giocare con un gruppo di amici.</p>
+<p>Fisicamente Davide è alto, con i capelli <mark data-word="ricci">ricci</mark> e gli occhi verdi. È una persona molto <mark data-word="simpatica">simpatica</mark> e <mark data-word="affidabile">affidabile</mark> — posso sempre contare su di lui.</p>
+<p>Il prossimo anno Davide si laurea. Spero che <mark data-word="trovi lavoro">trovi lavoro</mark> qui in città, così possiamo continuare a vederci spesso.</p>`,
+    vocabGlossary: [
+      { italian: 'trentadue anni', english: 'thirty-two years old' },
+      { italian: 'asilo', english: 'nursery school / kindergarten' },
+      { italian: 'studia', english: 'studies (studiare)' },
+      { italian: 'tempo libero', english: 'free time' },
+      { italian: 'campetto', english: 'small football pitch' },
+      { italian: 'ricci', english: 'curly (hair)' },
+      { italian: 'simpatica', english: 'likeable / friendly' },
+      { italian: 'affidabile', english: 'reliable / dependable' },
+      { italian: 'trovi lavoro', english: 'finds work (congiuntivo of trovare)' }
+    ],
+    questions: [
+      {
+        text: 'How long have the narrator and Davide known each other?',
+        options: ['Since primary school', 'Since university', 'Since nursery school', 'Since secondary school'],
+        correctIndex: 2
+      },
+      {
+        text: 'What does Davide study?',
+        options: ['Medicine', 'Law', 'Engineering', 'Literature'],
+        correctIndex: 2
+      },
+      {
+        text: 'What do they do every Sunday morning?',
+        options: ['Have breakfast together', 'Go for a run', 'Play football with friends', 'Visit family'],
+        correctIndex: 2
+      },
+      {
+        text: 'What does Davide look like?',
+        options: ['Short with straight blonde hair', 'Tall with curly hair and green eyes', 'Medium height with brown eyes', 'Tall with dark straight hair'],
+        correctIndex: 1
+      }
+    ],
+    audioUrl: null
+  },
+  {
+    title: 'La giornata di Francesca',
+    level: 2,
+    tags: ['daily life', 'family', 'work', 'routine', 'present tense'],
+    body: `<p>Mi chiamo Francesca e faccio la <mark data-word="segretaria">segretaria</mark> in una scuola elementare. Mi sveglio ogni mattina alle sette e preparo la <mark data-word="colazione">colazione</mark> per tutta la famiglia.</p>
+<p>Mentre i miei figli, Giada e Marco, mangiano, mi lavo e mi vesto. Dopo li <mark data-word="accompagno">accompagno</mark> all'<mark data-word="asilo">asilo</mark> e poi vado in ufficio a piedi. Il mio orario di lavoro è dalle nove alle diciassette, con una <mark data-word="pausa pranzo">pausa pranzo</mark> di un'ora.</p>
+<p>Verso le tredici prendo il <mark data-word="pranzo">pranzo</mark> con i colleghi. Parliamo, <mark data-word="ridiamo">ridiamo</mark> e facciamo una passeggiata prima di tornare all'ufficio.</p>
+<p>Quando esco dal lavoro, vado subito a prendere i bambini. Se non siamo stanchi e c'è il sole, andiamo al parco. Altrimenti mio <mark data-word="marito">marito</mark> gioca con loro a casa mentre io faccio la spesa.</p>
+<p>La sera <mark data-word="ceniamo">ceniamo</mark> tutti insieme verso le diciannove. I bambini vanno a letto alle ventuno, e poi mio marito ed io guardiamo un film prima di dormire.</p>`,
+    vocabGlossary: [
+      { italian: 'segretaria', english: 'secretary (female)' },
+      { italian: 'colazione', english: 'breakfast' },
+      { italian: 'accompagno', english: 'I take / accompany (accompagnare)' },
+      { italian: 'asilo', english: 'nursery school' },
+      { italian: 'pausa pranzo', english: 'lunch break' },
+      { italian: 'pranzo', english: 'lunch' },
+      { italian: 'ridiamo', english: 'we laugh (ridere)' },
+      { italian: 'marito', english: 'husband' },
+      { italian: 'ceniamo', english: 'we have dinner (cenare)' }
+    ],
+    questions: [
+      {
+        text: 'What time does Francesca wake up?',
+        options: ['Six o\'clock', 'Seven o\'clock', 'Eight o\'clock', 'Half past seven'],
+        correctIndex: 1
+      },
+      {
+        text: 'How does Francesca get to work?',
+        options: ['By bus', 'By car', 'On foot', 'By bicycle'],
+        correctIndex: 2
+      },
+      {
+        text: 'What does Francesca do during her lunch break?',
+        options: ['Eats alone at her desk', 'Goes home', 'Eats with colleagues and goes for a walk', 'Goes to the gym'],
+        correctIndex: 2
+      },
+      {
+        text: 'What time do the children go to bed?',
+        options: ['Eight o\'clock', 'Half past eight', 'Nine o\'clock', 'Ten o\'clock'],
+        correctIndex: 2
+      }
+    ],
+    audioUrl: null
   }
 ]
 const IDIOMS = [
