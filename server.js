@@ -11,12 +11,13 @@ process.on('unhandledRejection', (reason) => {
     process.exit(1)
 })
 
+const mongoose = require('mongoose')
+
 process.on('SIGTERM', () => {
     console.log(`[${new Date().toISOString()}] SIGTERM received — shutting down gracefully`)
     mongoose.connection.close(false, () => process.exit(0))
 })
 
-const mongoose = require('mongoose')
 const Article = require('./models/article')
 const articleRouter = require('./routes/articles.js')
 const authRouter = require('./routes/auth')
