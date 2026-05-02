@@ -360,9 +360,41 @@ mark[data-word] {
   color: var(--text-soft);
 }
 .tuscan-speak-cta {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   color: var(--text-soft);
   font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Gufo quick-prompt chips ─────────────────────────────────────── */
+.gufo-prompt-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  max-width: 540px;
+  margin: 0 auto;
+}
+.gufo-prompt-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.gufo-prompt-chip:hover {
+  border-color: var(--brand);
+  color: var(--text);
+  background: rgba(232, 168, 80, 0.08);
+}
+.gufo-prompt-chip.active {
+  border-color: var(--brand);
+  background: rgba(232, 168, 80, 0.15);
+  color: var(--brand);
+  transform: scale(0.97);
 }
 
 /* ── Footer ──────────────────────────────────────────────────────── */

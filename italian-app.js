@@ -2243,24 +2243,30 @@
   function renderGrammar() {
     showSection('grammar')
     el('grammar-area').innerHTML = `
-      <div class="ita-grammar-list">
-        ${appData.grammar.map((g, i) => `
-          <div class="content-card mb-3 ita-grammar-card">
-            <div class="card-body">
-              <h3 class="card-title ita-grammar-toggle" data-idx="${i}" role="button" tabindex="0">
-                ${g.title}
-                <span class="ita-chevron">&#9662;</span>
-              </h3>
-              <div class="ita-grammar-body d-none" id="grammar-body-${i}">
-                ${g.body}
-              </div>
-            </div>
-          </div>
-        `).join('')}
+      <div class="ref-subtab-bar" role="tablist">
+        <button class="ref-subtab-btn active" data-tab="grammar-rules" role="tab" aria-selected="true">📋 Grammar Rules</button>
+        <button class="ref-subtab-btn"        data-tab="verb-lookup"   role="tab" aria-selected="false">⚡ Verb Lookup</button>
       </div>
 
-      <div class="mt-4">
-        <h3 class="mb-1">Verb Reference</h3>
+      <div class="ref-subtab-panel" id="ref-panel-grammar-rules">
+        <div class="ita-grammar-list">
+          ${appData.grammar.map((g, i) => `
+            <div class="content-card mb-3 ita-grammar-card">
+              <div class="card-body">
+                <h3 class="card-title ita-grammar-toggle" data-idx="${i}" role="button" tabindex="0">
+                  ${g.title}
+                  <span class="ita-chevron">&#9662;</span>
+                </h3>
+                <div class="ita-grammar-body d-none" id="grammar-body-${i}">
+                  ${g.body}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="ref-subtab-panel d-none" id="ref-panel-verb-lookup">
         <p class="text-muted mb-3" style="font-size:0.9rem">Click any verb to see full conjugation across tenses.</p>
         <div class="ita-verb-ref-toolbar" id="verb-ref-toolbar"></div>
         <div class="ita-verb-ref-grid" id="verb-ref-grid"></div>
@@ -2268,6 +2274,21 @@
 
       <!-- Verb conjugation modal -->
       <div class="ita-verb-modal-overlay d-none" id="verb-ref-modal-overlay"></div>`
+
+    // sub-tab switching
+    el('grammar-area').querySelectorAll('.ref-subtab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab
+        el('grammar-area').querySelectorAll('.ref-subtab-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.tab === tab)
+          b.setAttribute('aria-selected', b.dataset.tab === tab)
+        })
+        el('grammar-area').querySelectorAll('.ref-subtab-panel').forEach(p => {
+          p.classList.toggle('d-none', p.id !== `ref-panel-${tab}`)
+        })
+        if (tab === 'verb-lookup') renderVerbRefPage()
+      })
+    })
 
     // accordion toggles
     el('grammar-area').querySelectorAll('.ita-grammar-toggle').forEach(toggle => {
@@ -2278,8 +2299,6 @@
       })
       toggle.addEventListener('keydown', e => { if (e.key === 'Enter') toggle.click() })
     })
-
-    renderVerbRefPage()
   }
 
   // ── Streak ───────────────────────────────────────────────────────

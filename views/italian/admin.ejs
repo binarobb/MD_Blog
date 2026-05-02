@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/style.css">
+    <title>Italian Admin Panel</title>
+    <style>
+        body { background: #0f1117; color: #e2e8f0; }
+        .admin-header { background: #1a1d2e; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
+        .admin-header a { color: #94a3b8; text-decoration: none; font-size: 0.875rem; }
+        .admin-header a:hover { color: #e2e8f0; }
+        .panel-tabs { display: flex; gap: 0.5rem; padding: 1.5rem 2rem 0; border-bottom: 2px solid rgba(255,255,255,0.08); }
+        .panel-tab { background: transparent; border: none; padding: 0.6rem 1.4rem; border-radius: 8px 8px 0 0; color: #94a3b8; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: color 0.15s, background 0.15s; }
+        .panel-tab:hover { color: #e2e8f0; background: rgba(255,255,255,0.05); }
+        .panel-tab.active { color: #e8a850; background: rgba(232,168,80,0.1); border-bottom: 2px solid #e8a850; margin-bottom: -2px; }
+        .panel-body { padding: 2rem; }
+        .panel-section { display: none; }
+        .panel-section.active { display: block; }
+        .form-card { background: #1a1d2e; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+        .form-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; color: #e8a850; }
+        .form-label { color: #94a3b8; font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.3rem; }
+        .form-control, .form-select { background: #0f1117; border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0; border-radius: 6px; }
+        .form-control:focus, .form-select:focus { background: #0f1117; border-color: #e8a850; color: #e2e8f0; box-shadow: 0 0 0 3px rgba(232,168,80,0.15); }
+        .form-control::placeholder { color: #4a5568; }
+        .json-hint { font-size: 0.75rem; color: #64748b; margin-top: 0.3rem; cursor: pointer; }
+        .json-hint:hover { color: #94a3b8; }
+        .json-example { display: none; background: #0a0d14; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 0.75rem; margin-top: 0.5rem; font-family: monospace; font-size: 0.75rem; color: #7dd3aa; white-space: pre-wrap; word-break: break-all; }
+        .json-example.open { display: block; }
+        .btn-submit { background: #e8a850; border: none; color: #1a1d2e; font-weight: 700; padding: 0.55rem 1.5rem; border-radius: 8px; transition: background 0.15s; }
+        .btn-submit:hover { background: #d4943a; }
+        .recent-table { background: #1a1d2e; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; }
+        .recent-table h4 { font-size: 0.9rem; font-weight: 700; color: #94a3b8; padding: 1rem 1.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.06); margin: 0; }
+        .recent-table table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .recent-table th { padding: 0.5rem 1rem; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.72rem; letter-spacing: 0.05em; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .recent-table td { padding: 0.55rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: #cbd5e1; vertical-align: middle; }
+        .recent-table tr:last-child td { border-bottom: none; }
+        .btn-del { background: transparent; border: 1px solid rgba(239,68,68,0.3); color: #ef4444; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+        .btn-del:hover { background: rgba(239,68,68,0.1); }
+        .toast-rack { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+        .toast-msg { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.75rem 1.25rem; font-size: 0.85rem; color: #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.4); animation: toastIn 0.2s ease; pointer-events: auto; }
+        .toast-msg.success { border-left: 3px solid #4ade80; }
+        .toast-msg.error   { border-left: 3px solid #ef4444; }
+        @keyframes toastIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+        .badge-diff { font-size: 0.7rem; padding: 0.2em 0.5em; border-radius: 4px; font-weight: 600; }
+        .badge-a1 { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .badge-a2 { background: rgba(251,191,36,0.15); color: #fbbf24; }
+        .badge-b1 { background: rgba(239,68,68,0.15);  color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <span style="font-size:1.5rem">🦉</span>
+        <strong style="font-size:1.1rem; color:#e8a850">Italian Admin</strong>
+        <span style="color:rgba(255,255,255,0.15); margin:0 0.25rem">|</span>
+        <a href="/italian">← Back to Italian App</a>
+        <a href="/" style="margin-left:auto">Home</a>
+    </div>
+
+    <!-- Panel tabs -->
+    <div class="panel-tabs">
+        <button class="panel-tab active" data-panel="vocab">📚 Vocabulary</button>
+        <button class="panel-tab" data-panel="verbs">⚡ Verbs</button>
+        <button class="panel-tab" data-panel="reading">📖 Reading</button>
+    </div>
+
+    <div class="panel-body">
+
+        <!-- ── VOCAB ───────────────────────────────────────────── -->
+        <div class="panel-section active" id="panel-vocab">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="form-card">
+                        <h3>Add Vocabulary Item</h3>
+                        <form id="form-vocab">
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" name="category" required>
+                                    <option value="">Select category…</option>
+                                    <% categories.forEach(c => { %>
+                                        <option value="<%= c._id %>"><%= c.name %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Italian</label>
+                                <input type="text" class="form-control" name="italian" placeholder="e.g. il gatto" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">English</label>
+                                <input type="text" class="form-control" name="english" placeholder="e.g. the cat" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Difficulty</label>
+                                <select class="form-select" name="difficulty">
+                                    <option value="A1">A1 — Beginner</option>
+                                    <option value="A2">A2 — Elementary</option>
+                                    <option value="B1">B1 — Intermediate</option>
+                                    <option value="B2">B2 — Upper Intermediate</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Image Path <small class="text-muted">(optional)</small></label>
+                                <input type="text" class="form-control" name="imageUrl" placeholder="e.g. /public/img/vocab/food/gatto.jpg">
+                            </div>
+                            <button type="submit" class="btn-submit">Add Item</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="recent-table" id="vocab-table-wrap">
+                        <h4>Recently Added</h4>
+                        <table>
+                            <thead><tr><th>Italian</th><th>English</th><th>Category</th><th>Diff</th><th></th></tr></thead>
+                            <tbody id="vocab-tbody">
+                                <% recentVocab.forEach(v => { %>
+                                <tr id="vocab-row-<%= v._id %>">
+                                    <td><strong><%= v.italian %></strong></td>
+                                    <td><%= v.english %></td>
+                                    <td><%= v.category ? v.category.name : '—' %></td>
+                                    <td><span class="badge-diff badge-<%= (v.difficulty||'A1').toLowerCase() %>"><%= v.difficulty||'A1' %></span></td>
+                                    <td><button class="btn-del" onclick="deleteItem('vocab','<%= v._id %>')">Delete</button></td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── VERBS ───────────────────────────────────────────── -->
+        <div class="panel-section" id="panel-verbs">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="form-card">
+                        <h3>Add Verb</h3>
+                        <form id="form-verbs">
+                            <div class="mb-3">
+                                <label class="form-label">Infinitive</label>
+                                <input type="text" class="form-control" name="infinitive" placeholder="e.g. parlare" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Translation</label>
+                                <input type="text" class="form-control" name="translation" placeholder="e.g. to speak" required>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Group</label>
+                                    <select class="form-select" name="group">
+                                        <option value="are">-are</option>
+                                        <option value="ere">-ere</option>
+                                        <option value="ire">-ire</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Auxiliary</label>
+                                    <select class="form-select" name="auxiliaryVerb">
+                                        <option value="avere">avere</option>
+                                        <option value="essere">essere</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Difficulty</label>
+                                    <select class="form-select" name="difficulty">
+                                        <option value="A1">A1</option>
+                                        <option value="A2">A2</option>
+                                        <option value="B1">B1</option>
+                                        <option value="B2">B2</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 d-flex align-items-end pb-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="isIrregular" id="irregularCheck">
+                                        <label class="form-check-label" for="irregularCheck" style="color:#94a3b8;font-size:0.85rem">Irregular</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Past Participle</label>
+                                <input type="text" class="form-control" name="pastParticiple" placeholder="e.g. parlato">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Conjugations <small class="text-muted">(JSON)</small></label>
+                                <textarea class="form-control" name="conjugations" rows="5" placeholder='{"presente":{"io":"parlo","tu":"parli","lui":"parla","noi":"parliamo","voi":"parlate","loro":"parlano"}}'></textarea>
+                                <div class="json-hint" onclick="toggleExample(this)">▸ Show format example</div>
+                                <div class="json-example">
+{
+  "presente":          {"io":"parlo","tu":"parli","lui":"parla","noi":"parliamo","voi":"parlate","loro":"parlano"},
+  "passato_prossimo":  {"io":"ho parlato","tu":"hai parlato","lui":"ha parlato","noi":"abbiamo parlato","voi":"avete parlato","loro":"hanno parlato"},
+  "imperfetto":        {"io":"parlavo","tu":"parlavi","lui":"parlava","noi":"parlavamo","voi":"parlavate","loro":"parlavano"}
+}</div>
+                            </div>
+                            <button type="submit" class="btn-submit">Add Verb</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="recent-table">
+                        <h4>Recently Added</h4>
+                        <table>
+                            <thead><tr><th>Infinitive</th><th>Translation</th><th>Group</th><th>Diff</th><th></th></tr></thead>
+                            <tbody id="verbs-tbody">
+                                <% recentVerbs.forEach(v => { %>
+                                <tr id="verb-row-<%= v._id %>">
+                                    <td><strong><%= v.infinitive %></strong></td>
+                                    <td><%= v.translation %></td>
+                                    <td><code style="font-size:0.8rem;color:#7dd3aa">-<%= v.group %></code></td>
+                                    <td><span class="badge-diff badge-<%= (v.difficulty||'A1').toLowerCase() %>"><%= v.difficulty||'A1' %></span></td>
+                                    <td><button class="btn-del" onclick="deleteItem('verbs','<%= v._id %>')">Delete</button></td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── READING ─────────────────────────────────────────── -->
+        <div class="panel-section" id="panel-reading">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="form-card">
+                        <h3>Add Reading Passage</h3>
+                        <form id="form-reading">
+                            <div class="mb-3">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" name="title" placeholder="e.g. Una giornata a Roma" required>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Level</label>
+                                    <select class="form-select" name="level">
+                                        <option value="1">A1 — Beginner</option>
+                                        <option value="2">A2 — Elementary</option>
+                                        <option value="3">B1 — Intermediate</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Tags <small class="text-muted">(comma-separated)</small></label>
+                                    <input type="text" class="form-control" name="tags" placeholder="e.g. travel, city">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Body <small class="text-muted">(HTML — wrap key vocab in <code style="color:#7dd3aa">&lt;mark data-word="word"&gt;</code>)</small></label>
+                                <textarea class="form-control" name="body" rows="7" placeholder="<p>Marco abita a <mark data-word=&quot;Roma&quot;>Roma</mark>…</p>" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Vocab Glossary <small class="text-muted">(JSON, optional)</small></label>
+                                <textarea class="form-control" name="vocabGlossary" rows="3" placeholder='[{"italian":"abitare","english":"to live"}]'></textarea>
+                                <div class="json-hint" onclick="toggleExample(this)">▸ Show format example</div>
+                                <div class="json-example">[
+  {"italian": "abitare",  "english": "to live"},
+  {"italian": "la piazza","english": "the square"}
+]</div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Comprehension Questions <small class="text-muted">(JSON, optional)</small></label>
+                                <textarea class="form-control" name="questions" rows="5" placeholder='[{"text":"Dove abita Marco?","options":["Milano","Roma","Napoli","Torino"],"correctIndex":1}]'></textarea>
+                                <div class="json-hint" onclick="toggleExample(this)">▸ Show format example</div>
+                                <div class="json-example">[
+  {
+    "text": "Dove abita Marco?",
+    "options": ["Milano", "Roma", "Napoli", "Torino"],
+    "correctIndex": 1
+  }
+]</div>
+                            </div>
+                            <button type="submit" class="btn-submit">Add Passage</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="recent-table">
+                        <h4>Recently Added</h4>
+                        <table>
+                            <thead><tr><th>Title</th><th>Level</th><th>Questions</th><th></th></tr></thead>
+                            <tbody id="reading-tbody">
+                                <% recentReading.forEach(r => { %>
+                                <tr id="reading-row-<%= r._id %>">
+                                    <td><strong><%= r.title %></strong></td>
+                                    <td><span class="badge-diff badge-a<%= r.level %>">A<%= r.level %></span></td>
+                                    <td><%= r.questions ? r.questions.length : 0 %> Qs</td>
+                                    <td><button class="btn-del" onclick="deleteItem('reading','<%= r._id %>')">Delete</button></td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.panel-body -->
+
+    <!-- Toast rack -->
+    <div class="toast-rack" id="toast-rack"></div>
+
+    <script>
+        // ── Tab switching ─────────────────────────────────────────
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'))
+                document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('active'))
+                tab.classList.add('active')
+                document.getElementById('panel-' + tab.dataset.panel).classList.add('active')
+            })
+        })
+
+        // ── JSON example toggles ──────────────────────────────────
+        function toggleExample(hint) {
+            const ex = hint.nextElementSibling
+            ex.classList.toggle('open')
+            hint.textContent = ex.classList.contains('open') ? '▾ Hide example' : '▸ Show format example'
+        }
+
+        // ── Toast ─────────────────────────────────────────────────
+        function toast(msg, type = 'success') {
+            const rack = document.getElementById('toast-rack')
+            const div = document.createElement('div')
+            div.className = `toast-msg ${type}`
+            div.textContent = msg
+            rack.appendChild(div)
+            setTimeout(() => div.remove(), 4000)
+        }
+
+        // ── Generic form submit ───────────────────────────────────
+        async function submitForm(formEl, endpoint, rowBuilder, tbodyId) {
+            const fd = new FormData(formEl)
+            const body = {}
+            fd.forEach((v, k) => { if (v !== '') body[k] = v })
+
+            // checkbox
+            if (formEl.querySelector('[name=isIrregular]')) {
+                body.isIrregular = formEl.querySelector('#irregularCheck').checked
+            }
+
+            // parse JSON fields
+            const jsonFields = ['conjugations','vocabGlossary','questions']
+            for (const f of jsonFields) {
+                if (body[f]) {
+                    try { body[f] = JSON.parse(body[f]) }
+                    catch { toast(`Invalid JSON in "${f}"`, 'error'); return }
+                }
+            }
+
+            // tags: comma-separated → array
+            if (body.tags && typeof body.tags === 'string') {
+                body.tags = body.tags.split(',').map(t => t.trim()).filter(Boolean)
+            }
+
+            // level must be number
+            if (body.level) body.level = parseInt(body.level)
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                })
+                const data = await res.json()
+                if (!res.ok) { toast(data.error || 'Error', 'error'); return }
+                toast('Added successfully ✓')
+                formEl.reset()
+                const tbody = document.getElementById(tbodyId)
+                if (tbody) tbody.insertAdjacentHTML('afterbegin', rowBuilder(data))
+            } catch (err) {
+                toast('Network error', 'error')
+            }
+        }
+
+        // ── Delete ────────────────────────────────────────────────
+        async function deleteItem(type, id) {
+            if (!confirm('Delete this item?')) return
+            const map = { vocab: '/italian/admin/vocab', verbs: '/italian/admin/verbs', reading: '/italian/admin/reading' }
+            try {
+                const res = await fetch(`${map[type]}/${id}`, { method: 'DELETE' })
+                if (!res.ok) { toast('Delete failed', 'error'); return }
+                const rowMap = { vocab: 'vocab-row-', verbs: 'verb-row-', reading: 'reading-row-' }
+                document.getElementById(rowMap[type] + id)?.remove()
+                toast('Deleted')
+            } catch { toast('Network error', 'error') }
+        }
+
+        // ── Row builders ──────────────────────────────────────────
+        function vocabRowBuilder(v) {
+            const diff = (v.difficulty || 'A1').toLowerCase()
+            const catName = (v.category && v.category.name) ? v.category.name : '—'
+            return `<tr id="vocab-row-${v._id}">
+                <td><strong>${e(v.italian)}</strong></td>
+                <td>${e(v.english)}</td>
+                <td>${e(catName)}</td>
+                <td><span class="badge-diff badge-${diff}">${e(v.difficulty||'A1')}</span></td>
+                <td><button class="btn-del" onclick="deleteItem('vocab','${v._id}')">Delete</button></td>
+            </tr>`
+        }
+
+        function verbRowBuilder(v) {
+            const diff = (v.difficulty || 'A1').toLowerCase()
+            return `<tr id="verb-row-${v._id}">
+                <td><strong>${e(v.infinitive)}</strong></td>
+                <td>${e(v.translation)}</td>
+                <td><code style="font-size:0.8rem;color:#7dd3aa">-${e(v.group)}</code></td>
+                <td><span class="badge-diff badge-${diff}">${e(v.difficulty||'A1')}</span></td>
+                <td><button class="btn-del" onclick="deleteItem('verbs','${v._id}')">Delete</button></td>
+            </tr>`
+        }
+
+        function readingRowBuilder(r) {
+            const lvl = r.level || 1
+            const qCount = (r.questions || []).length
+            return `<tr id="reading-row-${r._id}">
+                <td><strong>${e(r.title)}</strong></td>
+                <td><span class="badge-diff badge-a${lvl}">A${lvl}</span></td>
+                <td>${qCount} Qs</td>
+                <td><button class="btn-del" onclick="deleteItem('reading','${r._id}')">Delete</button></td>
+            </tr>`
+        }
+
+        // Escape helper — prevent XSS in dynamically built rows
+        function e(str) {
+            return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+        }
+
+        // ── Wire up forms ─────────────────────────────────────────
+        document.getElementById('form-vocab').addEventListener('submit', ev => {
+            ev.preventDefault()
+            submitForm(ev.target, '/italian/admin/vocab', vocabRowBuilder, 'vocab-tbody')
+        })
+
+        document.getElementById('form-verbs').addEventListener('submit', ev => {
+            ev.preventDefault()
+            submitForm(ev.target, '/italian/admin/verbs', verbRowBuilder, 'verbs-tbody')
+        })
+
+        document.getElementById('form-reading').addEventListener('submit', ev => {
+            ev.preventDefault()
+            submitForm(ev.target, '/italian/admin/reading', readingRowBuilder, 'reading-tbody')
+        })
+    </script>
+</body>
+</html>
