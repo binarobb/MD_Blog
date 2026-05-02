@@ -11,8 +11,6 @@ module.exports = {
                 NODE_ENV: 'production',
                 PORT: 5000
             },
-            // Logging
-            log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
             merge_logs: false,
             // Restart behaviour — don't restart-loop if crashing on startup
             min_uptime: '10s',
