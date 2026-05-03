@@ -3,8 +3,18 @@ const express = require('express')
 const helmet = require('helmet')
 
 // Fail fast if required env vars are missing
-if (!process.env.SESSION_SECRET) {
-    throw new Error('SESSION_SECRET env var is not set — refusing to start')
+const REQUIRED_ENV = [
+    'SESSION_SECRET',
+    'MONGODB_URI',
+    'EMAIL_USER',
+    'EMAIL_PASSWORD',
+    'EMAIL_TO',
+    'ELEVENLABS_API_KEY',
+    'ELEVENLABS_AGENT_ID',
+]
+const missingEnv = REQUIRED_ENV.filter(k => !process.env[k])
+if (missingEnv.length) {
+    throw new Error(`Missing required env vars: ${missingEnv.join(', ')} — refusing to start`)
 }
 
 process.on('uncaughtException', (err) => {
@@ -36,7 +46,7 @@ const passport = require('./config/passport')
 const rateLimit = require('express-rate-limit')
 const app = express()
 
-const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost/blog'
+const mongoUri = process.env.MONGODB_URI
 
 mongoose.connect(mongoUri, {
     useNewUrlParser: true, useUnifiedTopology: true 
@@ -211,7 +221,7 @@ app.post('/contact', contactLimiter, (req, res) => {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         replyTo: safeEmail,
-        to: process.env.EMAIL_TO || 'admin@intentionalowl.io',
+        to: process.env.EMAIL_TO,
         subject: `Contact Form Message from ${safeName}`,
         text: `Name: ${name.trim()}\nEmail: ${safeEmail}\n\nMessage:\n${message.trim()}`
     }
