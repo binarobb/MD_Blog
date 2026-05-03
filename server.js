@@ -29,6 +29,7 @@ const articleRouter = require('./routes/articles.js')
 const authRouter = require('./routes/auth')
 const methodOverride = require('method-override')
 const nodemailer = require('nodemailer')
+const validator = require('validator')
 const session = require('express-session')
 const MongoStore = require('connect-mongo').MongoStore
 const passport = require('./config/passport')
@@ -56,7 +57,7 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', '*.elevenlabs.io'],
-            styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com'],
+            styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
             fontSrc: ["'self'", 'fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com'],
             connectSrc: ["'self'", '*.elevenlabs.io'],
@@ -163,11 +164,26 @@ app.get('/contact', (req, res) => {
 
 app.post('/contact', (req, res) => {
     const { name, email, message } = req.body
+
+    if (!name || name.trim().length < 1 || name.trim().length > 100) {
+        return res.status(400).send('Name must be between 1 and 100 characters.')
+    }
+    if (!email || !validator.isEmail(email)) {
+        return res.status(400).send('Invalid email address.')
+    }
+    if (!message || message.trim().length < 1 || message.trim().length > 5000) {
+        return res.status(400).send('Message must be between 1 and 5000 characters.')
+    }
+
+    const safeName = validator.escape(name.trim())
+    const safeEmail = validator.normalizeEmail(email) || email
+
     const mailOptions = {
-        from: email,
+        from: process.env.EMAIL_USER,
+        replyTo: safeEmail,
         to: process.env.EMAIL_TO || 'admin@intentionalowl.io',
-        subject: `Contact Form Message from ${name}`,
-        text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
+        subject: `Contact Form Message from ${safeName}`,
+        text: `Name: ${name.trim()}\nEmail: ${safeEmail}\n\nMessage:\n${message.trim()}`
     }
 
     transporter.sendMail(mailOptions, (error, info) => {
