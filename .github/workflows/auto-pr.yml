@@ -13,6 +13,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
 
       - name: Create PR if one doesn't exist
         env:
@@ -27,11 +29,8 @@ jobs:
             # Derive a human-readable title from the branch name:
             # strip common prefixes (feature/, fix/, chore/, etc.) and replace - with spaces
             TITLE=$(echo "$BRANCH" \
-              | sed 's|^feature/||;s|^fix/||;s|^chore/||;s|^hotfix/||;s|^docs/||' \
+              | sed 's|^feature/||;s|^fix/||;s|^chore/||;s|^hotfix/||;s|^docs/||;s|^security/||' \
               | tr '-' ' ')
-
-            # Fetch main so we can diff against it
-            git fetch origin main --depth=50
 
             # Separate meaningful commits (feat/fix) from housekeeping (ci/chore/docs)
             FEAT_FIX_COMMITS=$(git log origin/main..HEAD --no-merges \
