@@ -196,7 +196,8 @@ router.get('/admin', ensureAdmin, async (req, res) => {
         ])
         res.render('italian/admin', { categories, recentVocab, recentVerbs, recentReading })
     } catch (err) {
-        res.status(500).send('Admin panel error: ' + err.message)
+        console.error('Admin panel error:', err)
+        res.status(500).send('Internal server error')
     }
 })
 
@@ -207,7 +208,8 @@ router.post('/admin/vocab', ensureAdmin, async (req, res) => {
         const item = await VocabItem.create({ category, italian, english, imageUrl, audioUrl, difficulty, tags })
         res.status(201).json(item)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -218,7 +220,8 @@ router.put('/admin/vocab/:id', ensureAdmin, async (req, res) => {
         if (!item) return res.status(404).json({ error: 'Not found' })
         res.json(item)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -227,7 +230,8 @@ router.delete('/admin/vocab/:id', ensureAdmin, async (req, res) => {
         await VocabItem.findByIdAndDelete(req.params.id)
         res.json({ success: true })
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -238,7 +242,8 @@ router.post('/admin/verbs', ensureAdmin, async (req, res) => {
         const verb = await Verb.create({ infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty })
         res.status(201).json(verb)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -249,7 +254,8 @@ router.put('/admin/verbs/:id', ensureAdmin, async (req, res) => {
         if (!verb) return res.status(404).json({ error: 'Not found' })
         res.json(verb)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -258,7 +264,8 @@ router.delete('/admin/verbs/:id', ensureAdmin, async (req, res) => {
         await Verb.findByIdAndDelete(req.params.id)
         res.json({ success: true })
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -269,7 +276,8 @@ router.post('/admin/grammar/questions', ensureAdmin, async (req, res) => {
         const q = await GrammarQuestion.create({ question, correctAnswer, options, topic, difficulty })
         res.status(201).json(q)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -280,7 +288,8 @@ router.put('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
         if (!q) return res.status(404).json({ error: 'Not found' })
         res.json(q)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -289,7 +298,8 @@ router.delete('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
         await GrammarQuestion.findByIdAndDelete(req.params.id)
         res.json({ success: true })
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -300,7 +310,8 @@ router.post('/admin/sentences', ensureAdmin, async (req, res) => {
         const s = await SentenceExercise.create({ english, words, difficulty })
         res.status(201).json(s)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -311,7 +322,8 @@ router.put('/admin/sentences/:id', ensureAdmin, async (req, res) => {
         if (!s) return res.status(404).json({ error: 'Not found' })
         res.json(s)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -320,7 +332,8 @@ router.delete('/admin/sentences/:id', ensureAdmin, async (req, res) => {
         await SentenceExercise.findByIdAndDelete(req.params.id)
         res.json({ success: true })
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -335,7 +348,8 @@ router.post('/admin/reading', ensureAdmin, async (req, res) => {
         const passage = await ReadingPassage.create({ title, level, body: safeBody, vocabGlossary, questions, tags, audioUrl })
         res.status(201).json(passage)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -350,7 +364,8 @@ router.put('/admin/reading/:id', ensureAdmin, async (req, res) => {
         if (!passage) return res.status(404).json({ error: 'Not found' })
         res.json(passage)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -359,7 +374,8 @@ router.delete('/admin/reading/:id', ensureAdmin, async (req, res) => {
         await ReadingPassage.findByIdAndDelete(req.params.id)
         res.json({ success: true })
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -370,7 +386,8 @@ router.post('/admin/idioms', ensureAdmin, async (req, res) => {
         const expr = await IdiomExpression.create({ idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl })
         res.status(201).json(expr)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -381,7 +398,8 @@ router.put('/admin/idioms/:id', ensureAdmin, async (req, res) => {
         if (!expr) return res.status(404).json({ error: 'Not found' })
         res.json(expr)
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
@@ -390,7 +408,8 @@ router.delete('/admin/idioms/:id', ensureAdmin, async (req, res) => {
         await IdiomExpression.findByIdAndDelete(req.params.id)
         res.json({ success: true })
     } catch (err) {
-        res.status(400).json({ error: err.message })
+        console.error('Admin API error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 
