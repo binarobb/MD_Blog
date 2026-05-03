@@ -96,6 +96,35 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
+// Global fallback rate limiter (applied first, before all routes)
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: 'Too many requests, please try again later.',
+    skip: (req) => req.path.startsWith('/public') || req.path.startsWith('/img')
+})
+app.use(globalLimiter)
+
+// Contact form limiter: 5 submissions per 15 minutes per IP
+const contactLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    message: 'Too many messages sent. Please wait before trying again.',
+    standardHeaders: true,
+    legacyHeaders: false
+})
+
+// ElevenLabs TTS limiter: 20 requests per hour per IP
+const elevenLabsLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    message: 'Audio request limit reached. Please try again in an hour.',
+    standardHeaders: true,
+    legacyHeaders: false
+})
+
 // Rate limit on auth endpoints
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -163,7 +192,7 @@ app.get('/contact', (req, res) => {
     res.render('contact')
 })
 
-app.post('/contact', (req, res) => {
+app.post('/contact', contactLimiter, (req, res) => {
     const { name, email, message } = req.body
 
     if (!name || name.trim().length < 1 || name.trim().length > 100) {
@@ -230,7 +259,7 @@ const italianRouter = require('./routes/italian')
 const elevenLabsRouter = require('./routes/elevenlabs')
 app.use('/blog', articleRouter)
 app.use('/italian', italianRouter)
-app.use('/api/elevenlabs', elevenLabsRouter)
+app.use('/api/elevenlabs', elevenLabsLimiter, elevenLabsRouter)
 
 app.listen(process.env.PORT || 5000, () => {
     const port = process.env.PORT || 5000
