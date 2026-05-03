@@ -1,4 +1,5 @@
 require('dotenv').config()
+const path = require('path')
 const express = require('express')
 const helmet = require('helmet')
 
@@ -70,8 +71,13 @@ app.use(helmet({
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
             fontSrc: ["'self'", 'fonts.gstatic.com'],
-            imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com'],
-            connectSrc: ["'self'", '*.elevenlabs.io'],
+            imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com', 'upload.wikimedia.org'],
+            connectSrc: ["'self'", '*.elevenlabs.io', 'en.wikipedia.org'],
+            workerSrc: ["'none'"],
+            manifestSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            navigateTo: ["'self'"],
             mediaSrc: ["'self'", '*.elevenlabs.io'],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
@@ -83,7 +89,7 @@ app.use(helmet({
 app.use(express.json())
 app.use(express.urlencoded({ extended: false}))
 app.use(methodOverride('_method'))
-app.use(express.static(__dirname))
+app.use(express.static(path.join(__dirname, 'public')))
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
