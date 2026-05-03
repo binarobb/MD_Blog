@@ -60,6 +60,7 @@ app.use(helmet({
             fontSrc: ["'self'", 'fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com'],
             connectSrc: ["'self'", '*.elevenlabs.io'],
+            mediaSrc: ["'self'", '*.elevenlabs.io'],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: []
