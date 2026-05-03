@@ -5,7 +5,10 @@ function ensureAuthenticated(req, res, next) {
     if (req.originalUrl.startsWith('/api') || req.originalUrl.includes('/api/') || req.xhr) {
         return res.status(401).json({ error: 'Authentication required' })
     }
-    req.session.returnTo = req.originalUrl
+    // Guard against open redirect — only allow relative paths
+    if (req.originalUrl.startsWith('/') && !req.originalUrl.startsWith('//')) {
+        req.session.returnTo = req.originalUrl
+    }
     res.redirect('/login')
 }
 

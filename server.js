@@ -277,6 +277,21 @@ app.use('/blog', articleRouter)
 app.use('/italian', italianRouter)
 app.use('/api/elevenlabs', elevenLabsLimiter, elevenLabsRouter)
 
+// 404 handler
+app.use((req, res) => {
+    res.status(404).send('Not found')
+})
+
+// Global error handler — never expose stack traces or err.message to clients
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err)
+    const isApi = req.originalUrl.startsWith('/api') || req.xhr
+    if (isApi) {
+        return res.status(500).json({ error: 'Internal server error' })
+    }
+    res.status(500).send('Internal server error')
+})
+
 app.listen(process.env.PORT || 5000, () => {
     const port = process.env.PORT || 5000
     const env = process.env.NODE_ENV || 'development'
