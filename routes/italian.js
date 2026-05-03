@@ -1,6 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const { ensureAdmin, ensureAuthenticated } = require('../middleware/auth')
+const { JSDOM } = require('jsdom')
+const createDomPurify = require('dompurify')
+const dompurify = createDomPurify(new JSDOM().window)
 const UserProgress = require('../models/UserProgress')
 const SRSCard      = require('../models/italian/SRSCard')
 
@@ -200,7 +203,8 @@ router.get('/admin', ensureAdmin, async (req, res) => {
 // Vocab
 router.post('/admin/vocab', ensureAdmin, async (req, res) => {
     try {
-        const item = await VocabItem.create(req.body)
+        const { category, italian, english, imageUrl, audioUrl, difficulty, tags } = req.body
+        const item = await VocabItem.create({ category, italian, english, imageUrl, audioUrl, difficulty, tags })
         res.status(201).json(item)
     } catch (err) {
         res.status(400).json({ error: err.message })
@@ -209,7 +213,8 @@ router.post('/admin/vocab', ensureAdmin, async (req, res) => {
 
 router.put('/admin/vocab/:id', ensureAdmin, async (req, res) => {
     try {
-        const item = await VocabItem.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const { category, italian, english, imageUrl, audioUrl, difficulty, tags } = req.body
+        const item = await VocabItem.findByIdAndUpdate(req.params.id, { category, italian, english, imageUrl, audioUrl, difficulty, tags }, { new: true, runValidators: true })
         if (!item) return res.status(404).json({ error: 'Not found' })
         res.json(item)
     } catch (err) {
@@ -229,7 +234,8 @@ router.delete('/admin/vocab/:id', ensureAdmin, async (req, res) => {
 // Verbs
 router.post('/admin/verbs', ensureAdmin, async (req, res) => {
     try {
-        const verb = await Verb.create(req.body)
+        const { infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty } = req.body
+        const verb = await Verb.create({ infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty })
         res.status(201).json(verb)
     } catch (err) {
         res.status(400).json({ error: err.message })
@@ -238,7 +244,8 @@ router.post('/admin/verbs', ensureAdmin, async (req, res) => {
 
 router.put('/admin/verbs/:id', ensureAdmin, async (req, res) => {
     try {
-        const verb = await Verb.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const { infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty } = req.body
+        const verb = await Verb.findByIdAndUpdate(req.params.id, { infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty }, { new: true, runValidators: true })
         if (!verb) return res.status(404).json({ error: 'Not found' })
         res.json(verb)
     } catch (err) {
@@ -258,7 +265,8 @@ router.delete('/admin/verbs/:id', ensureAdmin, async (req, res) => {
 // Grammar questions
 router.post('/admin/grammar/questions', ensureAdmin, async (req, res) => {
     try {
-        const q = await GrammarQuestion.create(req.body)
+        const { question, correctAnswer, options, topic, difficulty } = req.body
+        const q = await GrammarQuestion.create({ question, correctAnswer, options, topic, difficulty })
         res.status(201).json(q)
     } catch (err) {
         res.status(400).json({ error: err.message })
@@ -267,7 +275,8 @@ router.post('/admin/grammar/questions', ensureAdmin, async (req, res) => {
 
 router.put('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
     try {
-        const q = await GrammarQuestion.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const { question, correctAnswer, options, topic, difficulty } = req.body
+        const q = await GrammarQuestion.findByIdAndUpdate(req.params.id, { question, correctAnswer, options, topic, difficulty }, { new: true, runValidators: true })
         if (!q) return res.status(404).json({ error: 'Not found' })
         res.json(q)
     } catch (err) {
@@ -287,7 +296,8 @@ router.delete('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
 // Sentences
 router.post('/admin/sentences', ensureAdmin, async (req, res) => {
     try {
-        const s = await SentenceExercise.create(req.body)
+        const { english, words, difficulty } = req.body
+        const s = await SentenceExercise.create({ english, words, difficulty })
         res.status(201).json(s)
     } catch (err) {
         res.status(400).json({ error: err.message })
@@ -296,7 +306,8 @@ router.post('/admin/sentences', ensureAdmin, async (req, res) => {
 
 router.put('/admin/sentences/:id', ensureAdmin, async (req, res) => {
     try {
-        const s = await SentenceExercise.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const { english, words, difficulty } = req.body
+        const s = await SentenceExercise.findByIdAndUpdate(req.params.id, { english, words, difficulty }, { new: true, runValidators: true })
         if (!s) return res.status(404).json({ error: 'Not found' })
         res.json(s)
     } catch (err) {
@@ -316,7 +327,12 @@ router.delete('/admin/sentences/:id', ensureAdmin, async (req, res) => {
 // Reading passages admin
 router.post('/admin/reading', ensureAdmin, async (req, res) => {
     try {
-        const passage = await ReadingPassage.create(req.body)
+        const { title, level, body, vocabGlossary, questions, tags, audioUrl } = req.body
+        const safeBody = dompurify.sanitize(body, {
+            ALLOWED_TAGS: ['p', 'mark', 'strong', 'em', 'br', 'span'],
+            ALLOWED_ATTR: ['data-word', 'class']
+        })
+        const passage = await ReadingPassage.create({ title, level, body: safeBody, vocabGlossary, questions, tags, audioUrl })
         res.status(201).json(passage)
     } catch (err) {
         res.status(400).json({ error: err.message })
@@ -325,7 +341,12 @@ router.post('/admin/reading', ensureAdmin, async (req, res) => {
 
 router.put('/admin/reading/:id', ensureAdmin, async (req, res) => {
     try {
-        const passage = await ReadingPassage.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+        const { title, level, body, vocabGlossary, questions, tags, audioUrl } = req.body
+        const safeBody = dompurify.sanitize(body, {
+            ALLOWED_TAGS: ['p', 'mark', 'strong', 'em', 'br', 'span'],
+            ALLOWED_ATTR: ['data-word', 'class']
+        })
+        const passage = await ReadingPassage.findByIdAndUpdate(req.params.id, { title, level, body: safeBody, vocabGlossary, questions, tags, audioUrl }, { new: true, runValidators: true })
         if (!passage) return res.status(404).json({ error: 'Not found' })
         res.json(passage)
     } catch (err) {
@@ -345,8 +366,9 @@ router.delete('/admin/reading/:id', ensureAdmin, async (req, res) => {
 // Idioms admin
 router.post('/admin/idioms', ensureAdmin, async (req, res) => {
     try {
-        const idiom = await IdiomExpression.create(req.body)
-        res.status(201).json(idiom)
+        const { idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl } = req.body
+        const expr = await IdiomExpression.create({ idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl })
+        res.status(201).json(expr)
     } catch (err) {
         res.status(400).json({ error: err.message })
     }
@@ -354,9 +376,10 @@ router.post('/admin/idioms', ensureAdmin, async (req, res) => {
 
 router.put('/admin/idioms/:id', ensureAdmin, async (req, res) => {
     try {
-        const idiom = await IdiomExpression.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
-        if (!idiom) return res.status(404).json({ error: 'Not found' })
-        res.json(idiom)
+        const { idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl } = req.body
+        const expr = await IdiomExpression.findByIdAndUpdate(req.params.id, { idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl }, { new: true, runValidators: true })
+        if (!expr) return res.status(404).json({ error: 'Not found' })
+        res.json(expr)
     } catch (err) {
         res.status(400).json({ error: err.message })
     }
