@@ -63,23 +63,46 @@ function catSlug(cat) {
     .replace(/^-+|-+$/g, '')
 }
 
+// ── Per-category accent colours (vary backgrounds across categories) ───
+const CAT_ACCENT = {
+  'Greetings':          'warm cobalt blue',
+  'Numbers':            'Venetian red',
+  'Colors':             'deep ochre yellow',
+  'Family':             'terracotta orange',
+  'Food & Drink':       'olive green',
+  'Days & Time':        'slate indigo',
+  'Common Adjectives':  'burnt sienna',
+  'Around the House':   'sage green',
+  'In the City':        'dusty rose',
+  'Common Phrases':     'warm cobalt blue',
+  'Travel':             'Mediterranean teal',
+  'Emotions':           'deep plum',
+  'Health':             'celadon green',
+  'Weather':            'steel blue',
+  'Work & Professions': 'charcoal with warm highlights',
+  'Technology':         'midnight blue',
+  'Sport & Hobbies':    'forest green',
+}
+
 // ── Image prompt ──────────────────────────────────────────────────────
-function buildPrompt(enWord) {
+function buildPrompt(enWord, catName) {
   const subject = enWord
     .replace(/^(the|a|an)\s+/i, '')
     .replace(/\(.*?\)/g, '')
     .replace(/[\.…\/]+/g, ' ')
     .trim()
 
+  const accent = CAT_ACCENT[catName] || 'terracotta'
+
   return (
-    `A vibrant Italian language flashcard illustration in a cheerful flat cartoon style. ` +
-    `The main subject is prominently and clearly depicted in the center foreground: "${subject}". ` +
-    `Background: Tuscan countryside scene — rolling green hills, tall cypress trees, ` +
-    `a small terracotta-roofed farmhouse, warm golden sunlight, fluffy white clouds in a blue sky. ` +
-    `Decorative border: warm golden-yellow with subtle wood grain texture. ` +
-    `Italian flag colour accent stripes: green at the top edge, red at the bottom edge. ` +
-    `Style: bright, warm, friendly, educational, suitable for a children's language learning card. ` +
-    `No text, no letters, no numbers, no writing of any kind in the image.`
+    `A clean flat vector-style illustration for an Italian language vocabulary flashcard. ` +
+    `The single subject is "${subject}" — centered, filling most of the frame, instantly recognizable at a glance. ` +
+    `Style: bold confident outlines, flat solid color fills, zero gradients, zero textures, zero shadows. ` +
+    `Background: a single solid ${accent} rectangle — nothing else. The subject sits directly on it. ` +
+    `The subject itself uses 2–4 flat colors maximum. Shapes are clean and geometric, slightly simplified but not cartoonishly cute. ` +
+    `Think high-quality app icon or modern educational flashcard illustration — crisp, professional, immediately readable. ` +
+    `No scenes, no secondary objects, no decorative elements, no patterns, no depth effects. ` +
+    `No text, no letters, no numbers, no borders, no frames, no writing of any kind.`
   )
 }
 
@@ -103,7 +126,7 @@ function downloadImage(url, dest) {
 }
 
 async function generateImage(enWord, catName) {
-  const prompt = buildPrompt(enWord)
+  const prompt = buildPrompt(enWord, catName)
   const resp = await axios.post(
     'https://api.openai.com/v1/images/generations',
     { model: MODEL, prompt, n: 1, size: SIZE, quality: QUALITY, response_format: 'url' },
