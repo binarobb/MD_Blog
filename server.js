@@ -175,7 +175,7 @@ app.post('/contact', (req, res) => {
         return res.status(400).send('Message must be between 1 and 5000 characters.')
     }
 
-    const safeName = validator.escape(name.trim())
+    const safeName = name.trim().replace(/[\r\n]/g, ' ')  // strip newlines only — plain-text email, not HTML
     const safeEmail = validator.normalizeEmail(email) || email
 
     const mailOptions = {
