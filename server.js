@@ -7,8 +7,7 @@ const helmet = require('helmet')
 const REQUIRED_ENV = [
     'SESSION_SECRET',
     'MONGODB_URI',
-    'EMAIL_USER',
-    'EMAIL_PASSWORD',
+    'RESEND_API_KEY',
     'EMAIL_TO',
     'ELEVENLABS_API_KEY',
     'ELEVENLABS_AGENT_ID',
@@ -39,7 +38,7 @@ const Article = require('./models/article')
 const articleRouter = require('./routes/articles.js')
 const authRouter = require('./routes/auth')
 const methodOverride = require('method-override')
-const nodemailer = require('nodemailer')
+const { Resend } = require('resend')
 const validator = require('validator')
 const session = require('express-session')
 const MongoStore = require('connect-mongo').MongoStore
@@ -163,14 +162,8 @@ app.use((req, res, next) => {
 // Auth routes (login, register, OAuth, logout, profile)
 app.use('/', authRouter)
 
-// Nodemailer setup
-const transporter = nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE || 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
-})
+// Resend email setup
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 async function getCategories() {
     const cats = await Article.distinct('category', { published: true })
@@ -224,20 +217,17 @@ app.post('/contact', contactLimiter, (req, res) => {
     const safeName = name.trim().replace(/[\r\n]/g, ' ')  // strip newlines only — plain-text email, not HTML
     const safeEmail = validator.normalizeEmail(email) || email
 
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
+    resend.emails.send({
+        from: 'wiseops@unrealstyle.com',
         replyTo: safeEmail,
         to: process.env.EMAIL_TO,
         subject: `Contact Form Message from ${safeName}`,
         text: `Name: ${name.trim()}\nEmail: ${safeEmail}\n\nMessage:\n${message.trim()}`
-    }
-
-    transporter.sendMail(mailOptions, (error, info) => {
+    }).then(({ error }) => {
         if (error) {
-            console.log(error)
+            console.error('Resend error:', error)
             res.send('Error sending message. Please try again.')
         } else {
-            console.log('Email sent: ' + info.response)
             res.send('Message sent successfully!')
         }
     })
