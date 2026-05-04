@@ -32,6 +32,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "qs": "^6.15.0",
+    "resend": "^6.12.2",
     "slugify": "^1.6.6",
     "validator": "^13.15.35"
   },
