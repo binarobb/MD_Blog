@@ -1,49 +1,72 @@
-# My Markdown Blog
+# MD Blog
 
-A Markdown-powered blog platform built with Node.js, Express, MongoDB, and EJS, with an integrated Italian language learning SPA and an ElevenLabs voice tutor.
+A Markdown-powered blog and Italian language learning platform built with Node.js, Express, MongoDB, and EJS.
+
+**Live:** [wiseops.io](https://wiseops.io)
 
 ## Features
 
-- Article management (CRUD) with Markdown rendering
-- Code block copy button, card flip UI, footer
-- **Italian A1–B1 Learning App** — multi-level SPA (Vocabulary, Verb Drill, Grammar Reference, Grammar Quiz, Sentence Builder, Reading Comprehension, Idioms) backed by MongoDB with per-level filtering
-- **Verb Reference** — 86 verbs (A1/A2/B1) with paginated grid, search, group filter, and tabbed conjugation modal (Presente, Passato Prossimo, Imperfetto)
-- **Gufo Voice Tutor** — ElevenLabs Conversational AI voice agent embedded as a floating owl button on the Italian page
-- **Level selector** — filter all content by A1 / A2 / B1 or show everything; preference persisted in `localStorage`
-- **Empty-state handling** — graceful "No content at this level" UI with a shortcut back to All Levels
+- **Blog** — article management (CRUD) with Markdown rendering, category/tag filtering, code-block copy buttons
+- **Italian A1–B1 Learning App** — single-page study app with Vocabulary, Verb Drill, Grammar Reference, Grammar Quiz, Sentence Builder, Reading Comprehension, and Idioms; content filtered by level (A1/A2/B1)
+- **Gufo Voice Tutor** — ElevenLabs Conversational AI owl button for spoken Italian practice
+- **User Auth** — local email/password registration + Google OAuth 2.0 (Passport.js); roles: `admin` / `user`; sessions persisted to MongoDB
+- **Contact Form** — validated contact form sending via [Resend](https://resend.com)
+- **Security hardened** — Helmet + strict CSP, rate limiting, input validation, secure session cookies; OWASP Top 10 sweep complete through Phase 7
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js 18, Express 4 |
+| Templating | EJS |
+| Database | MongoDB (Mongoose 7) |
+| Auth | Passport.js — local + Google OAuth 2.0 |
+| Sessions | express-session + connect-mongo |
+| Email | Resend SDK |
+| Security | Helmet, express-rate-limit, validator |
+| Deployment | Rocky Linux 9, PM2, Nginx, DigitalOcean |
+| CI/CD | GitHub Actions (auto-deploy on push to `main`) |
+
+## Security
+
+Phased OWASP hardening applied across Phases 1–7:
+
+| Phase | What was done |
+|---|---|
+| 1 | Helmet + strict Content Security Policy |
+| 2 | Session cookies: `httpOnly`, `sameSite: lax`, `secure` in production |
+| 3 | Rate limiting: global (200/15 min), auth (10/15 min), contact (5/15 min), ElevenLabs (20/hr) |
+| 4 | Input validation and sanitisation on contact form (`validator`) |
+| 5 | Auth middleware: `ensureAuthenticated`, `ensureAdmin`; open-redirect protection on `returnTo` |
+| 6 | XSS: DOMPurify on Markdown output, newline-stripping on email headers |
+| 7 | Fail-fast env-var check on startup; graceful SIGTERM shutdown; structured error logging |
+
+## Authentication
+
+- **Registration** — email + password (min 8 chars); auto-login after register
+- **Login** — local strategy via Passport.js; `returnTo` session redirect after login
+- **Google OAuth** — `/auth/google` → callback → session
+- **Roles** — `admin` can create/edit/delete articles; `user` can access the Italian app
 
 ## Italian Learning App
 
-### Content Overview
+### Content
 
-| Section | Description |
+| Section | Detail |
 |---|---|
-| Vocabulary | 194 words across 14 categories (Greetings, Colors, Food & Drink, etc.) |
-| Verb Drill | 86 verbs (A1–B1) — type or multiple-choice conjugation practice across Presente, Passato Prossimo, and Imperfetto |
-| Grammar Reference | 8 accordion topics + paginated verb reference (20/page) with search, group filter, and tabbed conjugation modal |
-| Grammar Quiz | 37 multiple-choice grammar questions |
-| Sentence Builder | 30 word-order exercises |
+| Vocabulary | 194 words across 14 categories with category images |
+| Verb Drill | 86 verbs (A1–B1) — type or multiple-choice across Presente, Passato Prossimo, Imperfetto |
+| Grammar Reference | 8 accordion topics + paginated verb reference (20/page) with search, group filter, tabbed conjugation modal |
+| Grammar Quiz | 37 multiple-choice questions |
+| Sentence Builder | 30 word-order drag exercises |
 | Reading Comprehension | 10 passages (4 A1, 4 A2, 2 B1) with glossary and comprehension questions |
-| Idioms | 25 idiom expressions with flip-card study and quiz modes |
+| Idioms | 25 expressions — flip-card study + quiz mode |
 
 ### Level System
 
-All content carries a `difficulty` field (`1 = A1, 2 = A2, 3 = B1`). The level selector filters every section — vocab, verbs, grammar, sentences, idioms — via the API. Reading passages use a `level` field with the same values.
+All content carries a `difficulty` field (`1 = A1`, `2 = A2`, `3 = B1`). The level selector filters every section via the API; preference is persisted in `localStorage`. Reading passages use a matching `level` field.
 
-### Database Collections
-
-| Collection | Model file |
-|---|---|
-| `vocabcategories` | `models/italian/VocabCategory.js` |
-| `vocabitems` | `models/italian/VocabItem.js` |
-| `verbs` | `models/italian/Verb.js` — 86 verbs (A1/A2/B1) with 3-tense conjugations |
-| `grammartopics` | `models/italian/GrammarTopic.js` |
-| `grammarquestions` | `models/italian/GrammarQuestion.js` |
-| `sentenceexercises` | `models/italian/SentenceExercise.js` |
-| `readingpassages` | `models/italian/ReadingPassage.js` — 10 passages (4 A1, 4 A2, 2 B1) |
-| `idiomexpressions` | `models/italian/IdiomExpression.js` — 25 idiom expressions |
-
-### API Endpoints
+### API
 
 All endpoints are mounted under `/italian/api`:
 
@@ -59,69 +82,74 @@ GET /italian/api/reading/:id
 GET /italian/api/idioms                 (?level=a1|a2|b1)
 ```
 
-### Seeding the Database
+### Database Collections
+
+| Collection | Model |
+|---|---|
+| `vocabcategories` | `models/italian/VocabCategory.js` |
+| `vocabitems` | `models/italian/VocabItem.js` |
+| `verbs` | `models/italian/Verb.js` |
+| `grammartopics` | `models/italian/GrammarTopic.js` |
+| `grammarquestions` | `models/italian/GrammarQuestion.js` |
+| `sentenceexercises` | `models/italian/SentenceExercise.js` |
+| `readingpassages` | `models/italian/ReadingPassage.js` |
+| `idiomexpressions` | `models/italian/IdiomExpression.js` |
+
+### Seeding
 
 ```bash
 npm run seed-italian
 ```
 
-Idempotent — safe to re-run. All collections use upsert; grammar questions and sentence exercises are cleared and re-inserted.
-
-### Models
-
-Mongoose models live in `models/italian/`:
-
-- `VocabCategory.js`
-- `VocabItem.js`
-- `Verb.js`
-- `GrammarTopic.js`
-- `GrammarQuestion.js`
-- `SentenceExercise.js`
-- `ReadingPassage.js`
-- `IdiomExpression.js`
+Idempotent — safe to re-run. Collections use upsert; grammar questions and sentence exercises are cleared and re-inserted on each run.
 
 ## Gufo – Italian Voice Tutor
 
-Gufo (Italian for "owl") is a real-time voice conversation agent powered by [ElevenLabs Conversational AI](https://elevenlabs.io/docs/eleven-agents/overview). It appears as a floating owl button on the `/italian` page and allows users to practice Italian through voice conversation.
+Gufo (Italian for "owl") is a real-time voice agent powered by [ElevenLabs Conversational AI](https://elevenlabs.io/docs/eleven-agents/overview). It appears as a floating owl button on `/italian`.
 
-### How It Works
-
-- Click the owl button → browser requests microphone access → WebSocket voice session opens with the ElevenLabs agent
-- The owl animates based on state: idle pulse, connecting spinner, listening waves, speaking waves
+- Click the owl → microphone access → WebSocket voice session with the ElevenLabs agent
+- Owl animates across four states: idle pulse, connecting spinner, listening waves, speaking waves
 - Click again to end the session
-
-### Architecture
-
-- **Client-side**: Uses `@elevenlabs/client` SDK (loaded via CDN) to connect directly using the public agent ID
-- **Server-side route** (`routes/elevenlabs.js`): Proxy endpoint at `/api/elevenlabs/signed-url` for future use with private/authenticated agents (requires `convai_write` API key permission)
-- Agent ID: configured in `.env` as `ELEVENLABS_AGENT_ID`
-- API key: stored in `.env` as `ELEVENLABS_API_KEY` (not exposed to browser)
-
-### Configuration
-
-Add to your `.env` file:
-
-```
-ELEVENLABS_API_KEY=your-elevenlabs-api-key
-ELEVENLABS_AGENT_ID=your-agent-id
-```
+- Server-side proxy route at `/api/elevenlabs/signed-url` for future authenticated agents
 
 ## Getting Started
 
-1. Install dependencies:
+### Prerequisites
+
+- Node.js 18+
+- MongoDB Atlas cluster (or local MongoDB)
+- [Resend](https://resend.com) account with a verified sending domain
+- ElevenLabs account with a Conversational AI agent (for Gufo)
+- Google OAuth credentials (optional, for Google login)
+
+### Setup
+
+1. Clone and install:
 
    ```bash
+   git clone https://github.com/binarobb/MD_Blog.git
+   cd MD_Blog
    npm install
    ```
 
-2. Configure environment — copy `.env.example` to `.env` and fill in values:
+2. Copy and fill in the environment file:
 
+   ```bash
+   cp .env.example .env
    ```
-   MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/blogDB
-   SESSION_SECRET=<random string>
-   ELEVENLABS_API_KEY=...
-   ELEVENLABS_AGENT_ID=...
-   ```
+
+   Required variables:
+
+   | Variable | Description |
+   |---|---|
+   | `MONGODB_URI` | MongoDB connection string |
+   | `SESSION_SECRET` | Random string (use `openssl rand -base64 32`) |
+   | `RESEND_API_KEY` | Resend API key |
+   | `EMAIL_TO` | Address that receives contact form messages |
+   | `ELEVENLABS_API_KEY` | ElevenLabs API key |
+   | `ELEVENLABS_AGENT_ID` | ElevenLabs Conversational AI agent ID |
+   | `GOOGLE_CLIENT_ID` | Google OAuth client ID (optional) |
+   | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (optional) |
 
 3. Seed the Italian content:
 
@@ -129,7 +157,7 @@ ELEVENLABS_AGENT_ID=your-agent-id
    npm run seed-italian
    ```
 
-4. Start the dev server:
+4. Start the development server:
 
    ```bash
    npm run devStart
@@ -140,32 +168,39 @@ ELEVENLABS_AGENT_ID=your-agent-id
 ## Folder Structure
 
 ```
+server.js                 — App entry point, middleware, core routes
+config/
+  passport.js             — Passport local + Google OAuth strategies
+middleware/
+  auth.js                 — ensureAuthenticated, ensureAdmin helpers
 models/
-  article.js
-  italian/
-    VocabCategory.js     VocabItem.js         Verb.js
-    GrammarTopic.js      GrammarQuestion.js   SentenceExercise.js
-    ReadingPassage.js    IdiomExpression.js
+  article.js              — Blog article schema
+  User.js                 — User schema (local + OAuth)
+  italian/                — Italian app Mongoose models
 routes/
-  articles.js             — Blog CRUD routes
-  italian.js              — Italian page + API
+  articles.js             — Blog CRUD
+  auth.js                 — Login, register, Google OAuth, profile
+  italian.js              — Italian page + API endpoints
   elevenlabs.js           — ElevenLabs signed-URL proxy
 scripts/
-  seed-italian.js         — Populates / refreshes all Italian collections
-  generate-vocab-images.js
+  seed-italian.js         — Seeds / refreshes all Italian collections
+  generate-vocab-images.js — Generates vocabulary category images
+  inject-blog-post.js     — Utility to inject a blog post from a file
 views/
-  italian/index.ejs       — Italian SPA shell
+  home.ejs  about.ejs  contact.ejs  login.ejs
+  auth/                   — Register, login, profile pages
   articles/               — Blog article templates
+  italian/index.ejs       — Italian SPA shell
 public/
   img/vocab/              — Vocabulary category images
-italian-data.js           — Source data (consumed only by seed script)
-italian-app.js            — Italian SPA engine (fetches from API at runtime)
-style.css                 — Global + Italian app styles
+italian-data.js           — Source data for seed script
+italian-app.js            — Italian SPA client engine
+style.css                 — Global styles
 ```
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first.
 
 ## License
 
