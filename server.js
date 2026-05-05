@@ -205,13 +205,13 @@ app.post('/contact', contactLimiter, async (req, res) => {
     const { name, email, message } = req.body
 
     if (!name || name.trim().length < 1 || name.trim().length > 100) {
-        return res.status(400).send('Name must be between 1 and 100 characters.')
+        return res.status(400).json({ success: false, message: 'Name must be between 1 and 100 characters.' })
     }
     if (!email || !validator.isEmail(email)) {
-        return res.status(400).send('Invalid email address.')
+        return res.status(400).json({ success: false, message: 'Invalid email address.' })
     }
     if (!message || message.trim().length < 1 || message.trim().length > 5000) {
-        return res.status(400).send('Message must be between 1 and 5000 characters.')
+        return res.status(400).json({ success: false, message: 'Message must be between 1 and 5000 characters.' })
     }
 
     const safeName = name.trim().replace(/[\r\n]/g, ' ')  // strip newlines only — plain-text email, not HTML
@@ -227,13 +227,12 @@ app.post('/contact', contactLimiter, async (req, res) => {
         })
         if (error) {
             console.error('Resend error:', error)
-            res.send('Error sending message. Please try again.')
-        } else {
-            res.send('Message sent successfully!')
+            return res.status(500).json({ success: false, message: 'Error sending message. Please try again.' })
         }
+        res.json({ success: true })
     } catch (e) {
         console.error('Resend exception:', e)
-        res.send('Error sending message. Please try again.')
+        res.status(500).json({ success: false, message: 'Error sending message. Please try again.' })
     }
 })
 
