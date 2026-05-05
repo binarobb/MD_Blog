@@ -201,7 +201,7 @@ app.get('/contact', (req, res) => {
     res.render('contact')
 })
 
-app.post('/contact', contactLimiter, (req, res) => {
+app.post('/contact', contactLimiter, async (req, res) => {
     const { name, email, message } = req.body
 
     if (!name || name.trim().length < 1 || name.trim().length > 100) {
@@ -217,20 +217,24 @@ app.post('/contact', contactLimiter, (req, res) => {
     const safeName = name.trim().replace(/[\r\n]/g, ' ')  // strip newlines only — plain-text email, not HTML
     const safeEmail = validator.normalizeEmail(email) || email
 
-    resend.emails.send({
-        from: 'wiseops@unrealstyle.com',
-        replyTo: safeEmail,
-        to: process.env.EMAIL_TO,
-        subject: `Contact Form Message from ${safeName}`,
-        text: `Name: ${name.trim()}\nEmail: ${safeEmail}\n\nMessage:\n${message.trim()}`
-    }).then(({ error }) => {
+    try {
+        const { error } = await resend.emails.send({
+            from: 'wiseops@unrealstyle.com',
+            replyTo: safeEmail,
+            to: process.env.EMAIL_TO,
+            subject: `Contact Form Message from ${safeName}`,
+            text: `Name: ${name.trim()}\nEmail: ${safeEmail}\n\nMessage:\n${message.trim()}`
+        })
         if (error) {
             console.error('Resend error:', error)
             res.send('Error sending message. Please try again.')
         } else {
             res.send('Message sent successfully!')
         }
-    })
+    } catch (e) {
+        console.error('Resend exception:', e)
+        res.send('Error sending message. Please try again.')
+    }
 })
 
 app.get('/blog/tags/:tag', async (req, res) => {
