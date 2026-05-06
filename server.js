@@ -66,12 +66,12 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', '*.elevenlabs.io'],
+            scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', '*.elevenlabs.io', 'esm.sh', '*.esm.sh'],
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
             fontSrc: ["'self'", 'fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com', 'upload.wikimedia.org'],
-            connectSrc: ["'self'", '*.elevenlabs.io', 'en.wikipedia.org'],
+            connectSrc: ["'self'", '*.elevenlabs.io', 'en.wikipedia.org', 'esm.sh', '*.esm.sh'],
             workerSrc: ["'none'"],
             manifestSrc: ["'none'"],
             baseUri: ["'self'"],
