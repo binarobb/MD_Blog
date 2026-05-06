@@ -72,7 +72,7 @@ app.use(helmet({
             fontSrc: ["'self'", 'fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com', 'upload.wikimedia.org'],
             connectSrc: ["'self'", '*.elevenlabs.io', 'en.wikipedia.org', 'esm.sh', '*.esm.sh'],
-            workerSrc: ["'none'"],
+            workerSrc: ["'self'", 'blob:'],
             manifestSrc: ["'none'"],
             baseUri: ["'self'"],
             formAction: ["'self'"],
