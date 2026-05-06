@@ -66,7 +66,7 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', '*.elevenlabs.io', 'esm.sh', '*.esm.sh'],
+            scriptSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', '*.elevenlabs.io', 'esm.sh', '*.esm.sh', 'blob:'],
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
             fontSrc: ["'self'", 'fonts.gstatic.com'],
