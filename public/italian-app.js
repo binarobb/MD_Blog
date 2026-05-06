@@ -1035,7 +1035,7 @@
 
   function vocabImgUrl(enWord, catName) {
     const base = (window.VOCAB_CDN_BASE || '').replace(/\/$/, '')
-    return `${base}/public/img/vocab/${cat_slug(catName || 'vocab')}/${ita_slug(enWord)}.png`
+    return `${base}/img/vocab/${cat_slug(catName || 'vocab')}/${ita_slug(enWord)}.png`
   }
 
   // ── Wikipedia image cache ─────────────────────────────────────
