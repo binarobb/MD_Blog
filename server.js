@@ -71,7 +71,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'fonts.googleapis.com'],
             fontSrc: ["'self'", 'fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'lh3.googleusercontent.com', 'upload.wikimedia.org'],
-            connectSrc: ["'self'", '*.elevenlabs.io', 'en.wikipedia.org', 'esm.sh', '*.esm.sh'],
+            connectSrc: ["'self'", 'https://*.elevenlabs.io', 'wss://*.elevenlabs.io', 'en.wikipedia.org', 'esm.sh', '*.esm.sh'],
             workerSrc: ["'self'", 'blob:'],
             manifestSrc: ["'none'"],
             baseUri: ["'self'"],
