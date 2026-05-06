@@ -52,11 +52,45 @@
             </div>
         </div>
     </nav>
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-white text-dark">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title text-dark" id="successModalLabel">Message Sent</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-dark mb-0">Thanks for reaching out, your message has been sent.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-primary" id="successOkBtn">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-white text-dark">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title text-dark" id="errorModalLabel">Something went wrong</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-dark mb-0" id="errorModalMessage">Error sending message. Please try again.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="page-shell panel">
         <h1 class="mb-2">Contact</h1>
         <p class="text-muted mb-4">Questions, collaboration ideas, or feedback are always welcome.</p>
         <div class="panel-body">
-            <form action="/contact" method="POST">
+            <form id="contactForm">
                 <div class="mb-3">
                     <label for="name" class="form-label">Name</label>
                     <input type="text" name="name" class="form-control" id="name" required>
@@ -69,7 +103,7 @@
                     <label for="message" class="form-label">Message</label>
                     <textarea name="message" class="form-control" id="message" rows="6" required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Send Message</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Send Message</button>
             </form>
         </div>
     </div>
@@ -78,6 +112,48 @@
     </footer>
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
+
+        const contactForm = document.getElementById('contactForm')
+        const submitBtn = document.getElementById('submitBtn')
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'))
+        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'))
+
+        document.getElementById('successOkBtn').addEventListener('click', () => {
+            successModal.hide()
+            window.location.href = '/'
+        })
+
+        document.getElementById('successModal').addEventListener('hidden.bs.modal', () => {
+            window.location.href = '/'
+        })
+
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            submitBtn.disabled = true
+            submitBtn.textContent = 'Sending…'
+
+            try {
+                const res = await fetch('/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(new FormData(contactForm))
+                })
+                const data = await res.json()
+                if (data.success) {
+                    successModal.show()
+                } else {
+                    document.getElementById('errorModalMessage').textContent = data.message || 'Error sending message. Please try again.'
+                    errorModal.show()
+                    submitBtn.disabled = false
+                    submitBtn.textContent = 'Send Message'
+                }
+            } catch {
+                document.getElementById('errorModalMessage').textContent = 'Could not reach the server. Please check your connection.'
+                errorModal.show()
+                submitBtn.disabled = false
+                submitBtn.textContent = 'Send Message'
+            }
+        })
     </script>
     <script src="/script.js"></script>
 </body>
