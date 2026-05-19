@@ -19,19 +19,25 @@ if (missingEnv.length) {
 
 process.on('uncaughtException', (err) => {
     console.error(`[${new Date().toISOString()}] UNCAUGHT EXCEPTION:`, err)
-    process.exit(1)
+    if (server) server.close(() => process.exit(1))
+    else process.exit(1)
 })
 
 process.on('unhandledRejection', (reason) => {
     console.error(`[${new Date().toISOString()}] UNHANDLED REJECTION:`, reason?.stack || reason)
-    process.exit(1)
+    if (server) server.close(() => process.exit(1))
+    else process.exit(1)
 })
 
 const mongoose = require('mongoose')
 
 process.on('SIGTERM', () => {
     console.log(`[${new Date().toISOString()}] SIGTERM received — shutting down gracefully`)
-    mongoose.connection.close(false, () => process.exit(0))
+    if (server) {
+        server.close(() => mongoose.connection.close(false, () => process.exit(0)))
+    } else {
+        mongoose.connection.close(false, () => process.exit(0))
+    }
 })
 
 const Article = require('./models/article')
@@ -45,6 +51,7 @@ const MongoStore = require('connect-mongo').MongoStore
 const passport = require('./config/passport')
 const rateLimit = require('express-rate-limit')
 const app = express()
+let server
 
 const mongoUri = process.env.MONGODB_URI
 
@@ -285,7 +292,7 @@ app.use((err, req, res, next) => {
     res.status(500).send('Internal server error')
 })
 
-app.listen(process.env.PORT || 5000, () => {
+server = app.listen(process.env.PORT || 5000, () => {
     const port = process.env.PORT || 5000
     const env = process.env.NODE_ENV || 'development'
     if (env === 'production') {

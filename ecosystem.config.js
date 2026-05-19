@@ -14,9 +14,9 @@ module.exports = {
             merge_logs: false,
             // Restart behaviour — don't restart-loop if crashing on startup
             min_uptime: '10s',
-            max_restarts: 5,
-            restart_delay: 3000,
-            kill_timeout: 5000
+            max_restarts: 10,
+            restart_delay: 5000,
+            kill_timeout: 8000
         }
     ]
 }
