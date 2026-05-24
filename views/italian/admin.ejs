@@ -120,7 +120,7 @@
                                     <td><strong><%= v.italian %></strong></td>
                                     <td><%= v.english %></td>
                                     <td><%= v.category ? v.category.name : '—' %></td>
-                                    <td><span class="badge-diff badge-<%= (v.difficulty||'A1').toLowerCase() %>"><%= v.difficulty||'A1' %></span></td>
+                                    <td><span class="badge-diff badge-<%= ({1:'a1',2:'a2',3:'b1'}[v.difficulty]||'a1') %>"><%= ({1:'A1',2:'A2',3:'B1'}[v.difficulty]||'A1') %></span></td>
                                     <td><button class="btn-del" onclick="deleteItem('vocab','<%= v._id %>')">Delete</button></td>
                                 </tr>
                                 <% }) %>
@@ -389,13 +389,16 @@
 
         // ── Row builders ──────────────────────────────────────────
         function vocabRowBuilder(v) {
-            const diff = (v.difficulty || 'A1').toLowerCase()
+            const diffMap = {1:'a1',2:'a2',3:'b1'}
+            const labelMap = {1:'A1',2:'A2',3:'B1'}
+            const diff = diffMap[v.difficulty] || String(v.difficulty||'a1').toLowerCase()
+            const label = labelMap[v.difficulty] || String(v.difficulty||'A1')
             const catName = (v.category && v.category.name) ? v.category.name : '—'
             return `<tr id="vocab-row-${v._id}">
                 <td><strong>${e(v.italian)}</strong></td>
                 <td>${e(v.english)}</td>
                 <td>${e(catName)}</td>
-                <td><span class="badge-diff badge-${diff}">${e(v.difficulty||'A1')}</span></td>
+                <td><span class="badge-diff badge-${diff}">${e(label)}</span></td>
                 <td><button class="btn-del" onclick="deleteItem('vocab','${v._id}')">Delete</button></td>
             </tr>`
         }
