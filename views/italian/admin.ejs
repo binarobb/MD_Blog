@@ -210,7 +210,7 @@
                                     <td><strong><%= v.infinitive %></strong></td>
                                     <td><%= v.translation %></td>
                                     <td><code style="font-size:0.8rem;color:#7dd3aa">-<%= v.group %></code></td>
-                                    <td><span class="badge-diff badge-<%= (v.difficulty||'A1').toLowerCase() %>"><%= v.difficulty||'A1' %></span></td>
+                                    <td><span class="badge-diff badge-<%= ({1:'a1',2:'a2',3:'b1'}[v.difficulty]||String(v.difficulty||'a1').toLowerCase()) %>"><%= ({1:'A1',2:'A2',3:'B1'}[v.difficulty]||String(v.difficulty||'A1')) %></span></td>
                                     <td><button class="btn-del" onclick="deleteItem('verbs','<%= v._id %>')">Delete</button></td>
                                 </tr>
                                 <% }) %>
@@ -404,12 +404,15 @@
         }
 
         function verbRowBuilder(v) {
-            const diff = (v.difficulty || 'A1').toLowerCase()
+            const diffMap = {1:'a1',2:'a2',3:'b1'}
+            const labelMap = {1:'A1',2:'A2',3:'B1'}
+            const diff = diffMap[v.difficulty] || String(v.difficulty||'a1').toLowerCase()
+            const label = labelMap[v.difficulty] || String(v.difficulty||'A1')
             return `<tr id="verb-row-${v._id}">
                 <td><strong>${e(v.infinitive)}</strong></td>
                 <td>${e(v.translation)}</td>
                 <td><code style="font-size:0.8rem;color:#7dd3aa">-${e(v.group)}</code></td>
-                <td><span class="badge-diff badge-${diff}">${e(v.difficulty||'A1')}</span></td>
+                <td><span class="badge-diff badge-${diff}">${e(label)}</span></td>
                 <td><button class="btn-del" onclick="deleteItem('verbs','${v._id}')">Delete</button></td>
             </tr>`
         }
