@@ -235,6 +235,47 @@ router.delete('/admin/vocab/:id', ensureAdmin, async (req, res) => {
     }
 })
 
+// POST /italian/admin/vocab/bulk-import
+router.post('/admin/vocab/bulk-import', ensureAdmin, async (req, res) => {
+    try {
+        const { items } = req.body
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'items must be a non-empty array' })
+        }
+        let inserted = 0, skipped = 0
+        const errors = []
+        for (const item of items) {
+            const { categorySlug, italian, english, difficulty, tags } = item
+            if (!categorySlug || !italian || !english) {
+                errors.push({ item, reason: 'Missing required fields: categorySlug, italian, english' })
+                continue
+            }
+            const category = await VocabCategory.findOne({ slug: categorySlug })
+            if (!category) {
+                errors.push({ item, reason: `Category not found: ${categorySlug}` })
+                continue
+            }
+            try {
+                const result = await VocabItem.findOneAndUpdate(
+                    { category: category._id, italian },
+                    { category: category._id, italian, english,
+                      difficulty: difficulty || 1,
+                      tags: Array.isArray(tags) ? tags : [] },
+                    { upsert: true, new: true, rawResult: true }
+                )
+                if (result.lastErrorObject?.updatedExisting) skipped++
+                else inserted++
+            } catch (itemErr) {
+                errors.push({ item, reason: itemErr.message })
+            }
+        }
+        res.json({ inserted, skipped, errors })
+    } catch (err) {
+        console.error('Admin bulk-import error:', err)
+        res.status(500).json({ error: 'Bulk import failed' })
+    }
+})
+
 // Verbs
 router.post('/admin/verbs', ensureAdmin, async (req, res) => {
     try {

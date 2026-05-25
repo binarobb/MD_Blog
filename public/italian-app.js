@@ -155,6 +155,7 @@
       }))
     })
 
+    appData.vocabCategories = categories   // full category docs incl. group fields
     appData.verbs       = verbs
     appData.vocab       = vocab
     appData.grammar     = grammarTopics
@@ -829,27 +830,59 @@
   }
 
   function renderVocabSetup() {
-    const categories = Object.keys(appData.vocab)
     const totalItems = Object.values(appData.vocab).flat().length
     if (totalItems === 0) {
       return emptyState('vocab-area', 'Vocabulary')
     }
-    el('vocab-area').innerHTML = `
-      <div class="ita-setup-panel">
-        <h3>Choose a Category</h3>
-        <div class="row g-2 mb-3">
-          ${categories.map(cat => `
+
+    // Build grouped category list using full category docs (fall back to flat if no group data)
+    const cats = appData.vocabCategories || []
+    const hasCatDocs = cats.length > 0
+
+    // Group categories by (groupOrder, group)
+    const groupMap = new Map()
+    if (hasCatDocs) {
+      cats.forEach(cat => {
+        const key = `${cat.groupOrder || 99}:${cat.group || 'Other'}`
+        if (!groupMap.has(key)) groupMap.set(key, { icon: cat.groupIcon || '📚', name: cat.group || 'Other', cats: [] })
+        groupMap.get(key).cats.push(cat)
+      })
+    } else {
+      // Fallback: single group with all categories by name
+      Object.keys(appData.vocab).forEach(name => groupMap.set('99:Other', { icon: '📚', name: 'Other', cats: [{ name }] }))
+    }
+
+    const groupsSorted = [...groupMap.entries()]
+      .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+      .map(([, g]) => g)
+
+    const groupedHTML = groupsSorted.map(group => `
+      <div class="vocab-group-section">
+        <div class="vocab-group-header">${group.icon} ${group.name}</div>
+        <div class="row g-2 mb-2">
+          ${group.cats.map(cat => `
             <div class="col-6 col-md-4">
-              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat}">
-                ${cat} <span class="badge bg-secondary">${appData.vocab[cat].length}</span>
+              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat.name}">
+                ${cat.name} <span class="badge bg-secondary">${(appData.vocab[cat.name] || []).length}</span>
               </button>
             </div>
           `).join('')}
-          <div class="col-6 col-md-4">
-            <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="all">
-              All Words <span class="badge bg-secondary">${Object.values(appData.vocab).flat().length}</span>
-            </button>
+        </div>
+      </div>
+    `).join('')
+
+    el('vocab-area').innerHTML = `
+      <div class="ita-setup-panel">
+        <h3>Choose a Category</h3>
+        <div class="mb-2">
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-4">
+              <button class="btn btn-outline-warning w-100 ita-cat-btn" data-cat="all">
+                ⭐ All Words <span class="badge bg-secondary">${totalItems}</span>
+              </button>
+            </div>
           </div>
+          ${groupedHTML}
         </div>
         <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
           <div>

@@ -129,6 +129,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Bulk Import -->
+            <div class="row g-4 mt-1">
+                <div class="col-12">
+                    <div class="form-card">
+                        <h3>Bulk Import Vocabulary</h3>
+                        <p style="font-size:0.82rem;color:#64748b;margin-bottom:1rem">Paste a JSON array of items. Each item needs <code>categorySlug</code>, <code>italian</code>, <code>english</code>. Optional: <code>difficulty</code> (1/2/3), <code>tags</code> (array of slugs).</p>
+                        <div class="row g-3 align-items-start">
+                            <div class="col-lg-8">
+                                <label class="form-label">JSON Array</label>
+                                <textarea class="form-control" id="bulk-json" rows="8" placeholder='[{"categorySlug":"food-drink","italian":"il risotto","english":"risotto","difficulty":2,"tags":["restaurant"]}]' style="font-family:monospace;font-size:0.78rem"></textarea>
+                            </div>
+                            <div class="col-lg-4 d-flex flex-column gap-2" style="padding-top:1.7rem">
+                                <button class="btn-submit w-100" onclick="bulkPreview()">Preview</button>
+                                <button class="btn-submit w-100" id="btn-bulk-import" style="display:none" onclick="bulkImport()">Import</button>
+                            </div>
+                        </div>
+                        <div id="bulk-preview-wrap" style="display:none;margin-top:1rem">
+                            <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:0.4rem" id="bulk-preview-count"></div>
+                            <table style="width:100%;font-size:0.78rem;border-collapse:collapse" id="bulk-preview-table">
+                                <thead><tr>
+                                    <th style="padding:0.3rem 0.5rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.06)">Category</th>
+                                    <th style="padding:0.3rem 0.5rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.06)">Italian</th>
+                                    <th style="padding:0.3rem 0.5rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.06)">English</th>
+                                    <th style="padding:0.3rem 0.5rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.06)">Diff</th>
+                                    <th style="padding:0.3rem 0.5rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,0.06)">Tags</th>
+                                </tr></thead>
+                                <tbody id="bulk-preview-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- ── VERBS ───────────────────────────────────────────── -->
@@ -448,6 +481,64 @@
             ev.preventDefault()
             submitForm(ev.target, '/italian/admin/reading', readingRowBuilder, 'reading-tbody')
         })
+
+        // ── Bulk Import ───────────────────────────────────────────
+        let _bulkParsed = null
+
+        function bulkPreview() {
+            const raw = document.getElementById('bulk-json').value.trim()
+            const wrap = document.getElementById('bulk-preview-wrap')
+            const btn  = document.getElementById('btn-bulk-import')
+            _bulkParsed = null
+            wrap.style.display = 'none'
+            btn.style.display = 'none'
+            if (!raw) { toast('Paste JSON first', 'error'); return }
+            let items
+            try { items = JSON.parse(raw) } catch (e) { toast('Invalid JSON: ' + e.message, 'error'); return }
+            if (!Array.isArray(items)) { toast('JSON must be an array', 'error'); return }
+            _bulkParsed = items
+            const preview = items.slice(0, 10)
+            document.getElementById('bulk-preview-count').textContent =
+                `${items.length} item${items.length !== 1 ? 's' : ''} parsed — showing first ${preview.length}`
+            const tbody = document.getElementById('bulk-preview-tbody')
+            tbody.innerHTML = preview.map(it => `
+                <tr>
+                    <td style="padding:0.3rem 0.5rem;color:#cbd5e1">${it.categorySlug || '<span style="color:#f87171">missing</span>'}</td>
+                    <td style="padding:0.3rem 0.5rem;color:#e2e8f0"><strong>${it.italian || ''}</strong></td>
+                    <td style="padding:0.3rem 0.5rem;color:#cbd5e1">${it.english || ''}</td>
+                    <td style="padding:0.3rem 0.5rem">${it.difficulty || 1}</td>
+                    <td style="padding:0.3rem 0.5rem;color:#64748b;font-size:0.72rem">${(it.tags||[]).join(', ')}</td>
+                </tr>`).join('')
+            wrap.style.display = 'block'
+            btn.style.display = 'inline-block'
+        }
+
+        async function bulkImport() {
+            if (!_bulkParsed) { toast('Run Preview first', 'error'); return }
+            const btn = document.getElementById('btn-bulk-import')
+            btn.disabled = true
+            btn.textContent = 'Importing…'
+            try {
+                const res = await fetch('/italian/admin/vocab/bulk-import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: _bulkParsed })
+                })
+                const data = await res.json()
+                if (!res.ok) { toast(data.error || 'Import failed', 'error'); return }
+                const msg = `Imported: ${data.inserted} new, ${data.skipped} skipped` +
+                    (data.errors.length ? `, ${data.errors.length} errors` : '')
+                toast(msg, data.errors.length ? 'error' : 'success')
+                if (data.errors.length) console.warn('Bulk import errors:', data.errors)
+                _bulkParsed = null
+                document.getElementById('bulk-json').value = ''
+                document.getElementById('bulk-preview-wrap').style.display = 'none'
+                btn.style.display = 'none'
+            } catch { toast('Network error', 'error') } finally {
+                btn.disabled = false
+                btn.textContent = 'Import'
+            }
+        }
     </script>
 </body>
 </html>

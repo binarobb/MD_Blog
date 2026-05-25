@@ -33,7 +33,12 @@ const vocabItemSchema = new mongoose.Schema({
     tags: [{
         type: String,
         trim: true
-    }]
+    }],
+    exampleSentence: {
+        type: String,
+        default: '',
+        trim: true
+    }
 })
 
 // Compound index: same word shouldn't appear twice in same category

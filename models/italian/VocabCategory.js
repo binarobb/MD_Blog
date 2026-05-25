@@ -17,6 +17,22 @@ const vocabCategorySchema = new mongoose.Schema({
     order: {
         type: Number,
         default: 0
+    },
+    group: {
+        type: String,
+        trim: true
+    },
+    groupOrder: {
+        type: Number,
+        default: 99
+    },
+    groupIcon: {
+        type: String,
+        trim: true
+    },
+    description: {
+        type: String,
+        trim: true
     }
 })
 
