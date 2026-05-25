@@ -844,17 +844,17 @@
     if (hasCatDocs) {
       cats.forEach(cat => {
         const key = `${cat.groupOrder || 99}:${cat.group || 'Other'}`
-        if (!groupMap.has(key)) groupMap.set(key, { icon: cat.groupIcon || '📚', name: cat.group || 'Other', cats: [] })
+        if (!groupMap.has(key)) groupMap.set(key, { order: cat.groupOrder || 99, icon: cat.groupIcon || '📚', name: cat.group || 'Other', cats: [] })
         groupMap.get(key).cats.push(cat)
       })
     } else {
       // Fallback: single group with all categories by name
-      Object.keys(appData.vocab).forEach(name => groupMap.set('99:Other', { icon: '📚', name: 'Other', cats: [{ name }] }))
+      groupMap.set('99:Other', { order: 99, icon: '📚', name: 'Other', cats: [] })
+      Object.keys(appData.vocab).forEach(n => groupMap.get('99:Other').cats.push({ name: n }))
     }
 
-    const groupsSorted = [...groupMap.entries()]
-      .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
-      .map(([, g]) => g)
+    const groupsSorted = [...groupMap.values()]
+      .sort((a, b) => (a.order || 99) - (b.order || 99))
 
     const groupedHTML = groupsSorted.map(group => `
       <div class="vocab-group-section">

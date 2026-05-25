@@ -98,7 +98,6 @@
                                     <option value="A1">A1 — Beginner</option>
                                     <option value="A2">A2 — Elementary</option>
                                     <option value="B1">B1 — Intermediate</option>
-                                    <option value="B2">B2 — Upper Intermediate</option>
                                 </select>
                             </div>
                             <div class="mb-4">
@@ -203,7 +202,6 @@
                                         <option value="A1">A1</option>
                                         <option value="A2">A2</option>
                                         <option value="B1">B1</option>
-                                        <option value="B2">B2</option>
                                     </select>
                                 </div>
                                 <div class="col-6 d-flex align-items-end pb-1">
@@ -485,6 +483,10 @@
         // ── Bulk Import ───────────────────────────────────────────
         let _bulkParsed = null
 
+        const _esc = s => String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+
         function bulkPreview() {
             const raw = document.getElementById('bulk-json').value.trim()
             const wrap = document.getElementById('bulk-preview-wrap')
@@ -496,6 +498,7 @@
             let items
             try { items = JSON.parse(raw) } catch (e) { toast('Invalid JSON: ' + e.message, 'error'); return }
             if (!Array.isArray(items)) { toast('JSON must be an array', 'error'); return }
+            if (items.length > 500) { toast('Max 500 items per import', 'error'); return }
             _bulkParsed = items
             const preview = items.slice(0, 10)
             document.getElementById('bulk-preview-count').textContent =
@@ -503,11 +506,11 @@
             const tbody = document.getElementById('bulk-preview-tbody')
             tbody.innerHTML = preview.map(it => `
                 <tr>
-                    <td style="padding:0.3rem 0.5rem;color:#cbd5e1">${it.categorySlug || '<span style="color:#f87171">missing</span>'}</td>
-                    <td style="padding:0.3rem 0.5rem;color:#e2e8f0"><strong>${it.italian || ''}</strong></td>
-                    <td style="padding:0.3rem 0.5rem;color:#cbd5e1">${it.english || ''}</td>
-                    <td style="padding:0.3rem 0.5rem">${it.difficulty || 1}</td>
-                    <td style="padding:0.3rem 0.5rem;color:#64748b;font-size:0.72rem">${(it.tags||[]).join(', ')}</td>
+                    <td style="padding:0.3rem 0.5rem;color:#cbd5e1">${it.categorySlug ? _esc(it.categorySlug) : '<span style="color:#f87171">missing</span>'}</td>
+                    <td style="padding:0.3rem 0.5rem;color:#e2e8f0"><strong>${_esc(it.italian)}</strong></td>
+                    <td style="padding:0.3rem 0.5rem;color:#cbd5e1">${_esc(it.english)}</td>
+                    <td style="padding:0.3rem 0.5rem">${_esc(it.difficulty || 1)}</td>
+                    <td style="padding:0.3rem 0.5rem;color:#64748b;font-size:0.72rem">${_esc((it.tags||[]).join(', '))}</td>
                 </tr>`).join('')
             wrap.style.display = 'block'
             btn.style.display = 'inline-block'

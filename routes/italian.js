@@ -242,6 +242,9 @@ router.post('/admin/vocab/bulk-import', ensureAdmin, async (req, res) => {
         if (!Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: 'items must be a non-empty array' })
         }
+        if (items.length > 500) {
+            return res.status(400).json({ error: 'Max 500 items per import' })
+        }
         let inserted = 0, skipped = 0
         const errors = []
         for (const item of items) {
