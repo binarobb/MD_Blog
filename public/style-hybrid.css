@@ -752,6 +752,21 @@
   color: #86efac;
 }
 
+/* ── Vocab grouped category picker ─────────────────────────────── */
+.vocab-group-section {
+  margin-bottom: 0.5rem;
+}
+.vocab-group-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft, rgba(255,255,255,0.45));
+  padding: 0.55rem 0 0.3rem 0.1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.4rem;
+}
+
 /* Dashboard SRS call-to-action card */
 .srs-dash-card {
   display: flex;

@@ -21,6 +21,27 @@ function toSlug(str) {
     return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
+// Group metadata for each category
+const CATEGORY_GROUP_META = {
+    'greetings':          { group: 'Basics',             groupOrder: 1, groupIcon: '🌅' },
+    'numbers':            { group: 'Basics',             groupOrder: 1, groupIcon: '🌅' },
+    'colors':             { group: 'Basics',             groupOrder: 1, groupIcon: '🌅' },
+    'common-phrases':     { group: 'Basics',             groupOrder: 1, groupIcon: '🌅' },
+    'common-adjectives':  { group: 'Basics',             groupOrder: 1, groupIcon: '🌅' },
+    'days-time':          { group: 'Basics',             groupOrder: 1, groupIcon: '🌅' },
+    'family':             { group: 'People & Home',      groupOrder: 2, groupIcon: '🏠' },
+    'around-the-house':   { group: 'People & Home',      groupOrder: 2, groupIcon: '🏠' },
+    'food-drink':         { group: 'Food & Dining',      groupOrder: 3, groupIcon: '🍽️' },
+    'in-the-city':        { group: 'Getting Around',     groupOrder: 4, groupIcon: '🏙️' },
+    'emotions':           { group: 'Mind & Body',        groupOrder: 5, groupIcon: '❤️' },
+    'health':             { group: 'Mind & Body',        groupOrder: 5, groupIcon: '❤️' },
+    'weather':            { group: 'Nature & World',     groupOrder: 6, groupIcon: '🌤️' },
+    'travel':             { group: 'Travel',             groupOrder: 7, groupIcon: '✈️' },
+    'work-professions':   { group: 'Work & Modern Life', groupOrder: 8, groupIcon: '💼' },
+    'technology':         { group: 'Work & Modern Life', groupOrder: 8, groupIcon: '💼' },
+    'sport-hobbies':      { group: 'Work & Modern Life', groupOrder: 8, groupIcon: '💼' },
+}
+
 async function seedCategories() {
     const categoryNames = Object.keys(VOCAB)
     const results = []
@@ -28,9 +49,10 @@ async function seedCategories() {
     for (let i = 0; i < categoryNames.length; i++) {
         const name = categoryNames[i]
         const slug = toSlug(name)
+        const meta = CATEGORY_GROUP_META[slug] || { group: 'Misc', groupOrder: 99, groupIcon: '📚' }
         const doc = await VocabCategory.findOneAndUpdate(
             { slug },
-            { name, slug, order: i },
+            { name, slug, order: i, ...meta },
             { upsert: true, new: true }
         )
         results.push(doc)

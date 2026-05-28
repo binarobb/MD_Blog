@@ -155,6 +155,7 @@
       }))
     })
 
+    appData.vocabCategories = categories   // full category docs incl. group fields
     appData.verbs       = verbs
     appData.vocab       = vocab
     appData.grammar     = grammarTopics
@@ -829,27 +830,59 @@
   }
 
   function renderVocabSetup() {
-    const categories = Object.keys(appData.vocab)
     const totalItems = Object.values(appData.vocab).flat().length
     if (totalItems === 0) {
       return emptyState('vocab-area', 'Vocabulary')
     }
-    el('vocab-area').innerHTML = `
-      <div class="ita-setup-panel">
-        <h3>Choose a Category</h3>
-        <div class="row g-2 mb-3">
-          ${categories.map(cat => `
+
+    // Build grouped category list using full category docs (fall back to flat if no group data)
+    const cats = appData.vocabCategories || []
+    const hasCatDocs = cats.length > 0
+
+    // Group categories by (groupOrder, group)
+    const groupMap = new Map()
+    if (hasCatDocs) {
+      cats.forEach(cat => {
+        const key = `${cat.groupOrder || 99}:${cat.group || 'Other'}`
+        if (!groupMap.has(key)) groupMap.set(key, { order: cat.groupOrder || 99, icon: cat.groupIcon || '📚', name: cat.group || 'Other', cats: [] })
+        groupMap.get(key).cats.push(cat)
+      })
+    } else {
+      // Fallback: single group with all categories by name
+      groupMap.set('99:Other', { order: 99, icon: '📚', name: 'Other', cats: [] })
+      Object.keys(appData.vocab).forEach(n => groupMap.get('99:Other').cats.push({ name: n }))
+    }
+
+    const groupsSorted = [...groupMap.values()]
+      .sort((a, b) => (a.order || 99) - (b.order || 99))
+
+    const groupedHTML = groupsSorted.map(group => `
+      <div class="vocab-group-section">
+        <div class="vocab-group-header">${group.icon} ${group.name}</div>
+        <div class="row g-2 mb-2">
+          ${group.cats.map(cat => `
             <div class="col-6 col-md-4">
-              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat}">
-                ${cat} <span class="badge bg-secondary">${appData.vocab[cat].length}</span>
+              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat.name}">
+                ${cat.name} <span class="badge bg-secondary">${(appData.vocab[cat.name] || []).length}</span>
               </button>
             </div>
           `).join('')}
-          <div class="col-6 col-md-4">
-            <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="all">
-              All Words <span class="badge bg-secondary">${Object.values(appData.vocab).flat().length}</span>
-            </button>
+        </div>
+      </div>
+    `).join('')
+
+    el('vocab-area').innerHTML = `
+      <div class="ita-setup-panel">
+        <h3>Choose a Category</h3>
+        <div class="mb-2">
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-4">
+              <button class="btn btn-outline-warning w-100 ita-cat-btn" data-cat="all">
+                ⭐ All Words <span class="badge bg-secondary">${totalItems}</span>
+              </button>
+            </div>
           </div>
+          ${groupedHTML}
         </div>
         <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
           <div>
@@ -923,19 +956,22 @@
         </div>
         <div class="ita-quiz-prompt">
           <span class="ita-lang-label">${isItEn ? 'Italian' : 'English'}</span>
-          <h2 class="mb-0">${prompt}</h2>
+          <h2 class="mb-0">${escapeHtml(prompt)}</h2>
         </div>
         <div class="row g-2 mt-3" id="mc-options">
           ${options.map((opt, i) => `
             <div class="col-6">
-              <button class="btn btn-outline-light w-100 ita-option-btn" data-answer="${opt.replace(/"/g, '&quot;')}">${opt}</button>
+              <button class="btn btn-outline-light w-100 ita-option-btn" data-idx="${i}">${escapeHtml(opt)}</button>
             </div>
           `).join('')}
         </div>
         <div id="vocab-feedback" class="mt-3"></div>`
 
       el('mc-options').querySelectorAll('.ita-option-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleVocabMC(btn, answer))
+        btn.addEventListener('click', () => {
+          const chosen = options[Number(btn.dataset.idx)]
+          handleVocabMC(btn, answer, chosen)
+        })
       })
     } else {
       el('vocab-area').innerHTML = `
@@ -946,7 +982,7 @@
         </div>
         <div class="ita-quiz-prompt">
           <span class="ita-lang-label">${isItEn ? 'Italian' : 'English'}</span>
-          <h2 class="mb-0">${prompt}</h2>
+          <h2 class="mb-0">${escapeHtml(prompt)}</h2>
         </div>
         <form id="type-form" class="mt-3" autocomplete="off">
           <div class="input-group">
@@ -964,12 +1000,11 @@
     }
   }
 
-  function handleVocabMC(btn, answer) {
+  function handleVocabMC(btn, answer, chosen) {
     // prevent double-click
     if (btn.closest('#mc-options').dataset.answered) return
     btn.closest('#mc-options').dataset.answered = '1'
     state.vocabTotal++
-    const chosen = btn.dataset.answer
     const correct = normalize(chosen) === normalize(answer)
     if (correct) {
       state.vocabCorrect++
@@ -980,13 +1015,14 @@
     // highlight
     btn.closest('#mc-options').querySelectorAll('.ita-option-btn').forEach(b => {
       b.disabled = true
-      if (normalize(b.dataset.answer) === normalize(answer)) b.classList.add('ita-correct')
+      const optionText = b.textContent || ''
+      if (normalize(optionText) === normalize(answer)) b.classList.add('ita-correct')
       else if (b === btn && !correct) b.classList.add('ita-wrong')
     })
 
     el('vocab-feedback').innerHTML = correct
       ? '<div class="ita-feedback-correct">Correct!</div>'
-      : `<div class="ita-feedback-wrong">The answer is: <strong>${answer}</strong></div>`
+      : `<div class="ita-feedback-wrong">The answer is: <strong>${escapeHtml(answer)}</strong></div>`
 
     setTimeout(() => { state.vocabIndex++; renderVocabQuestion() }, correct ? 1000 : 2000)
   }
@@ -1010,7 +1046,7 @@
     input.classList.add(correct ? 'ita-input-correct' : 'ita-input-wrong')
     el('vocab-feedback').innerHTML = correct
       ? '<div class="ita-feedback-correct">Correct!</div>'
-      : `<div class="ita-feedback-wrong">The answer is: <strong>${answer}</strong></div>`
+      : `<div class="ita-feedback-wrong">The answer is: <strong>${escapeHtml(answer)}</strong></div>`
 
     setTimeout(() => { state.vocabIndex++; renderVocabQuestion() }, correct ? 1200 : 2500)
   }
@@ -1086,12 +1122,12 @@
               <div class="ita-flip-front">
                 <div class="ita-flip-media">
                   <div class="ita-flip-skeleton"></div>
-                  <img class="ita-flip-img" alt="${item.en}">
+                  <img class="ita-flip-img" alt="${escapeHtml(item.en)}">
                 </div>
-                <div class="ita-flip-word">${item.it}</div>
+                <div class="ita-flip-word">${escapeHtml(item.it)}</div>
               </div>
               <div class="ita-flip-back">
-                <div class="ita-flip-en">${item.en}</div>
+                <div class="ita-flip-en">${escapeHtml(item.en)}</div>
               </div>
             </div>
           </div>`).join('')}

@@ -31,6 +31,32 @@ function readingLevelToFilter(levelStr) {
     return v ? { level: v } : { level: -1 }
 }
 
+function sanitizePlainText(value, maxLen = 200) {
+    const clean = dompurify.sanitize(String(value ?? ''), {
+        ALLOWED_TAGS: [],
+        ALLOWED_ATTR: []
+    }).replace(/\s+/g, ' ').trim()
+    return clean.slice(0, maxLen)
+}
+
+function sanitizeOptionalUrl(value, maxLen = 500) {
+    const clean = sanitizePlainText(value, maxLen)
+    return clean || undefined
+}
+
+function sanitizeDifficulty(value, fallback = 1) {
+    const n = Number(value)
+    return [1, 2, 3].includes(n) ? n : fallback
+}
+
+function sanitizeTags(tags) {
+    if (!Array.isArray(tags)) return []
+    return tags
+        .map(t => sanitizePlainText(t, 50).toLowerCase().replace(/\s+/g, '-'))
+        .filter(Boolean)
+        .slice(0, 20)
+}
+
 // ── Page render ──────────────────────────────────────────────────────
 router.get('/', (req, res) => {
     res.render('italian/index', {
@@ -205,7 +231,20 @@ router.get('/admin', ensureAdmin, async (req, res) => {
 router.post('/admin/vocab', ensureAdmin, async (req, res) => {
     try {
         const { category, italian, english, imageUrl, audioUrl, difficulty, tags } = req.body
-        const item = await VocabItem.create({ category, italian, english, imageUrl, audioUrl, difficulty, tags })
+        const safeItalian = sanitizePlainText(italian, 120)
+        const safeEnglish = sanitizePlainText(english, 180)
+        if (!category || !safeItalian || !safeEnglish) {
+            return res.status(400).json({ error: 'category, italian and english are required' })
+        }
+        const item = await VocabItem.create({
+            category,
+            italian: safeItalian,
+            english: safeEnglish,
+            imageUrl: sanitizeOptionalUrl(imageUrl),
+            audioUrl: sanitizeOptionalUrl(audioUrl),
+            difficulty: sanitizeDifficulty(difficulty),
+            tags: sanitizeTags(tags)
+        })
         res.status(201).json(item)
     } catch (err) {
         console.error('Admin API error:', err)
@@ -216,7 +255,24 @@ router.post('/admin/vocab', ensureAdmin, async (req, res) => {
 router.put('/admin/vocab/:id', ensureAdmin, async (req, res) => {
     try {
         const { category, italian, english, imageUrl, audioUrl, difficulty, tags } = req.body
-        const item = await VocabItem.findByIdAndUpdate(req.params.id, { category, italian, english, imageUrl, audioUrl, difficulty, tags }, { new: true, runValidators: true })
+        const safeItalian = sanitizePlainText(italian, 120)
+        const safeEnglish = sanitizePlainText(english, 180)
+        if (!category || !safeItalian || !safeEnglish) {
+            return res.status(400).json({ error: 'category, italian and english are required' })
+        }
+        const item = await VocabItem.findByIdAndUpdate(
+            req.params.id,
+            {
+                category,
+                italian: safeItalian,
+                english: safeEnglish,
+                imageUrl: sanitizeOptionalUrl(imageUrl),
+                audioUrl: sanitizeOptionalUrl(audioUrl),
+                difficulty: sanitizeDifficulty(difficulty),
+                tags: sanitizeTags(tags)
+            },
+            { new: true, runValidators: true }
+        )
         if (!item) return res.status(404).json({ error: 'Not found' })
         res.json(item)
     } catch (err) {
@@ -232,6 +288,61 @@ router.delete('/admin/vocab/:id', ensureAdmin, async (req, res) => {
     } catch (err) {
         console.error('Admin API error:', err)
         res.status(400).json({ error: 'Bad request' })
+    }
+})
+
+// POST /italian/admin/vocab/bulk-import
+router.post('/admin/vocab/bulk-import', ensureAdmin, async (req, res) => {
+    try {
+        const { items } = req.body
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'items must be a non-empty array' })
+        }
+        if (items.length > 500) {
+            return res.status(400).json({ error: 'Max 500 items per import' })
+        }
+        let inserted = 0, skipped = 0
+        const errors = []
+        for (const item of items) {
+            const { categorySlug, italian, english, difficulty, tags } = item
+            const safeCategorySlug = sanitizePlainText(categorySlug, 80).toLowerCase()
+            const safeItalian = sanitizePlainText(italian, 120)
+            const safeEnglish = sanitizePlainText(english, 180)
+            if (!safeCategorySlug || !safeItalian || !safeEnglish) {
+                errors.push({ item, reason: 'Missing required fields: categorySlug, italian, english' })
+                continue
+            }
+            if (!/^[a-z0-9-]+$/.test(safeCategorySlug)) {
+                errors.push({ item, reason: 'Invalid categorySlug format' })
+                continue
+            }
+            const category = await VocabCategory.findOne({ slug: safeCategorySlug })
+            if (!category) {
+                errors.push({ item, reason: `Category not found: ${safeCategorySlug}` })
+                continue
+            }
+            try {
+                const result = await VocabItem.findOneAndUpdate(
+                    { category: category._id, italian: safeItalian },
+                    {
+                      category: category._id,
+                      italian: safeItalian,
+                      english: safeEnglish,
+                      difficulty: sanitizeDifficulty(difficulty),
+                      tags: sanitizeTags(tags)
+                    },
+                                        { upsert: true, new: true, includeResultMetadata: true }
+                )
+                if (result.lastErrorObject?.updatedExisting) skipped++
+                else inserted++
+            } catch (itemErr) {
+                errors.push({ item, reason: itemErr.message })
+            }
+        }
+        res.json({ inserted, skipped, errors })
+    } catch (err) {
+        console.error('Admin bulk-import error:', err)
+        res.status(500).json({ error: 'Bulk import failed' })
     }
 })
 

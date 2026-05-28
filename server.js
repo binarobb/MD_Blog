@@ -57,6 +57,8 @@ const mongoUri = process.env.MONGODB_URI
 
 mongoose.connect(mongoUri, {
     useNewUrlParser: true, useUnifiedTopology: true 
+}).catch(err => {
+    console.error('MongoDB connection error:', err)
 })
 
 const db = mongoose.connection
