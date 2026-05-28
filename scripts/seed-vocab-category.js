@@ -174,7 +174,7 @@ async function main() {
           tags:            Array.isArray(item.tags) ? item.tags : [],
           exampleSentence: item.exampleSentence || ''
         },
-        { upsert: true, new: true, rawResult: true }
+        { upsert: true, new: true, includeResultMetadata: true }
       )
       if (result.lastErrorObject?.updatedExisting) updated++
       else inserted++
