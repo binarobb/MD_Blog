@@ -64,6 +64,7 @@
         <button class="panel-tab active" data-panel="vocab">📚 Vocabulary</button>
         <button class="panel-tab" data-panel="verbs">⚡ Verbs</button>
         <button class="panel-tab" data-panel="reading">📖 Reading</button>
+        <button class="panel-tab" data-panel="categories">🗂️ Categories</button>
     </div>
 
     <div class="panel-body">
@@ -327,6 +328,81 @@
             </div>
         </div>
 
+        <!-- ── CATEGORIES ────────────────────────────────────────── -->
+        <div class="panel-section" id="panel-categories">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="form-card">
+                        <h3>Add Category</h3>
+                        <form id="form-category">
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" name="name" id="cat-name" placeholder="e.g. Kitchen" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Slug <small class="text-muted">(auto-generated)</small></label>
+                                <input type="text" class="form-control" name="slug" id="cat-slug" placeholder="e.g. kitchen">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Parent Category <small class="text-muted">(optional)</small></label>
+                                <select class="form-select" name="parentCategory" id="cat-parent">
+                                    <option value="">— Top-level category —</option>
+                                    <% categories.filter(c => !c.parentCategory).forEach(c => { %>
+                                        <option value="<%= c._id %>"><%= c.name %></option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="row g-2 mb-3" id="cat-group-fields">
+                                <div class="col-8">
+                                    <label class="form-label">Group Name <small class="text-muted">(inherited from parent if set)</small></label>
+                                    <input type="text" class="form-control" name="group" placeholder="e.g. A1 Daily Life">
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label">Icon</label>
+                                    <input type="text" class="form-control" name="groupIcon" placeholder="🏠">
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label">Group Order</label>
+                                    <input type="number" class="form-control" name="groupOrder" placeholder="1–99" min="1" max="99">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Display Order</label>
+                                    <input type="number" class="form-control" name="order" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Description <small class="text-muted">(optional)</small></label>
+                                <input type="text" class="form-control" name="description" placeholder="e.g. Kitchen tools and appliances">
+                            </div>
+                            <button type="submit" class="btn-submit">Add Category</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="recent-table">
+                        <h4>All Categories</h4>
+                        <table>
+                            <thead><tr><th>Name</th><th>Slug</th><th>Parent</th><th>Group</th><th>Ord</th><th></th></tr></thead>
+                            <tbody id="cat-tbody">
+                                <% categories.forEach(c => { %>
+                                <tr id="cat-row-<%= c._id %>">
+                                    <td><strong><%= c.name %></strong></td>
+                                    <td><code style="font-size:0.75rem;color:#7dd3aa"><%= c.slug %></code></td>
+                                    <td><%= c.parentCategory ? c.parentCategory.name : '—' %></td>
+                                    <td><%= c.group || '—' %></td>
+                                    <td><%= c.order %></td>
+                                    <td><button class="btn-del" onclick="deleteItem('category','<%= c._id %>')">Delete</button></td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div><!-- /.panel-body -->
 
     <!-- Toast rack -->
@@ -408,7 +484,7 @@
         // ── Delete ────────────────────────────────────────────────
         async function deleteItem(type, id) {
             if (!confirm('Delete this item?')) return
-            const map = { vocab: '/italian/admin/vocab', verbs: '/italian/admin/verbs', reading: '/italian/admin/reading' }
+            const map = { vocab: '/italian/admin/vocab', verbs: '/italian/admin/verbs', reading: '/italian/admin/reading', category: '/italian/admin/category' }
             try {
                 const res = await fetch(`${map[type]}/${id}`, { method: 'DELETE' })
                 if (!res.ok) { toast('Delete failed', 'error'); return }
@@ -478,6 +554,33 @@
         document.getElementById('form-reading').addEventListener('submit', ev => {
             ev.preventDefault()
             submitForm(ev.target, '/italian/admin/reading', readingRowBuilder, 'reading-tbody')
+        })
+
+        // ── Categories ────────────────────────────────────────────
+        function categoryRowBuilder(c) {
+            const parent = (c.parentCategory && c.parentCategory.name) ? c.parentCategory.name : '—'
+            return `<tr id="cat-row-${c._id}">
+                <td><strong>${e(c.name)}</strong></td>
+                <td><code style="font-size:0.75rem;color:#7dd3aa">${e(c.slug)}</code></td>
+                <td>${e(parent)}</td>
+                <td>${e(c.group || '—')}</td>
+                <td>${c.order || 0}</td>
+                <td><button class="btn-del" onclick="deleteItem('category','${c._id}')">Delete</button></td>
+            </tr>`
+        }
+
+        document.getElementById('cat-name').addEventListener('input', ev => {
+            document.getElementById('cat-slug').value = ev.target.value
+                .toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        })
+
+        document.getElementById('cat-parent').addEventListener('change', ev => {
+            document.getElementById('cat-group-fields').style.opacity = ev.target.value ? '0.4' : '1'
+        })
+
+        document.getElementById('form-category').addEventListener('submit', ev => {
+            ev.preventDefault()
+            submitForm(ev.target, '/italian/admin/category', categoryRowBuilder, 'cat-tbody')
         })
 
         // ── Bulk Import ───────────────────────────────────────────
