@@ -52,6 +52,64 @@
       .replace(/[\u2013\u2014]/g, '-')
   }
 
+  // ── ElevenLabs TTS ───────────────────────────────────────────────
+  let _currentAudio = null
+  const _ttsCache = new Map()
+
+  function speakItalian(text, btnEl) {
+    if (!text || !text.trim()) return
+
+    // Stop any currently playing audio
+    if (_currentAudio) {
+      _currentAudio.pause()
+      _currentAudio = null
+    }
+
+    // Check client-side cache
+    if (_ttsCache.has(text)) {
+      const url = _ttsCache.get(text)
+      const audio = new Audio(url)
+      _currentAudio = audio
+      if (btnEl) btnEl.classList.add('ita-speak-playing')
+      audio.onended = () => {
+        if (btnEl) btnEl.classList.remove('ita-speak-playing')
+        _currentAudio = null
+      }
+      audio.play().catch(() => {})
+      return
+    }
+
+    if (btnEl) btnEl.classList.add('ita-speak-loading')
+
+    fetch('/api/elevenlabs/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text.trim() }),
+    })
+      .then(r => {
+        if (!r.ok) throw new Error('TTS request failed')
+        return r.blob()
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob)
+        _ttsCache.set(text, url)
+        const audio = new Audio(url)
+        _currentAudio = audio
+        if (btnEl) {
+          btnEl.classList.remove('ita-speak-loading')
+          btnEl.classList.add('ita-speak-playing')
+        }
+        audio.onended = () => {
+          if (btnEl) btnEl.classList.remove('ita-speak-playing')
+          _currentAudio = null
+        }
+        audio.play().catch(() => {})
+      })
+      .catch(() => {
+        if (btnEl) btnEl.classList.remove('ita-speak-loading')
+      })
+  }
+
   // ── State ────────────────────────────────────────────────────────
   const state = {
     section: 'dashboard',
@@ -1010,7 +1068,7 @@
         </div>
         <div class="ita-quiz-prompt">
           <span class="ita-lang-label">${isItEn ? 'Italian' : 'English'}</span>
-          <h2 class="mb-0">${escapeHtml(prompt)}</h2>
+          <h2 class="mb-0">${escapeHtml(prompt)}${isItEn ? ` <button class="ita-speak-btn" data-speak="${escapeHtml(prompt)}" title="Hear pronunciation" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊</button>` : ''}</h2>
         </div>
         <div class="row g-2 mt-3" id="mc-options">
           ${options.map((opt, i) => `
@@ -1036,7 +1094,7 @@
         </div>
         <div class="ita-quiz-prompt">
           <span class="ita-lang-label">${isItEn ? 'Italian' : 'English'}</span>
-          <h2 class="mb-0">${escapeHtml(prompt)}</h2>
+          <h2 class="mb-0">${escapeHtml(prompt)}${isItEn ? ` <button class="ita-speak-btn" data-speak="${escapeHtml(prompt)}" title="Hear pronunciation" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊</button>` : ''}</h2>
         </div>
         <form id="type-form" class="mt-3" autocomplete="off">
           <div class="input-group">
@@ -1178,7 +1236,10 @@
                   <div class="ita-flip-skeleton"></div>
                   <img class="ita-flip-img" alt="${escapeHtml(item.en)}">
                 </div>
-                <div class="ita-flip-word">${escapeHtml(item.it)}</div>
+                <div class="ita-flip-word">
+                  ${escapeHtml(item.it)}
+                  <button class="ita-speak-btn" data-speak="${escapeHtml(item.it)}" title="Hear pronunciation" onclick="event.stopPropagation();ItalianApp.speak(this.dataset.speak,this)">🔊</button>
+                </div>
               </div>
               <div class="ita-flip-back">
                 <div class="ita-flip-en">${escapeHtml(item.en)}</div>
@@ -1821,7 +1882,7 @@
       answerEl.classList.add(isCorrect ? 'ita-sentence-correct' : 'ita-sentence-wrong')
       el('sentence-feedback').innerHTML = isCorrect
         ? '<p class="ita-feedback-correct">Perfetto!</p>'
-        : `<p class="ita-feedback-wrong">Correct order: <strong>${correctAnswer}</strong></p>`
+        : `<p class="ita-feedback-wrong">Correct order: <strong>${correctAnswer}</strong> <button class="ita-speak-btn ms-1" data-speak="${correctAnswer.replace(/"/g, '&quot;')}" title="Hear pronunciation" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊</button></p>`
 
       setTimeout(() => { state.sentenceIndex++; renderSentence() }, 1800)
     })
@@ -1904,7 +1965,7 @@
 
     const audioHook = passage.audioUrl
       ? `<button class="btn btn-sm btn-outline-light mb-3" onclick="window.open('${passage.audioUrl}')">&#9654; Listen</button>`
-      : ''
+      : `<button class="btn btn-sm btn-outline-light mb-3 ita-speak-btn" data-speak="${(passage.body || '').replace(/</g,'').replace(/>/g,'').replace(/"/g,'&quot;').slice(0,1000)}" title="Listen to passage" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊 Listen</button>`
 
     const glossaryHtml = (passage.vocabGlossary || []).length
       ? `<div class="ita-reading-glossary mt-4">
@@ -2519,6 +2580,7 @@
     renderReview,
     srsFlip,
     srsAnswer,
+    speak: speakItalian,
     async init() {
       const dashContent = el('dash-content')
       if (dashContent) {
