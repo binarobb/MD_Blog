@@ -91,7 +91,7 @@ app.use(helmet({
             baseUri: ["'self'"],
             formAction: ["'self'"],
             navigateTo: ["'self'"],
-            mediaSrc: ["'self'", '*.elevenlabs.io'],
+            mediaSrc: ["'self'", 'blob:', '*.elevenlabs.io'],
             frameSrc: ["'none'"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: []
