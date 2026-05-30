@@ -75,6 +75,7 @@ router.post('/tts', ttsLimiter, async (req, res) => {
   if (ttsCache.has(cacheKey)) {
     const cached = ttsCache.get(cacheKey)
     res.set('Content-Type', 'audio/mpeg')
+    res.set('Cache-Control', 'public, max-age=86400')
     return res.send(cached)
   }
 
@@ -111,6 +112,7 @@ router.post('/tts', ttsLimiter, async (req, res) => {
     ttsCache.set(cacheKey, buffer)
 
     res.set('Content-Type', 'audio/mpeg')
+    res.set('Cache-Control', 'public, max-age=86400')
     res.send(buffer)
   } catch (err) {
     console.error('ElevenLabs TTS fetch error:', err.message)
