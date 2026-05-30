@@ -70,7 +70,7 @@ router.get('/', (req, res) => {
 // GET /api/italian/vocab/categories
 router.get('/api/vocab/categories', async (req, res) => {
     try {
-        const categories = await VocabCategory.find().sort({ order: 1 })
+        const categories = await VocabCategory.find().sort({ order: 1 }).populate('parentCategory', '_id name slug')
         res.json(categories)
     } catch (err) {
         res.status(500).json({ error: 'Failed to load categories' })
@@ -215,7 +215,7 @@ router.get('/api/idioms', async (req, res) => {
 router.get('/admin', ensureAdmin, async (req, res) => {
     try {
         const [categories, recentVocab, recentVerbs, recentReading] = await Promise.all([
-            VocabCategory.find().sort({ order: 1 }),
+            VocabCategory.find().sort({ order: 1 }).populate('parentCategory', 'name'),
             VocabItem.find().sort({ _id: -1 }).limit(10).populate('category', 'name'),
             Verb.find().sort({ _id: -1 }).limit(10),
             ReadingPassage.find().sort({ _id: -1 }).limit(10)
@@ -343,6 +343,57 @@ router.post('/admin/vocab/bulk-import', ensureAdmin, async (req, res) => {
     } catch (err) {
         console.error('Admin bulk-import error:', err)
         res.status(500).json({ error: 'Bulk import failed' })
+    }
+})
+
+
+// Categories
+router.post('/admin/category', ensureAdmin, async (req, res) => {
+    try {
+        const { name, slug, parentCategory, group, groupOrder, groupIcon, order, description } = req.body
+        const safeName = sanitizePlainText(name, 80)
+        const safeSlug = sanitizePlainText(slug, 80).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        if (!safeName || !safeSlug) {
+            return res.status(400).json({ error: 'name and slug are required' })
+        }
+        const catData = {
+            name: safeName,
+            slug: safeSlug,
+            order: parseInt(order) || 0
+        }
+        if (description) catData.description = sanitizePlainText(description, 300)
+        if (parentCategory) {
+            const parent = await VocabCategory.findById(parentCategory)
+            if (!parent) return res.status(400).json({ error: 'Parent category not found' })
+            catData.parentCategory = parent._id
+            catData.group      = group     ? sanitizePlainText(group, 60)     : parent.group
+            catData.groupOrder = groupOrder ? (parseInt(groupOrder) || 99)     : parent.groupOrder
+            catData.groupIcon  = groupIcon  ? sanitizePlainText(groupIcon, 10) : parent.groupIcon
+        } else {
+            if (group)      catData.group      = sanitizePlainText(group, 60)
+            if (groupOrder) catData.groupOrder = parseInt(groupOrder) || 99
+            if (groupIcon)  catData.groupIcon  = sanitizePlainText(groupIcon, 10)
+        }
+        const cat = await VocabCategory.create(catData)
+        await cat.populate('parentCategory', 'name')
+        res.status(201).json(cat)
+    } catch (err) {
+        if (err.code === 11000) return res.status(400).json({ error: 'A category with that name or slug already exists' })
+        console.error('Admin category error:', err)
+        res.status(400).json({ error: 'Bad request' })
+    }
+})
+
+router.delete('/admin/category/:id', ensureAdmin, async (req, res) => {
+    try {
+        const count = await VocabItem.countDocuments({ category: req.params.id })
+        if (count > 0) return res.status(400).json({ error: `Cannot delete: ${count} vocab item(s) exist in this category` })
+        await VocabCategory.updateMany({ parentCategory: req.params.id }, { $unset: { parentCategory: 1 } })
+        await VocabCategory.findByIdAndDelete(req.params.id)
+        res.json({ success: true })
+    } catch (err) {
+        console.error('Admin category error:', err)
+        res.status(400).json({ error: 'Bad request' })
     }
 })
 

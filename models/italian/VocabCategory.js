@@ -33,6 +33,11 @@ const vocabCategorySchema = new mongoose.Schema({
     description: {
         type: String,
         trim: true
+    },
+    parentCategory: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'VocabCategory',
+        default: null
     }
 })
 

@@ -829,6 +829,19 @@
     renderVocabSetup()
   }
 
+  // Returns all vocab items for a category + its subcategories, each tagged with _cat
+  function vocabPoolForCat(catName) {
+    const catDocs  = appData.vocabCategories || []
+    const catDoc   = catDocs.find(c => c.name === catName)
+    const own      = (appData.vocab[catName] || []).map(w => ({ ...w, _cat: catName }))
+    if (!catDoc) return own
+    const children = catDocs.filter(c => {
+      if (!c.parentCategory) return false
+      return String(c.parentCategory._id || c.parentCategory) === String(catDoc._id)
+    })
+    return [...own, ...children.flatMap(c => (appData.vocab[c.name] || []).map(w => ({ ...w, _cat: c.name })))]
+  }
+
   function renderVocabSetup() {
     const totalItems = Object.values(appData.vocab).flat().length
     if (totalItems === 0) {
@@ -839,10 +852,21 @@
     const cats = appData.vocabCategories || []
     const hasCatDocs = cats.length > 0
 
-    // Group categories by (groupOrder, group)
+    // Build parent→children map
+    const childMap = new Map()
+    cats.forEach(cat => {
+      if (cat.parentCategory) {
+        const pid = String(cat.parentCategory._id || cat.parentCategory)
+        if (!childMap.has(pid)) childMap.set(pid, [])
+        childMap.get(pid).push(cat)
+      }
+    })
+
+    // Group categories by (groupOrder, group) — top-level only
     const groupMap = new Map()
     if (hasCatDocs) {
       cats.forEach(cat => {
+        if (cat.parentCategory) return // subcategories rendered under their parent
         const key = `${cat.groupOrder || 99}:${cat.group || 'Other'}`
         if (!groupMap.has(key)) groupMap.set(key, { order: cat.groupOrder || 99, icon: cat.groupIcon || '📚', name: cat.group || 'Other', cats: [] })
         groupMap.get(key).cats.push(cat)
@@ -856,17 +880,47 @@
     const groupsSorted = [...groupMap.values()]
       .sort((a, b) => (a.order || 99) - (b.order || 99))
 
+    // Renders a single category entry: plain button if leaf, accordion if it has children
+    function catEntryHTML(cat) {
+      const children = childMap.get(String(cat._id)) || []
+      if (children.length === 0) {
+        const count = (appData.vocab[cat.name] || []).length
+        return `<div class="col-6 col-md-4">
+              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat.name}">
+                ${cat.name} <span class="badge bg-secondary">${count}</span>
+              </button>
+            </div>`
+      }
+      const totalCount = vocabPoolForCat(cat.name).length
+      const subBtns = children.map(c => {
+        const cCount = (appData.vocab[c.name] || []).length
+        return `<div class="col-6 col-md-4">
+                <button class="btn btn-outline-secondary btn-sm w-100 ita-cat-btn" data-cat="${c.name}">
+                  ${c.name} <span class="badge bg-secondary">${cCount}</span>
+                </button>
+              </div>`
+      }).join('')
+      const accId = `vcat-${cat._id}`
+      return `<div class="col-12">
+            <div class="vocab-parent-section">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <button class="btn btn-outline-light flex-grow-1 text-start ita-cat-btn" data-cat="${cat.name}">
+                  ${cat.name} <span class="badge bg-secondary">${totalCount}</span>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('${accId}').classList.toggle('d-none')" title="Toggle subcategories">▾</button>
+              </div>
+              <div id="${accId}" class="row g-1 ms-2 mb-1">
+                ${subBtns}
+              </div>
+            </div>
+          </div>`
+    }
+
     const groupedHTML = groupsSorted.map(group => `
       <div class="vocab-group-section">
         <div class="vocab-group-header">${group.icon} ${group.name}</div>
         <div class="row g-2 mb-2">
-          ${group.cats.map(cat => `
-            <div class="col-6 col-md-4">
-              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat.name}">
-                ${cat.name} <span class="badge bg-secondary">${(appData.vocab[cat.name] || []).length}</span>
-              </button>
-            </div>
-          `).join('')}
+          ${group.cats.map(catEntryHTML).join('')}
         </div>
       </div>
     `).join('')
@@ -916,7 +970,7 @@
         state.vocabCategory = cat
         state.vocabQueue = shuffle(cat === 'all'
           ? Object.entries(appData.vocab).flatMap(([c, words]) => words.map(w => ({ ...w, _cat: c })))
-          : appData.vocab[cat].map(w => ({ ...w, _cat: cat })))
+          : vocabPoolForCat(cat))
         state.vocabIndex = 0
         state.vocabCorrect = 0
         state.vocabTotal = 0
@@ -943,7 +997,7 @@
       // build 3 wrong options from same category or all
       const pool = (state.vocabCategory === 'all'
         ? Object.values(appData.vocab).flat()
-        : appData.vocab[state.vocabCategory])
+        : vocabPoolForCat(state.vocabCategory))
         .filter(w => (isItEn ? w.en : w.it) !== answer)
       const wrongs = pick(pool, 3).map(w => isItEn ? w.en : w.it)
       const options = shuffle([answer, ...wrongs])
