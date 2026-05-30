@@ -683,6 +683,33 @@ Article tables (explicit styling)
     font-size: 1.05rem;
 }
 
+/* TTS speak button */
+.ita-speak-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    padding: 2px 6px;
+    font-size: 0.9em;
+    cursor: pointer;
+    color: inherit;
+    vertical-align: middle;
+    transition: opacity 0.15s, border-color 0.15s;
+    line-height: 1;
+}
+.ita-speak-btn:hover { border-color: rgba(255,255,255,0.5); opacity: 0.85; }
+.ita-speak-btn.ita-speak-loading { opacity: 0.5; pointer-events: none; }
+.ita-speak-btn.ita-speak-playing {
+    border-color: var(--brand, #7c6af7);
+    animation: ita-speak-pulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes ita-speak-pulse {
+    from { box-shadow: 0 0 0 0 rgba(124,106,247,0.4); }
+    to   { box-shadow: 0 0 0 5px rgba(124,106,247,0); }
+}
+
 /* Results score ring */
 .ita-results {
     padding: 2rem 0;
@@ -1262,6 +1289,11 @@ Article tables (explicit styling)
     font-weight: 600;
     color: var(--text);
     word-break: break-word;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 .ita-flip-back .ita-flip-en {

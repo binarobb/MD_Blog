@@ -12,6 +12,11 @@ const REQUIRED_ENV = [
     'ELEVENLABS_API_KEY',
     'ELEVENLABS_AGENT_ID',
 ]
+// Optional but logged as warnings
+const OPTIONAL_ENV_WARN = ['ELEVENLABS_VOICE_ID']
+OPTIONAL_ENV_WARN.forEach(k => {
+    if (!process.env[k]) console.warn(`[warn] Optional env var not set: ${k} — TTS pronunciation buttons will return 503`)
+})
 const missingEnv = REQUIRED_ENV.filter(k => !process.env[k])
 if (missingEnv.length) {
     throw new Error(`Missing required env vars: ${missingEnv.join(', ')} — refusing to start`)
@@ -136,15 +141,6 @@ const contactLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
     message: 'Too many messages sent. Please wait before trying again.',
-    standardHeaders: true,
-    legacyHeaders: false
-})
-
-// ElevenLabs TTS limiter: 20 requests per hour per IP
-const elevenLabsLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: 20,
-    message: 'Audio request limit reached. Please try again in an hour.',
     standardHeaders: true,
     legacyHeaders: false
 })
@@ -277,7 +273,7 @@ const italianRouter = require('./routes/italian')
 const elevenLabsRouter = require('./routes/elevenlabs')
 app.use('/blog', articleRouter)
 app.use('/italian', italianRouter)
-app.use('/api/elevenlabs', elevenLabsLimiter, elevenLabsRouter)
+app.use('/api/elevenlabs', elevenLabsRouter)
 
 // 404 handler
 app.use((req, res) => {
