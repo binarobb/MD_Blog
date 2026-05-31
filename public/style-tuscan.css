@@ -20,6 +20,9 @@
   --card-bg:      #1d1a15;
   --fg:           #f5f0e8;
   --muted:        #b8a890;
+
+  /* Section accent colours */
+  --c-vocab:      #3ecfc0;
 }
 
 /* ── Typography ──────────────────────────────────────────────────── */

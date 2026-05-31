@@ -938,46 +938,35 @@
     const groupsSorted = [...groupMap.values()]
       .sort((a, b) => (a.order || 99) - (b.order || 99))
 
-    // Renders a single category entry: plain button if leaf, accordion if it has children
+    // Renders a single category entry: chip if leaf, parent-row + chip-row if it has children
     function catEntryHTML(cat) {
       const children = childMap.get(String(cat._id)) || []
       if (children.length === 0) {
         const count = (appData.vocab[cat.name] || []).length
-        return `<div class="col-6 col-md-4">
-              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat.name}">
-                ${cat.name} <span class="badge bg-secondary">${count}</span>
-              </button>
-            </div>`
+        return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(cat.name)}">
+          ${escapeHtml(cat.name)} <span class="ita-cat-chip-count">(${count})</span>
+        </button>`
       }
       const totalCount = vocabPoolForCat(cat.name).length
-      const subBtns = children.map(c => {
+      const subChips = children.map(c => {
         const cCount = (appData.vocab[c.name] || []).length
-        return `<div class="col-6 col-md-4">
-                <button class="btn btn-outline-secondary btn-sm w-100 ita-cat-btn" data-cat="${c.name}">
-                  ${c.name} <span class="badge bg-secondary">${cCount}</span>
-                </button>
-              </div>`
+        return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(c.name)}">
+          ${escapeHtml(c.name)} <span class="ita-cat-chip-count">(${cCount})</span>
+        </button>`
       }).join('')
-      const accId = `vcat-${cat._id}`
-      return `<div class="col-12">
-            <div class="vocab-parent-section">
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <button class="btn btn-outline-light flex-grow-1 text-start ita-cat-btn" data-cat="${cat.name}">
-                  ${cat.name} <span class="badge bg-secondary">${totalCount}</span>
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('${accId}').classList.toggle('d-none')" title="Toggle subcategories">▾</button>
-              </div>
-              <div id="${accId}" class="row g-1 ms-2 mb-1">
-                ${subBtns}
-              </div>
-            </div>
-          </div>`
+      return `<div class="vocab-parent-section">
+        <div class="ita-vocab-parent-row ita-cat-btn" data-cat="${escapeHtml(cat.name)}">
+          <span class="ita-vocab-parent-name">${escapeHtml(cat.name)}</span>
+          <span class="ita-vocab-parent-action">Study All ${totalCount} →</span>
+        </div>
+        <div class="ita-chip-row">${subChips}</div>
+      </div>`
     }
 
     const groupedHTML = groupsSorted.map(group => `
       <div class="vocab-group-section">
-        <div class="vocab-group-header">${group.icon} ${group.name}</div>
-        <div class="row g-2 mb-2">
+        <div class="ita-vocab-section-header">${group.icon} ${group.name}</div>
+        <div class="ita-chip-row">
           ${group.cats.map(catEntryHTML).join('')}
         </div>
       </div>
@@ -986,17 +975,7 @@
     el('vocab-area').innerHTML = `
       <div class="ita-setup-panel">
         <h3>Choose a Category</h3>
-        <div class="mb-2">
-          <div class="row g-2 mb-3">
-            <div class="col-6 col-md-4">
-              <button class="btn btn-outline-warning w-100 ita-cat-btn" data-cat="all">
-                ⭐ All Words <span class="badge bg-secondary">${totalItems}</span>
-              </button>
-            </div>
-          </div>
-          ${groupedHTML}
-        </div>
-        <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
+        <div class="ita-vocab-settings-bar">
           <div>
             <label class="form-label mb-1">Mode</label><br>
             <div class="btn-group btn-group-sm" role="group">
@@ -1017,6 +996,14 @@
               <label class="btn btn-outline-light" for="vdir-en">EN → IT</label>
             </div>
           </div>
+        </div>
+        <div>
+          <div class="ita-chip-row mb-3">
+            <button class="ita-cat-chip ita-cat-chip-all ita-cat-btn" data-cat="all">
+              <i class="ph ph-star"></i> All Words <span class="ita-cat-chip-count">(${totalItems})</span>
+            </button>
+          </div>
+          ${groupedHTML}
         </div>
       </div>`
 

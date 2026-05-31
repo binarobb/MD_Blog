@@ -120,10 +120,11 @@
   color: var(--text) !important;
 }
 .hybrid-nav-icon {
-  font-size: 0.95rem;
+  font-size: 1rem;
   width: 1.3rem;
   text-align: center;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 /* Active — default (dashboard) uses brand amber */
@@ -810,4 +811,105 @@
 @media (max-width: 768px) {
   .srs-front-text { font-size: 1.5rem; }
   .srs-back-text  { font-size: 1.2rem; }
+}
+
+/* ── Vocab category picker redesign ───────────────────────────── */
+.ita-vocab-settings-bar {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 0.75rem 0 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+.ita-vocab-section-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+  padding: 0.6rem 0 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.ita-vocab-parent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border-left: 3px solid transparent;
+  margin-bottom: 0.35rem;
+}
+.ita-vocab-parent-row:hover {
+  background: rgba(62,207,192,0.07);
+  border-left-color: var(--c-vocab, #3ecfc0);
+}
+.ita-vocab-parent-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.ita-vocab-parent-action {
+  font-size: 0.75rem;
+  color: var(--c-vocab, #3ecfc0);
+  opacity: 0.8;
+  white-space: nowrap;
+}
+.ita-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 0.75rem;
+  padding-left: 0.6rem;
+}
+.ita-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--c-vocab, #3ecfc0);
+  color: var(--c-vocab, #3ecfc0);
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.ita-cat-chip:hover {
+  background: rgba(62,207,192,0.1);
+}
+.ita-cat-chip.active {
+  background: var(--c-vocab, #3ecfc0);
+  color: #0f1117;
+  border-color: var(--c-vocab, #3ecfc0);
+  font-weight: 600;
+}
+.ita-cat-chip-count {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+.ita-cat-chip.active .ita-cat-chip-count {
+  opacity: 0.85;
+}
+/* "All Words" special chip */
+.ita-cat-chip-all {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.ita-cat-chip-all:hover { background: rgba(232,168,80,0.1); }
+.ita-cat-chip-all.active {
+  background: var(--brand);
+  color: #12100e;
+  border-color: var(--brand);
 }
