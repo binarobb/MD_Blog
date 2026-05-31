@@ -955,7 +955,7 @@
         const total = vocabPoolForCat(c.name).length
         const accId = `vcat-${String(c._id || c.name).replace(/\W+/g, '-')}`
         return `<button class="ita-cat-chip ita-vocab-parent-chip" data-acc="${accId}" aria-expanded="false">
-          ${escapeHtml(c.name)} <span class="ita-cat-chip-count">${total}</span> <span class="ita-vocab-chevron">&#9658;</span>
+          ${escapeHtml(c.name)} <span class="ita-cat-chip-count">${total}</span> <i class="ph-bold ph-caret-right ita-vocab-chevron"></i>
         </button>`
       }).join('')
 
@@ -1010,7 +1010,7 @@
         <div>
           <div class="ita-chip-row mb-3">
             <button class="ita-cat-chip ita-cat-chip-all ita-cat-btn" data-cat="all">
-              <i class="ph ph-star"></i> All Words <span class="ita-cat-chip-count">(${totalItems})</span>
+              <i class="ph ph-star"></i> All Words <span class="ita-cat-chip-count">${totalItems}</span>
             </button>
           </div>
           ${groupedHTML}
