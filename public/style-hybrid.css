@@ -848,20 +848,47 @@
   border-left: 3px solid transparent;
   margin-bottom: 0.35rem;
 }
-.ita-vocab-parent-row:hover {
-  background: rgba(62,207,192,0.07);
+/* Accordion toggle button for parent categories */
+.ita-vocab-acc-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  border-left: 3px solid var(--border);
+  border-radius: 0 4px 4px 0;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+  margin-bottom: 0.3rem;
+}
+.ita-vocab-acc-toggle:hover,
+.ita-vocab-acc-toggle[aria-expanded="true"] {
   border-left-color: var(--c-vocab, #3ecfc0);
+  background: rgba(62,207,192,0.05);
 }
 .ita-vocab-parent-name {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--text);
 }
-.ita-vocab-parent-action {
+.ita-vocab-parent-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 0.75rem;
-  color: var(--c-vocab, #3ecfc0);
-  opacity: 0.8;
-  white-space: nowrap;
+  color: var(--text-soft);
+  flex-shrink: 0;
+}
+.ita-vocab-chevron {
+  font-size: 0.7rem;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.ita-vocab-acc-toggle[aria-expanded="true"] .ita-vocab-chevron {
+  transform: rotate(90deg);
 }
 .ita-chip-row {
   display: flex;
@@ -874,8 +901,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.28rem 0.75rem;
-  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 5px;
   border: 1px solid var(--c-vocab, #3ecfc0);
   color: var(--c-vocab, #3ecfc0);
   background: transparent;
