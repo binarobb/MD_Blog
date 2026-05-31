@@ -836,59 +836,50 @@
   align-items: center;
   gap: 0.4rem;
 }
-.ita-vocab-parent-row {
-  display: flex;
+/* Parent category chip — looks like a leaf chip but has a ▸ and toggles a sub-panel */
+.ita-vocab-parent-chip {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 8px;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 5px;
+  border: 1px solid var(--c-vocab, #3ecfc0);
+  color: var(--c-vocab, #3ecfc0);
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  border-left: 3px solid transparent;
-  margin-bottom: 0.35rem;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  line-height: 1.4;
 }
-/* Accordion toggle button for parent categories */
-.ita-vocab-acc-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: none;
-  border: none;
-  border-left: 3px solid var(--border);
-  border-radius: 0 4px 4px 0;
-  padding: 0.45rem 0.6rem;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-  text-align: left;
-  margin-bottom: 0.3rem;
+.ita-vocab-parent-chip:hover {
+  background: rgba(62,207,192,0.1);
 }
-.ita-vocab-acc-toggle:hover,
-.ita-vocab-acc-toggle[aria-expanded="true"] {
-  border-left-color: var(--c-vocab, #3ecfc0);
-  background: rgba(62,207,192,0.05);
-}
-.ita-vocab-parent-name {
-  font-size: 0.88rem;
+.ita-vocab-parent-chip[aria-expanded="true"] {
+  background: var(--c-vocab, #3ecfc0);
+  color: #0f1117;
+  border-color: var(--c-vocab, #3ecfc0);
   font-weight: 600;
-  color: var(--text);
-}
-.ita-vocab-parent-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  color: var(--text-soft);
-  flex-shrink: 0;
 }
 .ita-vocab-chevron {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   display: inline-block;
   transition: transform 0.2s;
 }
-.ita-vocab-acc-toggle[aria-expanded="true"] .ita-vocab-chevron {
+.ita-vocab-parent-chip[aria-expanded="true"] .ita-vocab-chevron {
   transform: rotate(90deg);
+}
+/* Sub-panel that reveals subcategory chips when a parent is expanded */
+.ita-sub-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0.5rem 0.6rem;
+  margin: 0.2rem 0 0.6rem 0;
+  border-left: 2px solid var(--c-vocab, #3ecfc0);
+  background: rgba(62,207,192,0.04);
+  border-radius: 0 4px 4px 0;
 }
 .ita-chip-row {
   display: flex;

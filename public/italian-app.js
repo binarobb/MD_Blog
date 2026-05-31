@@ -939,45 +939,46 @@
       .sort((a, b) => (a.order || 99) - (b.order || 99))
 
     // Renders a single category entry: rectangular badge chip if leaf,
-    // accordion toggle + collapsed chip row if it has children
-    function catEntryHTML(cat) {
-      const children = childMap.get(String(cat._id)) || []
-      if (children.length === 0) {
-        const count = (appData.vocab[cat.name] || []).length
-        return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(cat.name)}">
-          ${escapeHtml(cat.name)} <span class="ita-cat-chip-count">${count}</span>
-        </button>`
-      }
-      const totalCount = vocabPoolForCat(cat.name).length
-      const accId = `vcat-${String(cat._id || cat.name).replace(/\W+/g, '-')}`
-      const subChips = children.map(c => {
-        const cCount = (appData.vocab[c.name] || []).length
-        return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(c.name)}">
-          ${escapeHtml(c.name)} <span class="ita-cat-chip-count">${cCount}</span>
-        </button>`
-      }).join('')
-      return `<div class="vocab-parent-section">
-        <button class="ita-vocab-acc-toggle" data-acc="${accId}" aria-expanded="false">
-          <span class="ita-vocab-parent-name">${escapeHtml(cat.name)}</span>
-          <span class="ita-vocab-parent-meta">
-            <span class="ita-cat-chip-count">${totalCount} words</span>
-            <span class="ita-vocab-chevron">&#9658;</span>
-          </span>
-        </button>
-        <div id="${accId}" class="ita-chip-row mt-1 d-none">
-          <button class="ita-cat-chip ita-cat-chip-all ita-cat-btn" data-cat="${escapeHtml(cat.name)}">All ${totalCount} →</button>
-          ${subChips}
-        </div>
-      </div>`
+    // Helper: leaf chip
+    function leafChipHTML(cat) {
+      const count = (appData.vocab[cat.name] || []).length
+      return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(cat.name)}">
+        ${escapeHtml(cat.name)} <span class="ita-cat-chip-count">${count}</span>
+      </button>`
     }
 
     const groupedHTML = groupsSorted.map(group => {
       const leaves  = group.cats.filter(c => (childMap.get(String(c._id)) || []).length === 0)
       const parents = group.cats.filter(c => (childMap.get(String(c._id)) || []).length > 0)
+
+      const parentChips = parents.map(c => {
+        const total = vocabPoolForCat(c.name).length
+        const accId = `vcat-${String(c._id || c.name).replace(/\W+/g, '-')}`
+        return `<button class="ita-cat-chip ita-vocab-parent-chip" data-acc="${accId}" aria-expanded="false">
+          ${escapeHtml(c.name)} <span class="ita-cat-chip-count">${total}</span> <span class="ita-vocab-chevron">&#9658;</span>
+        </button>`
+      }).join('')
+
+      const subPanels = parents.map(c => {
+        const children = childMap.get(String(c._id)) || []
+        const total = vocabPoolForCat(c.name).length
+        const accId = `vcat-${String(c._id || c.name).replace(/\W+/g, '-')}`
+        const subChips = children.map(sub => {
+          const cCount = (appData.vocab[sub.name] || []).length
+          return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(sub.name)}">
+            ${escapeHtml(sub.name)} <span class="ita-cat-chip-count">${cCount}</span>
+          </button>`
+        }).join('')
+        return `<div id="${accId}" class="ita-sub-panel d-none">
+          <button class="ita-cat-chip ita-cat-chip-all ita-cat-btn" data-cat="${escapeHtml(c.name)}">All ${total} →</button>
+          ${subChips}
+        </div>`
+      }).join('')
+
       return `<div class="vocab-group-section">
         <div class="ita-vocab-section-header">${group.icon} ${group.name}</div>
-        ${leaves.length  ? `<div class="ita-chip-row">${leaves.map(catEntryHTML).join('')}</div>` : ''}
-        ${parents.map(catEntryHTML).join('')}
+        <div class="ita-chip-row">${leaves.map(leafChipHTML).join('')}${parentChips}</div>
+        ${subPanels}
       </div>`
     }).join('')
 
@@ -1016,10 +1017,17 @@
         </div>
       </div>`
 
-    el('vocab-area').querySelectorAll('.ita-vocab-acc-toggle').forEach(btn => {
+    el('vocab-area').querySelectorAll('.ita-vocab-parent-chip').forEach(btn => {
       btn.addEventListener('click', () => {
         const target = document.getElementById(btn.dataset.acc)
         const expanded = btn.getAttribute('aria-expanded') === 'true'
+        // Collapse other open panels in the same group section
+        btn.closest('.vocab-group-section')?.querySelectorAll('.ita-vocab-parent-chip[aria-expanded="true"]').forEach(other => {
+          if (other !== btn) {
+            other.setAttribute('aria-expanded', 'false')
+            document.getElementById(other.dataset.acc)?.classList.add('d-none')
+          }
+        })
         target.classList.toggle('d-none', expanded)
         btn.setAttribute('aria-expanded', String(!expanded))
       })
