@@ -863,9 +863,10 @@
   font-weight: 600;
 }
 .ita-vocab-chevron {
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   display: inline-block;
   transition: transform 0.2s;
+  line-height: 1;
 }
 .ita-vocab-parent-chip[aria-expanded="true"] .ita-vocab-chevron {
   transform: rotate(90deg);
