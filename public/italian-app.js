@@ -938,65 +938,54 @@
     const groupsSorted = [...groupMap.values()]
       .sort((a, b) => (a.order || 99) - (b.order || 99))
 
-    // Renders a single category entry: plain button if leaf, accordion if it has children
-    function catEntryHTML(cat) {
-      const children = childMap.get(String(cat._id)) || []
-      if (children.length === 0) {
-        const count = (appData.vocab[cat.name] || []).length
-        return `<div class="col-6 col-md-4">
-              <button class="btn btn-outline-light w-100 ita-cat-btn" data-cat="${cat.name}">
-                ${cat.name} <span class="badge bg-secondary">${count}</span>
-              </button>
-            </div>`
-      }
-      const totalCount = vocabPoolForCat(cat.name).length
-      const subBtns = children.map(c => {
-        const cCount = (appData.vocab[c.name] || []).length
-        return `<div class="col-6 col-md-4">
-                <button class="btn btn-outline-secondary btn-sm w-100 ita-cat-btn" data-cat="${c.name}">
-                  ${c.name} <span class="badge bg-secondary">${cCount}</span>
-                </button>
-              </div>`
-      }).join('')
-      const accId = `vcat-${cat._id}`
-      return `<div class="col-12">
-            <div class="vocab-parent-section">
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <button class="btn btn-outline-light flex-grow-1 text-start ita-cat-btn" data-cat="${cat.name}">
-                  ${cat.name} <span class="badge bg-secondary">${totalCount}</span>
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('${accId}').classList.toggle('d-none')" title="Toggle subcategories">▾</button>
-              </div>
-              <div id="${accId}" class="row g-1 ms-2 mb-1">
-                ${subBtns}
-              </div>
-            </div>
-          </div>`
+    // Renders a single category entry: rectangular badge chip if leaf,
+    // Helper: leaf chip
+    function leafChipHTML(cat) {
+      const count = (appData.vocab[cat.name] || []).length
+      return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(cat.name)}">
+        ${escapeHtml(cat.name)} <span class="ita-cat-chip-count">${count}</span>
+      </button>`
     }
 
-    const groupedHTML = groupsSorted.map(group => `
-      <div class="vocab-group-section">
-        <div class="vocab-group-header">${group.icon} ${group.name}</div>
-        <div class="row g-2 mb-2">
-          ${group.cats.map(catEntryHTML).join('')}
-        </div>
-      </div>
-    `).join('')
+    const groupedHTML = groupsSorted.map(group => {
+      const leaves  = group.cats.filter(c => (childMap.get(String(c._id)) || []).length === 0)
+      const parents = group.cats.filter(c => (childMap.get(String(c._id)) || []).length > 0)
+
+      const parentChips = parents.map(c => {
+        const total = vocabPoolForCat(c.name).length
+        const accId = `vcat-${String(c._id || c.name).replace(/\W+/g, '-')}`
+        return `<button class="ita-cat-chip ita-vocab-parent-chip" data-acc="${accId}" aria-expanded="false">
+          ${escapeHtml(c.name)} <span class="ita-cat-chip-count">${total}</span> <i class="ph-bold ph-caret-right ita-vocab-chevron"></i>
+        </button>`
+      }).join('')
+
+      const subPanels = parents.map(c => {
+        const children = childMap.get(String(c._id)) || []
+        const total = vocabPoolForCat(c.name).length
+        const accId = `vcat-${String(c._id || c.name).replace(/\W+/g, '-')}`
+        const subChips = children.map(sub => {
+          const cCount = (appData.vocab[sub.name] || []).length
+          return `<button class="ita-cat-chip ita-cat-btn" data-cat="${escapeHtml(sub.name)}">
+            ${escapeHtml(sub.name)} <span class="ita-cat-chip-count">${cCount}</span>
+          </button>`
+        }).join('')
+        return `<div id="${accId}" class="ita-sub-panel d-none">
+          <button class="ita-cat-chip ita-cat-chip-all ita-cat-btn" data-cat="${escapeHtml(c.name)}">All ${total} →</button>
+          ${subChips}
+        </div>`
+      }).join('')
+
+      return `<div class="vocab-group-section">
+        <div class="ita-vocab-section-header">${group.icon} ${group.name}</div>
+        <div class="ita-chip-row">${leaves.map(leafChipHTML).join('')}${parentChips}</div>
+        ${subPanels}
+      </div>`
+    }).join('')
 
     el('vocab-area').innerHTML = `
       <div class="ita-setup-panel">
         <h3>Choose a Category</h3>
-        <div class="mb-2">
-          <div class="row g-2 mb-3">
-            <div class="col-6 col-md-4">
-              <button class="btn btn-outline-warning w-100 ita-cat-btn" data-cat="all">
-                ⭐ All Words <span class="badge bg-secondary">${totalItems}</span>
-              </button>
-            </div>
-          </div>
-          ${groupedHTML}
-        </div>
-        <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
+        <div class="ita-vocab-settings-bar">
           <div>
             <label class="form-label mb-1">Mode</label><br>
             <div class="btn-group btn-group-sm" role="group">
@@ -1018,7 +1007,31 @@
             </div>
           </div>
         </div>
+        <div>
+          <div class="ita-chip-row mb-3">
+            <button class="ita-cat-chip ita-cat-chip-all ita-cat-btn" data-cat="all">
+              <i class="ph ph-star"></i> All Words <span class="ita-cat-chip-count">${totalItems}</span>
+            </button>
+          </div>
+          ${groupedHTML}
+        </div>
       </div>`
+
+    el('vocab-area').querySelectorAll('.ita-vocab-parent-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = document.getElementById(btn.dataset.acc)
+        const expanded = btn.getAttribute('aria-expanded') === 'true'
+        // Collapse other open panels in the same group section
+        btn.closest('.vocab-group-section')?.querySelectorAll('.ita-vocab-parent-chip[aria-expanded="true"]').forEach(other => {
+          if (other !== btn) {
+            other.setAttribute('aria-expanded', 'false')
+            document.getElementById(other.dataset.acc)?.classList.add('d-none')
+          }
+        })
+        target.classList.toggle('d-none', expanded)
+        btn.setAttribute('aria-expanded', String(!expanded))
+      })
+    })
 
     el('vocab-area').querySelectorAll('.ita-cat-btn').forEach(btn => {
       btn.addEventListener('click', () => {

@@ -126,13 +126,14 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 // Global fallback rate limiter (applied first, before all routes)
+const isDev = process.env.NODE_ENV !== 'production'
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 200,
     standardHeaders: true,
     legacyHeaders: false,
     message: 'Too many requests, please try again later.',
-    skip: (req) => req.path.startsWith('/public') || req.path.startsWith('/img')
+    skip: (req) => isDev || req.path.startsWith('/public') || req.path.startsWith('/img')
 })
 app.use(globalLimiter)
 
@@ -142,7 +143,8 @@ const contactLimiter = rateLimit({
     max: 5,
     message: 'Too many messages sent. Please wait before trying again.',
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    skip: () => isDev
 })
 
 // Rate limit on auth endpoints
@@ -151,7 +153,8 @@ const authLimiter = rateLimit({
     max: 10,
     message: 'Too many attempts, please try again later.',
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    skip: () => isDev
 })
 app.use('/login', authLimiter)
 app.use('/register', authLimiter)

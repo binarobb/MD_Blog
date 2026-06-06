@@ -1,6 +1,7 @@
 const express = require('express')
 const rateLimit = require('express-rate-limit')
 const router = express.Router()
+const isDev = process.env.NODE_ENV !== 'production'
 
 // Per-route rate limiters
 const signedUrlLimiter = rateLimit({
@@ -9,6 +10,7 @@ const signedUrlLimiter = rateLimit({
   message: 'Audio request limit reached. Please try again in an hour.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => isDev,
 })
 
 const ttsLimiter = rateLimit({
@@ -17,6 +19,7 @@ const ttsLimiter = rateLimit({
   message: 'Too many pronunciation requests. Please wait a moment.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => isDev,
 })
 
 // In-memory TTS cache: Map<text, Buffer> with FIFO eviction at 500 entries
