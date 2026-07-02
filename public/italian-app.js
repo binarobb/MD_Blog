@@ -4,6 +4,9 @@
 ;(function () {
   'use strict'
 
+  // ── CSRF token helper (reads from <meta name="csrf-token"> in page) ─
+  const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.content ?? ''
+
   // ── Module-level data (populated by loadData on init) ────────────
   const PRONOUNS = ['io', 'tu', 'lui/lei', 'noi', 'voi', 'loro']
 
@@ -56,6 +59,34 @@
   let _currentAudio = null
   const _ttsCache = new Map()
 
+  // Browser SpeechSynthesis for long text (reading passages) — no API credits needed
+  function speakPassage(text, btnEl) {
+    const synth = window.speechSynthesis
+    if (!synth) return
+
+    // Toggle off if already playing
+    if (btnEl && btnEl.classList.contains('ita-speak-playing')) {
+      synth.cancel()
+      btnEl.classList.remove('ita-speak-playing')
+      return
+    }
+
+    synth.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = 'it-IT'
+    utterance.rate = 0.85
+
+    // Use an Italian voice if available
+    const voices = synth.getVoices()
+    const itVoice = voices.find(v => v.lang.startsWith('it'))
+    if (itVoice) utterance.voice = itVoice
+
+    if (btnEl) btnEl.classList.add('ita-speak-playing')
+    utterance.onend = () => { if (btnEl) btnEl.classList.remove('ita-speak-playing') }
+    utterance.onerror = () => { if (btnEl) btnEl.classList.remove('ita-speak-playing') }
+    synth.speak(utterance)
+  }
+
   function speakItalian(text, btnEl) {
     if (!text || !text.trim()) return
 
@@ -83,7 +114,7 @@
 
     fetch('/api/elevenlabs/tts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
       body: JSON.stringify({ text: text.trim() }),
     })
       .then(r => {
@@ -282,7 +313,7 @@
     try {
       const res = await fetch('/italian/api/progress/save', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
         body: JSON.stringify({ section, correct, total })
       })
       if (!res.ok) return
@@ -304,7 +335,7 @@
     if (!window.CURRENT_USER) return
     try {
       // Streak check must complete first so the subsequent GET reflects the updated streak
-      await fetch('/italian/api/progress/streak/check', { method: 'POST' })
+      await fetch('/italian/api/progress/streak/check', { method: 'POST', headers: { 'x-csrf-token': getCsrfToken() } })
       const progressRes = await fetch('/italian/api/progress')
       if (!progressRes.ok) {
         console.warn('initServerProgress: /api/progress returned', progressRes.status)
@@ -371,7 +402,7 @@
     try {
       const res = await fetch('/italian/api/progress/goal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
         body: JSON.stringify({ goal })
       })
       if (!res.ok) return
@@ -532,7 +563,7 @@
     try {
       await fetch('/italian/api/srs/answer', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
         body:    JSON.stringify({ cardId: card._id, grade: correct ? 4 : 1 })
       })
     } catch (_) {}
@@ -563,7 +594,7 @@
     if (!window.CURRENT_USER || !itemId) return
     fetch('/italian/api/srs/enroll', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
       body:    JSON.stringify({ itemType, itemId: String(itemId), front, back })
     }).catch(() => {})
   }
@@ -672,7 +703,7 @@
     try {
       await fetch('/italian/api/srs/answer', {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
         body:    JSON.stringify({ cardId: card._id, grade: correct ? 4 : 1 })
       })
     } catch (_) {}
@@ -703,7 +734,7 @@
     if (!window.CURRENT_USER || !itemId) return
     fetch('/italian/api/srs/enroll', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
       body:    JSON.stringify({ itemType, itemId: String(itemId), front, back })
     }).catch(() => {})
   }
@@ -1978,7 +2009,7 @@
 
     const audioHook = passage.audioUrl
       ? `<button class="btn btn-sm btn-outline-light mb-3" onclick="window.open('${passage.audioUrl}')">&#9654; Listen</button>`
-      : `<button class="btn btn-sm btn-outline-light mb-3 ita-speak-btn" data-speak="${(passage.body || '').replace(/</g,'').replace(/>/g,'').replace(/"/g,'&quot;').slice(0,1000)}" title="Listen to passage" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊 Listen</button>`
+      : `<button class="btn btn-sm btn-outline-light mb-3 ita-speak-btn" data-speak="${(passage.body || '').replace(/<[^>]*>/g,' ').replace(/&[a-z]+;/gi,' ').replace(/\s+/g,' ').trim().replace(/"/g,'&quot;').slice(0,3000)}" title="Listen to passage" onclick="ItalianApp.speakPassage(this.dataset.speak,this)">🔊 Listen</button>`
 
     const glossaryHtml = (passage.vocabGlossary || []).length
       ? `<div class="ita-reading-glossary mt-4">
@@ -2594,6 +2625,7 @@
     srsFlip,
     srsAnswer,
     speak: speakItalian,
+    speakPassage,
     async init() {
       const dashContent = el('dash-content')
       if (dashContent) {

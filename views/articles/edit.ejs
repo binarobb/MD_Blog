@@ -41,6 +41,7 @@
                         </li>
                         <li class="nav-item">
                             <form action="/logout" method="POST" class="d-inline">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button type="submit" class="btn btn-link nav-link">Logout</button>
                             </form>
                         </li>
@@ -57,6 +58,7 @@
                         </li>
                         <li class="nav-item">
                             <form action="/logout" method="POST" class="d-inline">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button type="submit" class="btn btn-link nav-link">Logout</button>
                             </form>
                         </li>

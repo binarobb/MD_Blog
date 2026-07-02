@@ -41,6 +41,7 @@
                         </li>
                         <li class="nav-item">
                             <form action="/logout" method="POST" class="d-inline">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button type="submit" class="btn btn-link nav-link">Logout</button>
                             </form>
                         </li>
@@ -107,6 +108,7 @@
                     <a href="/blog/<%= article.slug %>" class="btn btn-primary">Read More</a>
                     <a href="/blog/edit/<%= article.id %>" class="btn btn-info">Edit</a>
                     <form action="/blog/<%= article.id %>?_method=DELETE" method="POST" class="d-inline">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </div>

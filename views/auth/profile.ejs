@@ -26,6 +26,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <form action="/logout" method="POST" class="d-inline">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                             <button type="submit" class="btn btn-link nav-link">Logout</button>
                         </form>
                     </li>
@@ -68,6 +69,7 @@
             <% } %>
 
             <form action="/profile" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <h5 class="mb-3">Display Name</h5>
                 <div class="mb-3">
                     <input type="text" name="displayName" class="form-control" value="<%= user.displayName %>" required>
