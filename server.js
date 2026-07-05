@@ -55,12 +55,14 @@ const session = require('express-session')
 const MongoStore = require('connect-mongo').MongoStore
 const passport = require('./config/passport')
 const rateLimit = require('express-rate-limit')
+const cookieParser = require('cookie-parser')
 const { doubleCsrf } = require('csrf-csrf')
 const app = express()
 let server
 
 const { generateCsrfToken, doubleCsrfProtection, invalidCsrfTokenError } = doubleCsrf({
     getSecret: () => process.env.SESSION_SECRET,
+    getSessionIdentifier: (req) => req.session?.id ?? '',
     cookieName: process.env.NODE_ENV === 'production' ? '__Host-csrf' : 'csrf',
     cookieOptions: {
         sameSite: 'lax',
@@ -69,7 +71,7 @@ const { generateCsrfToken, doubleCsrfProtection, invalidCsrfTokenError } = doubl
         httpOnly: true
     },
     size: 64,
-    getTokenFromRequest: (req) => req.body?._csrf || req.headers['x-csrf-token']
+    getCsrfTokenFromRequest: (req) => req.body?._csrf || req.headers['x-csrf-token']
 })
 
 const mongoUri = process.env.MONGODB_URI
@@ -138,6 +140,7 @@ app.use(session({
 // Passport
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(cookieParser())
 
 // Global fallback rate limiter (applied first, before all routes)
 const isDev = process.env.NODE_ENV !== 'production'
