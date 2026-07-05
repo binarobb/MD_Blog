@@ -55,8 +55,24 @@ const session = require('express-session')
 const MongoStore = require('connect-mongo').MongoStore
 const passport = require('./config/passport')
 const rateLimit = require('express-rate-limit')
+const cookieParser = require('cookie-parser')
+const { doubleCsrf } = require('csrf-csrf')
 const app = express()
 let server
+
+const { generateCsrfToken, doubleCsrfProtection, invalidCsrfTokenError } = doubleCsrf({
+    getSecret: () => process.env.SESSION_SECRET,
+    getSessionIdentifier: (req) => req.session?.id ?? '',
+    cookieName: process.env.NODE_ENV === 'production' ? '__Host-csrf' : 'csrf',
+    cookieOptions: {
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true
+    },
+    size: 64,
+    getCsrfTokenFromRequest: (req) => req.body?._csrf || req.headers['x-csrf-token']
+})
 
 const mongoUri = process.env.MONGODB_URI
 
@@ -124,6 +140,7 @@ app.use(session({
 // Passport
 app.use(passport.initialize())
 app.use(passport.session())
+app.use(cookieParser())
 
 // Global fallback rate limiter (applied first, before all routes)
 const isDev = process.env.NODE_ENV !== 'production'
@@ -166,6 +183,13 @@ app.use((req, res, next) => {
     res.locals.isAdmin = !!(req.user && req.user.role === 'admin')
     next()
 })
+
+// CSRF protection — generate token for all responses, validate on mutations
+app.use((req, res, next) => {
+    res.locals.csrfToken = generateCsrfToken(req, res)
+    next()
+})
+app.use(doubleCsrfProtection)
 
 // Auth routes (login, register, OAuth, logout, profile)
 app.use('/', authRouter)
@@ -285,6 +309,11 @@ app.use((req, res) => {
 
 // Global error handler — never expose stack traces or err.message to clients
 app.use((err, req, res, next) => {
+    if (err.code === 'EBADCSRFTOKEN') {
+        const isApi = req.originalUrl.startsWith('/api') || req.xhr
+        if (isApi) return res.status(403).json({ error: 'Invalid CSRF token' })
+        return res.status(403).send('Forbidden')
+    }
     console.error('Unhandled error:', err)
     const isApi = req.originalUrl.startsWith('/api') || req.xhr
     if (isApi) {
