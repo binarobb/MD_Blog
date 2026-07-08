@@ -21,7 +21,10 @@ router.get('/edit/:id', ensureAdmin, async (req, res, next) => {
 
 router.get('/:slug', async (req, res, next) => {
     try {
-        const article = await Article.findOne({ slug: req.params.slug })
+        const filter = { slug: req.params.slug }
+        // Admins may preview drafts; everyone else only sees published articles
+        if (!req.user || req.user.role !== 'admin') filter.published = true
+        const article = await Article.findOne(filter)
         if (article == null) return res.redirect('/blog')
         res.render('articles/show', { article: article })
     } catch (e) {

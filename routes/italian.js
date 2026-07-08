@@ -397,11 +397,53 @@ router.delete('/admin/category/:id', ensureAdmin, async (req, res) => {
     }
 })
 
+// Helpers for nested verb structures
+function sanitizeConjugation(obj) {
+    if (!obj || typeof obj !== 'object') return {}
+    const pronouns = ['io', 'tu', 'lui/lei', 'noi', 'voi', 'loro']
+    const out = {}
+    for (const p of pronouns) {
+        if (obj[p] != null) out[p] = sanitizePlainText(obj[p], 80)
+    }
+    return out
+}
+
+function sanitizeTenses(obj) {
+    if (!obj || typeof obj !== 'object') return {}
+    const validTenses = ['presenteIndicativo', 'passatoProssimo', 'imperfetto']
+    const out = {}
+    for (const t of validTenses) {
+        if (obj[t]) out[t] = sanitizeConjugation(obj[t])
+    }
+    return out
+}
+
+function sanitizeExample(obj) {
+    if (!obj || typeof obj !== 'object') return undefined
+    const it = sanitizePlainText(obj.it, 300)
+    const en = sanitizePlainText(obj.en, 300)
+    return (it && en) ? { it, en } : undefined
+}
+
 // Verbs
 router.post('/admin/verbs', ensureAdmin, async (req, res) => {
     try {
         const { infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty } = req.body
-        const verb = await Verb.create({ infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty })
+        const validGroups = ['-are', '-ere', '-ire', '-ire (isc)', 'irregular', 'reflexive']
+        const validAux    = ['avere', 'essere', null, undefined]
+        const safeData = {
+            infinitive:     sanitizePlainText(infinitive, 80).toLowerCase(),
+            translation:    sanitizePlainText(translation, 150),
+            group:          validGroups.includes(group) ? group : '-are',
+            conjugation:    sanitizeConjugation(conjugation),
+            tenses:         sanitizeTenses(tenses),
+            auxiliaryVerb:  validAux.includes(auxiliaryVerb) ? (auxiliaryVerb || null) : null,
+            pastParticiple: pastParticiple ? sanitizePlainText(pastParticiple, 80) : null,
+            example:        sanitizeExample(example),
+            difficulty:     sanitizeDifficulty(difficulty)
+        }
+        if (Array.isArray(examples)) safeData.examples = examples.map(sanitizeExample).filter(Boolean)
+        const verb = await Verb.create(safeData)
         res.status(201).json(verb)
     } catch (err) {
         console.error('Admin API error:', err)
@@ -412,7 +454,21 @@ router.post('/admin/verbs', ensureAdmin, async (req, res) => {
 router.put('/admin/verbs/:id', ensureAdmin, async (req, res) => {
     try {
         const { infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty } = req.body
-        const verb = await Verb.findByIdAndUpdate(req.params.id, { infinitive, translation, group, conjugation, tenses, auxiliaryVerb, pastParticiple, example, examples, difficulty }, { new: true, runValidators: true })
+        const validGroups = ['-are', '-ere', '-ire', '-ire (isc)', 'irregular', 'reflexive']
+        const validAux    = ['avere', 'essere', null, undefined]
+        const safeData = {
+            infinitive:     sanitizePlainText(infinitive, 80).toLowerCase(),
+            translation:    sanitizePlainText(translation, 150),
+            group:          validGroups.includes(group) ? group : '-are',
+            conjugation:    sanitizeConjugation(conjugation),
+            tenses:         sanitizeTenses(tenses),
+            auxiliaryVerb:  validAux.includes(auxiliaryVerb) ? (auxiliaryVerb || null) : null,
+            pastParticiple: pastParticiple ? sanitizePlainText(pastParticiple, 80) : null,
+            example:        sanitizeExample(example),
+            difficulty:     sanitizeDifficulty(difficulty)
+        }
+        if (Array.isArray(examples)) safeData.examples = examples.map(sanitizeExample).filter(Boolean)
+        const verb = await Verb.findByIdAndUpdate(req.params.id, safeData, { new: true, runValidators: true })
         if (!verb) return res.status(404).json({ error: 'Not found' })
         res.json(verb)
     } catch (err) {
@@ -435,7 +491,22 @@ router.delete('/admin/verbs/:id', ensureAdmin, async (req, res) => {
 router.post('/admin/grammar/questions', ensureAdmin, async (req, res) => {
     try {
         const { question, correctAnswer, options, topic, difficulty } = req.body
-        const q = await GrammarQuestion.create({ question, correctAnswer, options, topic, difficulty })
+        const safeQuestion      = sanitizePlainText(question, 500)
+        const safeCorrectAnswer = sanitizePlainText(correctAnswer, 200)
+        const safeTopic         = sanitizePlainText(topic, 100)
+        if (!safeQuestion || !safeCorrectAnswer || !safeTopic) {
+            return res.status(400).json({ error: 'question, correctAnswer and topic are required' })
+        }
+        const safeOptions = Array.isArray(options)
+            ? options.map(o => sanitizePlainText(o, 200)).filter(Boolean).slice(0, 10)
+            : []
+        const q = await GrammarQuestion.create({
+            question: safeQuestion,
+            correctAnswer: safeCorrectAnswer,
+            options: safeOptions,
+            topic: safeTopic,
+            difficulty: sanitizeDifficulty(difficulty)
+        })
         res.status(201).json(q)
     } catch (err) {
         console.error('Admin API error:', err)
@@ -446,7 +517,20 @@ router.post('/admin/grammar/questions', ensureAdmin, async (req, res) => {
 router.put('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
     try {
         const { question, correctAnswer, options, topic, difficulty } = req.body
-        const q = await GrammarQuestion.findByIdAndUpdate(req.params.id, { question, correctAnswer, options, topic, difficulty }, { new: true, runValidators: true })
+        const safeQuestion      = sanitizePlainText(question, 500)
+        const safeCorrectAnswer = sanitizePlainText(correctAnswer, 200)
+        const safeTopic         = sanitizePlainText(topic, 100)
+        if (!safeQuestion || !safeCorrectAnswer || !safeTopic) {
+            return res.status(400).json({ error: 'question, correctAnswer and topic are required' })
+        }
+        const safeOptions = Array.isArray(options)
+            ? options.map(o => sanitizePlainText(o, 200)).filter(Boolean).slice(0, 10)
+            : []
+        const q = await GrammarQuestion.findByIdAndUpdate(
+            req.params.id,
+            { question: safeQuestion, correctAnswer: safeCorrectAnswer, options: safeOptions, topic: safeTopic, difficulty: sanitizeDifficulty(difficulty) },
+            { new: true, runValidators: true }
+        )
         if (!q) return res.status(404).json({ error: 'Not found' })
         res.json(q)
     } catch (err) {
@@ -469,7 +553,16 @@ router.delete('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
 router.post('/admin/sentences', ensureAdmin, async (req, res) => {
     try {
         const { english, words, difficulty } = req.body
-        const s = await SentenceExercise.create({ english, words, difficulty })
+        const safeEnglish = sanitizePlainText(english, 500)
+        if (!safeEnglish) return res.status(400).json({ error: 'english is required' })
+        const safeWords = Array.isArray(words)
+            ? words.map(w => sanitizePlainText(w, 100)).filter(Boolean).slice(0, 50)
+            : []
+        const s = await SentenceExercise.create({
+            english: safeEnglish,
+            words: safeWords,
+            difficulty: sanitizeDifficulty(difficulty)
+        })
         res.status(201).json(s)
     } catch (err) {
         console.error('Admin API error:', err)
@@ -480,7 +573,16 @@ router.post('/admin/sentences', ensureAdmin, async (req, res) => {
 router.put('/admin/sentences/:id', ensureAdmin, async (req, res) => {
     try {
         const { english, words, difficulty } = req.body
-        const s = await SentenceExercise.findByIdAndUpdate(req.params.id, { english, words, difficulty }, { new: true, runValidators: true })
+        const safeEnglish = sanitizePlainText(english, 500)
+        if (!safeEnglish) return res.status(400).json({ error: 'english is required' })
+        const safeWords = Array.isArray(words)
+            ? words.map(w => sanitizePlainText(w, 100)).filter(Boolean).slice(0, 50)
+            : []
+        const s = await SentenceExercise.findByIdAndUpdate(
+            req.params.id,
+            { english: safeEnglish, words: safeWords, difficulty: sanitizeDifficulty(difficulty) },
+            { new: true, runValidators: true }
+        )
         if (!s) return res.status(404).json({ error: 'Not found' })
         res.json(s)
     } catch (err) {
@@ -545,7 +647,23 @@ router.delete('/admin/reading/:id', ensureAdmin, async (req, res) => {
 router.post('/admin/idioms', ensureAdmin, async (req, res) => {
     try {
         const { idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl } = req.body
-        const expr = await IdiomExpression.create({ idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl })
+        const safeIdiom   = sanitizePlainText(idiom, 200)
+        const safeMeaning = sanitizePlainText(meaning, 400)
+        if (!safeIdiom || !safeMeaning) {
+            return res.status(400).json({ error: 'idiom and meaning are required' })
+        }
+        const safeExample = sanitizeExample(example)
+        if (!safeExample) return res.status(400).json({ error: 'example.it and example.en are required' })
+        const safeData = {
+            idiom:              safeIdiom,
+            meaning:            safeMeaning,
+            literalTranslation: literalTranslation ? sanitizePlainText(literalTranslation, 400) : null,
+            example:            safeExample,
+            difficulty:         sanitizeDifficulty(difficulty, 2),
+            tags:               sanitizeTags(tags),
+            audioUrl:           sanitizeOptionalUrl(audioUrl)
+        }
+        const expr = await IdiomExpression.create(safeData)
         res.status(201).json(expr)
     } catch (err) {
         console.error('Admin API error:', err)
@@ -556,7 +674,23 @@ router.post('/admin/idioms', ensureAdmin, async (req, res) => {
 router.put('/admin/idioms/:id', ensureAdmin, async (req, res) => {
     try {
         const { idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl } = req.body
-        const expr = await IdiomExpression.findByIdAndUpdate(req.params.id, { idiom, meaning, literalTranslation, example, difficulty, tags, audioUrl }, { new: true, runValidators: true })
+        const safeIdiom   = sanitizePlainText(idiom, 200)
+        const safeMeaning = sanitizePlainText(meaning, 400)
+        if (!safeIdiom || !safeMeaning) {
+            return res.status(400).json({ error: 'idiom and meaning are required' })
+        }
+        const safeExample = sanitizeExample(example)
+        if (!safeExample) return res.status(400).json({ error: 'example.it and example.en are required' })
+        const safeData = {
+            idiom:              safeIdiom,
+            meaning:            safeMeaning,
+            literalTranslation: literalTranslation ? sanitizePlainText(literalTranslation, 400) : null,
+            example:            safeExample,
+            difficulty:         sanitizeDifficulty(difficulty, 2),
+            tags:               sanitizeTags(tags),
+            audioUrl:           sanitizeOptionalUrl(audioUrl)
+        }
+        const expr = await IdiomExpression.findByIdAndUpdate(req.params.id, safeData, { new: true, runValidators: true })
         if (!expr) return res.status(404).json({ error: 'Not found' })
         res.json(expr)
     } catch (err) {
