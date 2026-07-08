@@ -258,7 +258,7 @@
         document.getElementById('year').textContent = new Date().getFullYear();
     </script>
     <script>window.VOCAB_CDN_BASE = '<%= cdnBase %>'</script>
-    <script>window.CURRENT_USER = <% if (typeof user !== 'undefined' && user) { %>{ id: '<%- String(user._id) %>', displayName: '<%- user.displayName.replace(/'/g, "\\'") %>' }<% } else { %>null<% } %></script>
+    <script>window.CURRENT_USER = <%- (typeof user !== 'undefined' && user) ? JSON.stringify({ id: String(user._id), displayName: user.displayName }) : 'null' %></script>
     <script src="/italian-app.js?v=<%= Date.now() %>"></script>
     <script>ItalianApp.init()</script>
 
