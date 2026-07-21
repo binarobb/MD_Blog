@@ -15,6 +15,11 @@ const sentenceExerciseSchema = new mongoose.Schema({
         default: 1,
         min: 1,
         max: 3
+    },
+    hint: {
+        type: String,
+        trim: true,
+        default: ''
     }
 })
 

@@ -66,6 +66,7 @@
         <button class="panel-tab" data-panel="verbs">⚡ Verbs</button>
         <button class="panel-tab" data-panel="reading">📖 Reading</button>
         <button class="panel-tab" data-panel="categories">🗂️ Categories</button>
+        <button class="panel-tab" data-panel="sentences">🔤 Sentences</button>
     </div>
 
     <div class="panel-body">
@@ -406,6 +407,49 @@
 
     </div><!-- /.panel-body -->
 
+        <!-- ── SENTENCES ──────────────────────────────────────── -->
+        <div class="panel-section" id="panel-sentences">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="form-card">
+                        <h3>Add Sentence Exercise</h3>
+                        <form id="form-sentences">
+                            <div class="mb-3">
+                                <label class="form-label">English Prompt</label>
+                                <input type="text" class="form-control" name="english" placeholder="e.g. I speak Italian." required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Words <small class="text-muted">(comma-separated, in correct order)</small></label>
+                                <input type="text" class="form-control" name="words" placeholder="e.g. Parlo, italiano." required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Difficulty</label>
+                                <select class="form-select" name="difficulty">
+                                    <option value="1">A1 — Beginner</option>
+                                    <option value="2">A2 — Elementary</option>
+                                    <option value="3">B1 — Intermediate</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Grammar Hint <small class="text-muted">(optional — shown on wrong answer)</small></label>
+                                <textarea class="form-control" name="hint" rows="2" placeholder="e.g. In Italian, the verb comes before the subject in questions."></textarea>
+                            </div>
+                            <button type="submit" class="btn-submit">Add Sentence</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="recent-table">
+                        <h4>Recently Added</h4>
+                        <table>
+                            <thead><tr><th>English</th><th>Words</th><th>Diff</th><th></th></tr></thead>
+                            <tbody id="sentences-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <!-- Toast rack -->
     <div class="toast-rack" id="toast-rack"></div>
 
@@ -487,11 +531,11 @@
         // ── Delete ────────────────────────────────────────────────
         async function deleteItem(type, id) {
             if (!confirm('Delete this item?')) return
-            const map = { vocab: '/italian/admin/vocab', verbs: '/italian/admin/verbs', reading: '/italian/admin/reading', category: '/italian/admin/category' }
+            const map = { vocab: '/italian/admin/vocab', verbs: '/italian/admin/verbs', reading: '/italian/admin/reading', category: '/italian/admin/category', sentences: '/italian/admin/sentences' }
             try {
                 const res = await fetch(`${map[type]}/${id}`, { method: 'DELETE', headers: { 'x-csrf-token': getCsrfToken() } })
                 if (!res.ok) { toast('Delete failed', 'error'); return }
-                const rowMap = { vocab: 'vocab-row-', verbs: 'verb-row-', reading: 'reading-row-' }
+                const rowMap = { vocab: 'vocab-row-', verbs: 'verb-row-', reading: 'reading-row-', sentences: 'sentence-row-' }
                 document.getElementById(rowMap[type] + id)?.remove()
                 toast('Deleted')
             } catch { toast('Network error', 'error') }
@@ -538,6 +582,19 @@
             </tr>`
         }
 
+        function sentenceRowBuilder(s) {
+            const diffMap = {1:'a1',2:'a2',3:'b1'}
+            const labelMap = {1:'A1',2:'A2',3:'B1'}
+            const diff = diffMap[s.difficulty] || 'a1'
+            const label = labelMap[s.difficulty] || 'A1'
+            return `<tr id="sentence-row-${s._id}">
+                <td>${e(s.english)}</td>
+                <td><code style="font-size:0.75rem;color:#7dd3aa">${e((s.words||[]).join(' | '))}</code></td>
+                <td><span class="badge-diff badge-${diff}">${label}</span></td>
+                <td><button class="btn-del" onclick="deleteItem('sentences','${s._id}')">Delete</button></td>
+            </tr>`
+        }
+
         // Escape helper — prevent XSS in dynamically built rows
         function e(str) {
             return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
@@ -557,6 +614,32 @@
         document.getElementById('form-reading').addEventListener('submit', ev => {
             ev.preventDefault()
             submitForm(ev.target, '/italian/admin/reading', readingRowBuilder, 'reading-tbody')
+        })
+
+        document.getElementById('form-sentences').addEventListener('submit', async ev => {
+            ev.preventDefault()
+            const fd = new FormData(ev.target)
+            const body = {
+                english:    fd.get('english'),
+                words:      (fd.get('words') || '').split(',').map(w => w.trim()).filter(Boolean),
+                difficulty: parseInt(fd.get('difficulty')) || 1,
+                hint:       fd.get('hint') || ''
+            }
+            try {
+                const res = await fetch('/italian/admin/sentences', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-csrf-token': getCsrfToken() },
+                    body: JSON.stringify(body)
+                })
+                const data = await res.json()
+                if (!res.ok) { toast(data.error || 'Error', 'error'); return }
+                toast('Added successfully ✓')
+                ev.target.reset()
+                const tbody = document.getElementById('sentences-tbody')
+                if (tbody) tbody.insertAdjacentHTML('afterbegin', sentenceRowBuilder(data))
+            } catch (err) {
+                toast('Network error', 'error')
+            }
         })
 
         // ── Categories ────────────────────────────────────────────
