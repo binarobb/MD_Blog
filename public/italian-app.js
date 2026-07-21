@@ -36,6 +36,7 @@
   function pick(arr, n) { return shuffle(arr).slice(0, n) }
 
   function el(id) { return document.getElementById(id) }
+  function esc(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
   function emptyState(areaId, sectionLabel) {
     const levelLabel = state.level === 'all' ? '' : state.level.toUpperCase()
@@ -1950,7 +1951,7 @@
             ${s.words.map(w => `<span class="ita-answer-word">${w}</span>`).join(' ')}
             <button class="ita-speak-btn ms-2" data-speak="${correctAnswer.replace(/"/g, '&quot;')}" title="Hear pronunciation" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊</button>
           </div>
-          ${s.hint ? `<p class="text-muted mb-2" style="font-size:0.88rem">💡 ${s.hint}</p>` : ''}
+          ${s.hint ? `<p class="text-muted mb-2" style="font-size:0.88rem">💡 ${esc(s.hint)}</p>` : ''}
           <button class="btn btn-primary btn-sm" id="sentence-next-btn">Got it &rarr;</button>`
         el('sentence-next-btn').addEventListener('click', () => { state.sentenceIndex++; renderSentence() })
       }

@@ -214,13 +214,14 @@ router.get('/api/idioms', async (req, res) => {
 // Admin panel page
 router.get('/admin', ensureAdmin, async (req, res) => {
     try {
-        const [categories, recentVocab, recentVerbs, recentReading] = await Promise.all([
+        const [categories, recentVocab, recentVerbs, recentReading, recentSentences] = await Promise.all([
             VocabCategory.find().sort({ order: 1 }).populate('parentCategory', 'name'),
             VocabItem.find().sort({ _id: -1 }).limit(10).populate('category', 'name'),
             Verb.find().sort({ _id: -1 }).limit(10),
-            ReadingPassage.find().sort({ _id: -1 }).limit(10)
+            ReadingPassage.find().sort({ _id: -1 }).limit(10),
+            SentenceExercise.find().sort({ _id: -1 }).limit(10)
         ])
-        res.render('italian/admin', { categories, recentVocab, recentVerbs, recentReading })
+        res.render('italian/admin', { categories, recentVocab, recentVerbs, recentReading, recentSentences })
     } catch (err) {
         console.error('Admin panel error:', err)
         res.status(500).send('Internal server error')

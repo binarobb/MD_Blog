@@ -405,8 +405,6 @@
             </div>
         </div>
 
-    </div><!-- /.panel-body -->
-
         <!-- ── SENTENCES ──────────────────────────────────────── -->
         <div class="panel-section" id="panel-sentences">
             <div class="row g-4">
@@ -443,12 +441,23 @@
                         <h4>Recently Added</h4>
                         <table>
                             <thead><tr><th>English</th><th>Words</th><th>Diff</th><th></th></tr></thead>
-                            <tbody id="sentences-tbody"></tbody>
+                            <tbody id="sentences-tbody">
+                                <% recentSentences.forEach(s => { %>
+                                <tr id="sentence-row-<%= s._id %>">
+                                    <td><%= s.english %></td>
+                                    <td><code style="font-size:0.75rem;color:#7dd3aa"><%= (s.words||[]).join(' | ') %></code></td>
+                                    <td><span class="badge-diff badge-<%= ['','a1','a2','b1'][s.difficulty]||'a1' %>"><%= ['','A1','A2','B1'][s.difficulty]||'A1' %></span></td>
+                                    <td><button class="btn-del" onclick="deleteItem('sentences','<%= s._id %>')">Delete</button></td>
+                                </tr>
+                                <% }) %>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
+
+    </div><!-- /.panel-body -->
 
     <!-- Toast rack -->
     <div class="toast-rack" id="toast-rack"></div>
