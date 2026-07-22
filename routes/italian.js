@@ -214,13 +214,14 @@ router.get('/api/idioms', async (req, res) => {
 // Admin panel page
 router.get('/admin', ensureAdmin, async (req, res) => {
     try {
-        const [categories, recentVocab, recentVerbs, recentReading] = await Promise.all([
+        const [categories, recentVocab, recentVerbs, recentReading, recentSentences] = await Promise.all([
             VocabCategory.find().sort({ order: 1 }).populate('parentCategory', 'name'),
             VocabItem.find().sort({ _id: -1 }).limit(10).populate('category', 'name'),
             Verb.find().sort({ _id: -1 }).limit(10),
-            ReadingPassage.find().sort({ _id: -1 }).limit(10)
+            ReadingPassage.find().sort({ _id: -1 }).limit(10),
+            SentenceExercise.find().sort({ _id: -1 }).limit(10)
         ])
-        res.render('italian/admin', { categories, recentVocab, recentVerbs, recentReading })
+        res.render('italian/admin', { categories, recentVocab, recentVerbs, recentReading, recentSentences })
     } catch (err) {
         console.error('Admin panel error:', err)
         res.status(500).send('Internal server error')
@@ -552,7 +553,7 @@ router.delete('/admin/grammar/questions/:id', ensureAdmin, async (req, res) => {
 // Sentences
 router.post('/admin/sentences', ensureAdmin, async (req, res) => {
     try {
-        const { english, words, difficulty } = req.body
+        const { english, words, difficulty, hint } = req.body
         const safeEnglish = sanitizePlainText(english, 500)
         if (!safeEnglish) return res.status(400).json({ error: 'english is required' })
         const safeWords = Array.isArray(words)
@@ -561,7 +562,8 @@ router.post('/admin/sentences', ensureAdmin, async (req, res) => {
         const s = await SentenceExercise.create({
             english: safeEnglish,
             words: safeWords,
-            difficulty: sanitizeDifficulty(difficulty)
+            difficulty: sanitizeDifficulty(difficulty),
+            hint: sanitizePlainText(hint || '', 300)
         })
         res.status(201).json(s)
     } catch (err) {
@@ -572,7 +574,7 @@ router.post('/admin/sentences', ensureAdmin, async (req, res) => {
 
 router.put('/admin/sentences/:id', ensureAdmin, async (req, res) => {
     try {
-        const { english, words, difficulty } = req.body
+        const { english, words, difficulty, hint } = req.body
         const safeEnglish = sanitizePlainText(english, 500)
         if (!safeEnglish) return res.status(400).json({ error: 'english is required' })
         const safeWords = Array.isArray(words)
@@ -580,7 +582,7 @@ router.put('/admin/sentences/:id', ensureAdmin, async (req, res) => {
             : []
         const s = await SentenceExercise.findByIdAndUpdate(
             req.params.id,
-            { english: safeEnglish, words: safeWords, difficulty: sanitizeDifficulty(difficulty) },
+            { english: safeEnglish, words: safeWords, difficulty: sanitizeDifficulty(difficulty), hint: sanitizePlainText(hint || '', 300) },
             { new: true, runValidators: true }
         )
         if (!s) return res.status(404).json({ error: 'Not found' })

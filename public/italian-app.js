@@ -36,6 +36,7 @@
   function pick(arr, n) { return shuffle(arr).slice(0, n) }
 
   function el(id) { return document.getElementById(id) }
+  function esc(str) { return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
 
   function emptyState(areaId, sectionLabel) {
     const levelLabel = state.level === 'all' ? '' : state.level.toUpperCase()
@@ -257,7 +258,8 @@
     }))
     appData.sentences = sentences.map(s => ({
       en:    s.english,
-      words: s.words
+      words: s.words,
+      hint:  s.hint || ''
     }))
     appData.reading = readingPayload.passages || []
     appData.idioms  = Array.isArray(idioms) ? idioms : []
@@ -1661,11 +1663,15 @@
 
     input.disabled = true
     input.classList.add(correct ? 'ita-input-correct' : 'ita-input-wrong')
-    el('verb-feedback').innerHTML = correct
-      ? `<div class="ita-feedback-correct">Esatto! <span class="text-muted ms-2"><em>${q.verb.example.it}</em></span></div>`
-      : `<div class="ita-feedback-wrong">The answer is: <strong>${q.answer}</strong><br><span class="text-muted"><em>${q.verb.example.it}</em> — ${q.verb.example.en}</span></div>`
-
-    setTimeout(() => { state.verbIndex++; renderVerbQuestion() }, correct ? 1200 : 2800)
+    if (correct) {
+      el('verb-feedback').innerHTML = `<div class="ita-feedback-correct">Esatto! <span class="text-muted ms-2"><em>${q.verb.example.it}</em></span></div>`
+      setTimeout(() => { state.verbIndex++; renderVerbQuestion() }, 1200)
+    } else {
+      el('verb-feedback').innerHTML = `
+        <div class="ita-feedback-wrong mb-2">The answer is: <strong>${q.answer}</strong><br><span class="text-muted"><em>${q.verb.example.it}</em> — ${q.verb.example.en}</span></div>
+        <button class="btn btn-primary btn-sm mt-2" id="verb-next-btn">Got it &rarr;</button>`
+      el('verb-next-btn').addEventListener('click', () => { state.verbIndex++; renderVerbQuestion() })
+    }
   }
 
   function handleVerbMC(btn, q) {
@@ -1682,11 +1688,15 @@
       else if (b === btn && !correct) b.classList.add('ita-wrong')
     })
 
-    el('verb-feedback').innerHTML = correct
-      ? `<div class="ita-feedback-correct">Esatto! <span class="text-muted ms-2"><em>${q.verb.example.it}</em></span></div>`
-      : `<div class="ita-feedback-wrong">The answer is: <strong>${q.answer}</strong><br><span class="text-muted"><em>${q.verb.example.it}</em> — ${q.verb.example.en}</span></div>`
-
-    setTimeout(() => { state.verbIndex++; renderVerbQuestion() }, correct ? 1000 : 2500)
+    if (correct) {
+      el('verb-feedback').innerHTML = `<div class="ita-feedback-correct">Esatto! <span class="text-muted ms-2"><em>${q.verb.example.it}</em></span></div>`
+      setTimeout(() => { state.verbIndex++; renderVerbQuestion() }, 1000)
+    } else {
+      el('verb-feedback').innerHTML = `
+        <div class="ita-feedback-wrong mb-2">The answer is: <strong>${q.answer}</strong><br><span class="text-muted"><em>${q.verb.example.it}</em> — ${q.verb.example.en}</span></div>
+        <button class="btn btn-primary btn-sm mt-2" id="verb-next-btn">Got it &rarr;</button>`
+      el('verb-next-btn').addEventListener('click', () => { state.verbIndex++; renderVerbQuestion() })
+    }
   }
 
   function renderVerbResults() {
@@ -1811,11 +1821,15 @@
           if (b === btn && !correct) b.classList.add('ita-wrong')
         })
 
-        el('grammar-feedback').innerHTML = correct
-          ? '<p class="ita-feedback-correct">Correct!</p>'
-          : `<p class="ita-feedback-wrong">The answer is: <strong>${q.a}</strong></p>`
-
-        setTimeout(() => { state.grammarIndex++; renderGrammarQuestion() }, 1200)
+        if (correct) {
+          el('grammar-feedback').innerHTML = '<p class="ita-feedback-correct">Correct!</p>'
+          setTimeout(() => { state.grammarIndex++; renderGrammarQuestion() }, 1200)
+        } else {
+          el('grammar-feedback').innerHTML = `
+            <p class="ita-feedback-wrong mb-2">The answer is: <strong>${q.a}</strong></p>
+            <button class="btn btn-primary btn-sm" id="grammar-next-btn">Got it &rarr;</button>`
+          el('grammar-next-btn').addEventListener('click', () => { state.grammarIndex++; renderGrammarQuestion() })
+        }
       })
     })
   }
@@ -1924,11 +1938,23 @@
       if (isCorrect) state.sentenceCorrect++
 
       answerEl.classList.add(isCorrect ? 'ita-sentence-correct' : 'ita-sentence-wrong')
-      el('sentence-feedback').innerHTML = isCorrect
-        ? '<p class="ita-feedback-correct">Perfetto!</p>'
-        : `<p class="ita-feedback-wrong">Correct order: <strong>${correctAnswer}</strong> <button class="ita-speak-btn ms-1" data-speak="${correctAnswer.replace(/"/g, '&quot;')}" title="Hear pronunciation" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊</button></p>`
 
-      setTimeout(() => { state.sentenceIndex++; renderSentence() }, 1800)
+      if (isCorrect) {
+        el('sentence-feedback').innerHTML = '<p class="ita-feedback-correct">Perfetto!</p>'
+        setTimeout(() => { state.sentenceIndex++; renderSentence() }, 1400)
+      } else {
+        // Wrong: show the correct sentence and require a deliberate click before continuing,
+        // so the learner must notice the word order rather than having it auto-dismiss.
+        el('sentence-feedback').innerHTML = `
+          <p class="ita-feedback-wrong mb-2">Correct order:</p>
+          <div class="ita-sentence-answer ita-sentence-correct mb-2">
+            ${s.words.map(w => `<span class="ita-answer-word">${w}</span>`).join(' ')}
+            <button class="ita-speak-btn ms-2" data-speak="${correctAnswer.replace(/"/g, '&quot;')}" title="Hear pronunciation" onclick="ItalianApp.speak(this.dataset.speak,this)">🔊</button>
+          </div>
+          ${s.hint ? `<p class="text-muted mb-2" style="font-size:0.88rem">💡 ${esc(s.hint)}</p>` : ''}
+          <button class="btn btn-primary btn-sm" id="sentence-next-btn">Got it &rarr;</button>`
+        el('sentence-next-btn').addEventListener('click', () => { state.sentenceIndex++; renderSentence() })
+      }
     })
   }
 
